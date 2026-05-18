@@ -33,7 +33,195 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        /* ... (τα ίδια styles) ... */
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #0d0d0d; color: #fff; margin: 0; padding: 20px; text-align: center; }
+        h1 { color: #FFD700; text-shadow: 0 0 20px rgba(255,215,0,0.3); }
+        #container { max-width: 700px; margin: 0 auto; }
+        
+        #camera-wrapper { 
+            position: relative; 
+            width: 100%; 
+            max-width: 500px; 
+            margin: 20px auto; 
+            border-radius: 20px; 
+            overflow: hidden; 
+            border: 3px solid #FFD700; 
+            box-shadow: 0 0 30px rgba(255,215,0,0.2); 
+            background: #111; 
+        }
+        video { 
+            width: 100%; 
+            display: block; 
+        }
+        
+        #camera-guide {
+            position: absolute;
+            top: 10%;
+            left: 10%;
+            width: 80%;
+            height: 80%;
+            border: 2px dashed #FFD700;
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0.5;
+            display: none;
+        }
+        #camera-guide::before {
+            content: "☕";
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            color: #FFD700;
+        }
+        #camera-guide::after {
+            content: "Τοποθέτησε το φλιτζάνι εδώ";
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #FFD700;
+            white-space: nowrap;
+        }
+        
+        #cup-guide {
+            display: none;
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 20px auto;
+        }
+        #cup-guide svg {
+            width: 100%;
+            height: 100%;
+        }
+        #cup-guide text {
+            font-size: 10px;
+            fill: #FFD700;
+            font-weight: bold;
+        }
+        #cup-guide .label {
+            font-size: 8px;
+            fill: #aaa;
+        }
+        
+        .position-dot {
+            fill: #FFD700;
+            opacity: 0.7;
+        }
+
+        .controls { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 10px; 
+            margin: 20px 0; 
+        }
+        .btn { 
+            padding: 12px 24px; 
+            border: none; 
+            border-radius: 30px; 
+            font-weight: bold; 
+            font-size: 14px; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            flex: 1; 
+            min-width: 80px; 
+        }
+        .btn-gold { background: #FFD700; color: #111; }
+        .btn-gold:hover { background: #FFC107; transform: scale(1.03); }
+        .btn-green { background: #2ecc71; color: #fff; }
+        .btn-red { background: #e74c3c; color: #fff; }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+        .upload-btn { 
+            padding: 12px 24px; 
+            border: none; 
+            border-radius: 30px; 
+            font-weight: bold; 
+            font-size: 14px; 
+            cursor: pointer; 
+            background: #9b59b6; 
+            color: #fff; 
+            transition: 0.3s; 
+            flex: 1; 
+            min-width: 80px; 
+        }
+        .upload-btn:hover { 
+            background: #8e44ad; 
+            transform: scale(1.03); 
+        }
+
+        #result-area { 
+            display: none; 
+            background: #1a1a1a; 
+            border-radius: 20px; 
+            padding: 20px; 
+            margin-top: 20px; 
+            border-left: 5px solid #FFD700; 
+            text-align: left; 
+        }
+        #result-area h2 { color: #FFD700; margin-top: 0; }
+        
+        .symbol-item { 
+            background: #222; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border-radius: 10px; 
+            border-left: 3px solid #FFD700; 
+        }
+        .symbol-name { color: #FFD700; font-weight: bold; }
+        .symbol-position { color: #aaa; font-size: 14px; }
+        .symbol-interpretation { color: #fff; font-size: 15px; line-height: 1.6; margin-top: 8px; }
+        
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
+        .stat-item { background: #222; padding: 8px 12px; border-radius: 10px; }
+
+        .badge { display: inline-block; background: #FFD700; color: #111; padding: 2px 10px; border-radius: 20px; font-size: 12px; }
+        #loading { display: none; margin: 15px; color: #aaa; }
+
+        #upload-section { 
+            margin: 20px 0; 
+            padding: 25px; 
+            border: 2px dashed #444; 
+            border-radius: 20px; 
+            background: #1a1a1a; 
+        }
+        #upload-section:hover { border-color: #FFD700; }
+        #file-input { display: none; }
+        
+        #upload-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        #upload-preview-container img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 2px solid #FFD700;
+        }
+        
+        .instructions {
+            margin-top: 10px;
+            padding: 12px;
+            background: #1a1a1a;
+            border-radius: 10px;
+            border: 1px solid #FFD700;
+            color: #eee;
+            font-size: 14px;
+        }
+        .instructions strong { color: #FFD700; }
+
+        @media (max-width: 480px) {
+            input { font-size: 13px; padding: 4px 8px; height: 32px; }
+            .btn, .upload-btn { font-size: 12px; padding: 8px 16px; }
+        }
     </style>
 </head>
 <body>
@@ -67,7 +255,22 @@
             <h2>🔮 Ανάλυση Φλιτζανιού</h2>
             
             <div id="cup-guide">
-                <!-- ... (το ίδιο svg) ... -->
+                <svg viewBox="0 0 200 200">
+                    <ellipse cx="100" cy="100" rx="70" ry="60" fill="none" stroke="#FFD700" stroke-width="2"/>
+                    <ellipse cx="100" cy="100" rx="60" ry="50" fill="none" stroke="#FFD700" stroke-width="1" stroke-dasharray="4"/>
+                    <path d="M 170 80 C 190 80, 190 120, 170 120" fill="none" stroke="#FFD700" stroke-width="3"/>
+                    <circle cx="100" cy="50" r="4" class="position-dot"/>
+                    <circle cx="100" cy="150" r="4" class="position-dot"/>
+                    <circle cx="50" cy="100" r="4" class="position-dot"/>
+                    <circle cx="150" cy="100" r="4" class="position-dot"/>
+                    <circle cx="75" cy="75" r="3" class="position-dot"/>
+                    <circle cx="125" cy="125" r="3" class="position-dot"/>
+                    <text x="100" y="45" text-anchor="middle" class="label">Πάνω</text>
+                    <text x="100" y="165" text-anchor="middle" class="label">Κάτω</text>
+                    <text x="35" y="105" text-anchor="middle" class="label">Αριστερό</text>
+                    <text x="165" y="105" text-anchor="middle" class="label">Δεξί</text>
+                    <text x="175" y="85" text-anchor="middle" class="label" fill="#aaa" font-size="7">Χερούλι</text>
+                </svg>
             </div>
             
             <div id="element-display"></div>
@@ -98,6 +301,7 @@
             const btn = document.getElementById('startBtn');
             
             if (camera) {
+                // Αν η κάμερα είναι ήδη ανοιχτή, τραβάμε φωτογραφία
                 takePhoto();
                 return;
             }
@@ -126,7 +330,7 @@
             });
         }
 
-        // --- Λήψη φωτογραφίας ---
+        // --- Λήψη φωτογραφίας από κάμερα ---
         function takePhoto() {
             if (!camera) {
                 alert("Πατήστε πρώτα το κουμπί 'Κάμερα'");
@@ -142,6 +346,7 @@
             currentImage = photo;
             capturedPhotos.push(photo);
             
+            // Εμφάνιση preview
             const container = document.getElementById('upload-preview-container');
             container.innerHTML = '';
             const img = document.createElement('img');
@@ -151,11 +356,12 @@
             document.getElementById('camera-guide').style.display = 'none';
             document.getElementById('cup-guide').style.display = 'block';
 
+            // Ενεργοποίηση κουμπιού ανάλυσης
             document.getElementById('scanBtn').disabled = false;
             document.getElementById('scanBtn').textContent = "🔍 Ανάλυση";
         }
 
-        // --- Upload φωτογραφίας ---
+        // --- Upload φωτογραφιών ---
         function handleUpload(event) {
             const files = event.target.files;
             if (!files || files.length === 0) return;
@@ -176,6 +382,7 @@
                 
                 document.getElementById('cup-guide').style.display = 'block';
                 
+                // Ενεργοποίηση κουμπιού ανάλυσης
                 document.getElementById('scanBtn').disabled = false;
                 document.getElementById('scanBtn').textContent = "🔍 Ανάλυση";
             };
@@ -287,6 +494,7 @@
             uploadedImages = [];
             analysisResult = null;
             
+            // Αν η κάμερα είναι ανοιχτή, την κλείνουμε
             if (camera) {
                 camera.stop();
                 camera = null;
