@@ -243,8 +243,8 @@
         <div class="controls">
             <button class="btn btn-gold" id="startBtn" onclick="startCamera()">📷 Κάμερα</button>
             <button class="upload-btn" onclick="document.getElementById('file-input').click()">📁 Ανέβασε</button>
-            <input type="file" id="file-input" accept="image/*" multiple onchange="handleUpload(event)">
-            <button class="btn btn-green" id="scanBtn" onclick="scanAndAnalyze()">🔍 Ανάλυση</button>
+            <input type="file" id="file-input" accept="image/*" onchange="handleUpload(event)">
+            <button class="btn btn-green" id="scanBtn" onclick="scanAndAnalyze()" disabled>🔍 Ανάλυση</button>
         </div>
 
         <div id="upload-preview-container"></div>
@@ -290,15 +290,22 @@
 
         // --- Camera Setup ---
         const video = document.getElementById('webcam');
-        let analysisResult = null;
-        let uploadedImages = [];
+        let currentImage = null;
         let camera = null;
         let capturedPhotos = [];
-        let currentImage = null;
+        let uploadedImages = [];
+        let analysisResult = null;
 
         // --- Εκκίνηση κάμερας ---
         function startCamera() {
             const btn = document.getElementById('startBtn');
+            
+            if (camera) {
+                // Αν η κάμερα είναι ήδη ανοιχτή, τραβάμε φωτογραφία
+                takePhoto();
+                return;
+            }
+            
             btn.disabled = true;
             btn.innerText = "⏳...";
             
@@ -311,8 +318,8 @@
                 facingMode: 'environment'
             });
             camera.start().then(() => {
-                btn.innerText = "📷 Κάμερα";
-                btn.style.background = "#FFD700";
+                btn.innerText = "📷 Λήψη";
+                btn.style.background = "#2ecc71";
                 btn.disabled = false;
             }).catch(err => {
                 console.error("Camera error:", err);
@@ -336,8 +343,8 @@
             canvas.getContext('2d').drawImage(video, 0, 0);
             const photo = canvas.toDataURL('image/jpeg');
 
-            // Αποθήκευση της φωτογραφίας
             currentImage = photo;
+            capturedPhotos.push(photo);
             
             // Εμφάνιση preview
             const container = document.getElementById('upload-preview-container');
@@ -370,8 +377,8 @@
                 img.src = e.target.result;
                 container.appendChild(img);
                 
-                // Αποθήκευση της φωτογραφίας
                 currentImage = e.target.result;
+                uploadedImages.push(e.target.result);
                 
                 document.getElementById('cup-guide').style.display = 'block';
                 
@@ -474,31 +481,26 @@
         function resetAll() {
             document.getElementById('result-area').style.display = 'none';
             document.getElementById('loading').style.display = 'none';
-            document.getElementById('startBtn').disabled = false;
             document.getElementById('startBtn').innerText = "📷 Κάμερα";
+            document.getElementById('startBtn').style.background = "#FFD700";
+            document.getElementById('startBtn').disabled = false;
             document.getElementById('scanBtn').disabled = true;
             document.getElementById('scanBtn').textContent = "🔍 Ανάλυση";
-            analysisResult = null;
             document.getElementById('upload-preview-container').innerHTML = '';
             document.getElementById('cup-guide').style.display = 'none';
             document.getElementById('camera-guide').style.display = 'none';
+            currentImage = null;
             capturedPhotos = [];
             uploadedImages = [];
-            currentImage = null;
-        }
-
-        // --- Αλλαγή: Το κουμπί κάμερας τώρα τραβάει φωτογραφία ---
-        document.getElementById('startBtn').addEventListener('click', function() {
+            analysisResult = null;
+            
+            // Αν η κάμερα είναι ανοιχτή, την κλείνουμε
             if (camera) {
-                takePhoto();
-            } else {
-                startCamera();
+                camera.stop();
+                camera = null;
+                video.srcObject = null;
             }
-        });
-        
-        window.onload = function() {
-            // Η σελίδα φορτώνει χωρίς ιστορικό
-        };
+        }
     </script>
 </body>
 </html>
