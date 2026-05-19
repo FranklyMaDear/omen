@@ -1,4 +1,3 @@
- ```html
 <!DOCTYPE html>
 <html lang="el">
 <head>
@@ -13,9 +12,15 @@
         .btn { padding: 12px 24px; border: none; border-radius: 30px; font-weight: bold; cursor: pointer; margin: 5px; }
         .btn-gold { background: #FFD700; color: #111; }
         .btn-green { background: #2ecc71; color: #fff; }
+        .btn-blue { background: #3498db; color: #fff; }
         #result-area { display: none; background: #1a1a1a; border-radius: 20px; padding: 20px; margin-top: 20px; text-align: left; }
         .symbol-item { background: #222; padding: 12px; margin: 10px 0; border-radius: 10px; border-left: 3px solid #FFD700; }
         #loading { display: none; margin: 15px; color: #FFD700; font-weight: bold; }
+        .controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 10px 0; }
+        select { padding: 10px; border-radius: 30px; background: #222; color: #fff; border: 1px solid #FFD700; }
+        .upload-wrapper { margin: 10px 0; }
+        input[type="file"] { display: none; }
+        .upload-label { display: inline-block; padding: 12px 24px; background: #e67e22; color: #fff; border-radius: 30px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -23,10 +28,23 @@
     <div id="camera-wrapper">
         <video id="webcam" playsinline></video>
     </div>
+
     <div class="controls">
-        <button class="btn btn-gold" id="startBtn" onclick="startCamera()">📷 Κάμερα</button>
-        <button class="btn btn-green" id="scanBtn" onclick="scanAndAnalyze()" disabled>🔍 Ανάλυση</button>
+        <select id="cameraSelect">
+            <option value="environment">📷 Πίσω κάμερα</option>
+            <option value="user">🤳 Selfie (μπροστινή)</option>
+        </select>
+        <button class="btn btn-gold" id="startBtn">▶️ Άνοιγμα Κάμερας</button>
+        <button class="btn btn-blue" id="captureBtn" disabled>📸 Λήψη Φωτογραφίας</button>
     </div>
+
+    <div class="upload-wrapper">
+        <label class="upload-label" for="fileInput">📁 Upload Εικόνας</label>
+        <input type="file" id="fileInput" accept="image/*">
+    </div>
+
+    <button class="btn btn-green" id="scanBtn" disabled>🔍 Ανάλυση</button>
+
     <div id="loading">⏳ Η Μαντάμ Ζαΐρα διαβάζει το φλιτζάνι...</div>
     <div id="result-area">
         <h2>🔮 Αποτελέσματα</h2>
@@ -35,28 +53,78 @@
 
     <script>
         const video = document.getElementById('webcam');
+        const startBtn = document.getElementById('startBtn');
+        const captureBtn = document.getElementById('captureBtn');
+        const scanBtn = document.getElementById('scanBtn');
+        const fileInput = document.getElementById('fileInput');
+        const cameraSelect = document.getElementById('cameraSelect');
+        const loading = document.getElementById('loading');
+        const resultArea = document.getElementById('result-area');
+        const resultText = document.getElementById('result-text');
+
         let currentImage = null;
         let camera = null;
+        let isCameraActive = false;
 
         async function startCamera() {
-            camera = new Camera(video, { onFrame: async () => {}, width: 500, height: 500 });
-            await camera.start();
-            document.getElementById('startBtn').textContent = "📸 Λήψη Φωτογραφίας";
-            document.getElementById('startBtn').onclick = takePhoto;
+            if (isCameraActive) {
+                if (camera) {
+                    await camera.stop();
+                    camera = null;
+                }
+                video.srcObject = null;
+                isCameraActive = false;
+                startBtn.textContent = "▶️ Άνοιγμα Κάμερας";
+                captureBtn.disabled = true;
+                return;
+            }
+
+            const facingMode = cameraSelect.value;
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: facingMode, width: 500, height: 500 }
+                });
+                video.srcObject = stream;
+                await video.play();
+                isCameraActive = true;
+                startBtn.textContent = "⏹️ Κλείσιμο Κάμερας";
+                captureBtn.disabled = false;
+            } catch (err) {
+                alert("Δεν ήταν δυνατή η πρόσβαση στην κάμερα: " + err.message);
+            }
         }
 
-        function takePhoto() {
+        startBtn.onclick = startCamera;
+
+        captureBtn.onclick = function() {
+            if (!isCameraActive) return;
             const canvas = document.createElement('canvas');
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             canvas.getContext('2d').drawImage(video, 0, 0);
             currentImage = canvas.toDataURL('image/jpeg');
-            document.getElementById('scanBtn').disabled = false;
-            alert("Η φωτογραφία λήφθηκε! Πάτα 'Ανάλυση'.");
-        }
+            scanBtn.disabled = false;
+            alert("📸 Φωτογραφία λήφθηκε! Πάτα 'Ανάλυση'.");
+        };
 
-        async function scanAndAnalyze() {
-            document.getElementById('loading').style.display = 'block';
+        fileInput.onchange = function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                currentImage = ev.target.result;
+                scanBtn.disabled = false;
+                alert("📁 Εικόνα ανέβηκε! Πάτα 'Ανάλυση'.");
+            };
+            reader.readAsDataURL(file);
+        };
+
+        scanBtn.onclick = async function() {
+            if (!currentImage) {
+                alert("Πρέπει πρώτα να τραβήξεις φωτογραφία ή να ανεβάσεις εικόνα.");
+                return;
+            }
+            loading.style.display = 'block';
             try {
                 const response = await fetch('/analyze', {
                     method: 'POST',
@@ -72,15 +140,13 @@
             } catch (err) {
                 alert("Σφάλμα σύνδεσης: " + err);
             } finally {
-                document.getElementById('loading').style.display = 'none';
+                loading.style.display = 'none';
             }
-        }
+        };
 
         function displayResult(r) {
-            const area = document.getElementById('result-area');
-            const text = document.getElementById('result-text');
-            area.style.display = 'block';
-            text.innerHTML = r.symbols.map(s => `
+            resultArea.style.display = 'block';
+            resultText.innerHTML = r.symbols.map(s => `
                 <div class="symbol-item">
                     <strong>${s.name}</strong> (${s.position})<br>
                     ${s.interpretation}
@@ -90,5 +156,3 @@
     </script>
 </body>
 </html>
-
-```
