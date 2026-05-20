@@ -8,7 +8,6 @@
     <meta name="description" content="Διάβασε το φλιτζάνι του καφέ σου με AI. Μυστική εμπειρία.">
     
     <style>
-        /* ===== RESET & BASE ===== */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
@@ -106,7 +105,7 @@
             font-weight: 700;
             cursor: pointer;
             box-shadow: 0 0 40px rgba(241, 196, 15, 0.2);
-            transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            transition: all 0.4s;
             letter-spacing: 3px;
             margin-top: 10px;
         }
@@ -167,15 +166,17 @@
         #preview-img { max-width: 220px; width: 100%; border-radius: 30px; border: 2px solid #d4af37; }
         .preview-label { color: #d4af37; font-weight: 300; letter-spacing: 2px; margin-bottom: 6px; font-size: 0.9rem; }
 
+        /* LOADING BOX - ΒΕΛΤΙΩΜΕΝΟ */
         #loading-box {
             display: none;
             text-align: center;
-            background: rgba(20, 12, 30, 0.85);
+            background: rgba(20, 12, 30, 0.95);
             backdrop-filter: blur(12px);
             border-radius: 40px;
-            padding: 30px 20px;
+            padding: 40px 30px;
             margin: 20px auto;
-            border: 1px solid rgba(255, 215, 0, 0.15);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            box-shadow: 0 0 80px rgba(241, 196, 15, 0.2);
             width: 100%;
             max-width: 450px;
         }
@@ -184,7 +185,7 @@
             color: #f5d76e;
             font-weight: 500;
             letter-spacing: 2px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             animation: mysticPulse 2s infinite ease-in-out;
         }
         @keyframes mysticPulse { 
@@ -192,15 +193,29 @@
             50% { opacity: 1; transform: scale(1.04); } 
             100% { opacity: 0.5; transform: scale(0.98); } 
         }
-
+        
         .waiting-text {
-            font-size: 1rem;
+            font-size: 1.1rem;
             color: #b9a6d4;
             letter-spacing: 3px;
             font-weight: 300;
-            padding: 8px 20px;
+            padding: 10px 25px;
             border-radius: 30px;
-            background: rgba(255, 215, 0, 0.05);
+            background: rgba(255, 215, 0, 0.08);
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 215, 0, 0.2);
+            border-top: 3px solid #f7dc6f;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         #result-area {
@@ -308,8 +323,10 @@
 
         <button class="btn btn-green" id="scanBtn" onclick="startAnalysis()" disabled>🔮 Ανάλυση Φλιτζανιού</button>
 
+        <!-- LOADING BOX ΜΕ SPINNER -->
         <div id="loading-box">
-            <div class="mantra">✨ Η μαντάμ Ζαΐρα διαβάζει τις σκιές... ✨</div>
+            <div class="mantra">✨ Η Μαντάμ Ζαΐρα διαβάζει τις σκιές... ✨</div>
+            <div class="loading-spinner"></div>
             <div class="waiting-text">Παρακαλώ Περίμενε</div>
         </div>
 
@@ -378,11 +395,12 @@
             document.getElementById('splash').classList.add('active');
         }
 
-        // ===== CAMERA & UPLOAD LOGIC =====
-        // ΑΥΤΟΜΑΤΗ ΑΝΙΧΝΕΥΣΗ: Αν τρέχει τοπικά, χρησιμοποιεί localhost
+        // ===== API URL - ΑΥΤΟΜΑΤΗ ΑΝΙΧΝΕΥΣΗ =====
         const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? 'http://localhost:7860/analyze'
             : '/analyze';
+
+        console.log('🌐 API URL:', API_URL);
 
         const video = document.getElementById('webcam');
         let currentStream = null;
@@ -409,6 +427,7 @@
             document.getElementById('inputControls').style.display = 'flex';
             document.getElementById('scanBtn').style.display = 'block';
             document.getElementById('fileInput').value = "";
+            console.log('🔄 Επαναφορά σάρωσης');
         }
 
         async function openCamera(facingMode) {
@@ -423,8 +442,9 @@
                 video.srcObject = currentStream;
                 document.getElementById('camera-wrapper').style.display = 'block';
                 document.getElementById('captureBtn').style.display = 'flex';
+                console.log('📷 Κάμερα άνοιξε:', facingMode);
             } catch (err) {
-                console.error("Camera error:", err);
+                console.error("❌ Σφάλμα κάμερας:", err);
                 alert("Δεν μπόρεσα να ανοίξω την κάμερα. Δοκίμασε το 'Ανέβασμα'.");
             }
         }
@@ -442,12 +462,14 @@
             document.getElementById('camera-wrapper').style.display = 'none';
             document.getElementById('captureBtn').style.display = 'none';
             showPreview(currentImageBase64);
+            console.log('📸 Φωτογραφία τραβήχτηκε');
         }
 
         function handleUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
             resetScanUI();
+            console.log('📁 Αρχείο επιλέχθηκε:', file.name);
             
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -456,6 +478,7 @@
                     const compressed = compressImage(img, 800, 0.7);
                     currentImageBase64 = compressed;
                     showPreview(currentImageBase64);
+                    console.log('✅ Εικόνα συμπιέστηκε και είναι έτοιμη');
                 };
                 img.src = e.target.result;
             };
@@ -484,18 +507,33 @@
             document.getElementById('preview-img').src = imageSrc;
             document.getElementById('preview-wrapper').style.display = 'block';
             document.getElementById('scanBtn').disabled = false;
+            document.getElementById('scanBtn').scrollIntoView({ behavior: 'smooth' });
+            console.log('🖼️ Προεπισκόπηση εμφανίστηκε');
         }
 
-        // ===== ANALYSIS =====
+        // ===== ΚΥΡΙΑ ΣΥΝΑΡΤΗΣΗ ΑΝΑΛΥΣΗΣ =====
         async function startAnalysis() {
-            if (!currentImageBase64 || isAnalyzing) return;
+            if (!currentImageBase64 || isAnalyzing) {
+                console.log('⚠️ Δεν υπάρχει εικόνα ή ήδη αναλύεται');
+                return;
+            }
 
+            const scanBtn = document.getElementById('scanBtn');
             isAnalyzing = true;
-            document.getElementById('scanBtn').disabled = true;
+            scanBtn.disabled = true;
+            scanBtn.style.display = 'none';
+            
+            // Απόκρυψη όλων των άλλων
             document.getElementById('inputControls').style.display = 'none';
             document.getElementById('preview-wrapper').style.display = 'none';
-            document.getElementById('scanBtn').style.display = 'none';
-            document.getElementById('loading-box').style.display = 'block';
+            
+            // ΕΜΦΑΝΙΣΗ LOADING BOX
+            const loadingBox = document.getElementById('loading-box');
+            loadingBox.style.display = 'block';
+            loadingBox.scrollIntoView({ behavior: 'smooth' });
+            
+            console.log('🔮 Η Μαντάμ Ζαΐρα ξεκινά την ανάλυση...');
+            console.log('📤 Μέγεθος εικόνας:', (currentImageBase64.length / 1024).toFixed(2), 'KB');
 
             try {
                 const response = await fetch(API_URL, {
@@ -504,26 +542,31 @@
                     body: JSON.stringify({ image: currentImageBase64 })
                 });
 
+                console.log('📥 Status απάντησης:', response.status);
+
                 if (!response.ok) {
                     throw new Error(`Server error: ${response.status}`);
                 }
 
                 const data = await response.json();
+                console.log('✅ Δεδομένα από backend:', data);
                 
                 if (data.success && data.symbols) {
-                    // Το backend στέλνει απλό κείμενο, το εμφανίζουμε ως έχει
                     document.getElementById('result-text').textContent = data.symbols;
                     document.getElementById('result-area').style.display = 'block';
+                    document.getElementById('result-area').scrollIntoView({ behavior: 'smooth' });
+                    console.log('✨ Αποτελέσματα έτοιμα!');
                 } else {
                     throw new Error(data.error || "Άγνωστο σφάλμα");
                 }
             } catch (error) {
-                console.error('Error:', error);
-                alert("Κάτι δεν πήγε καλά. Δοκίμασε ξανά.");
+                console.error('❌ ΣΦΑΛΜΑ:', error);
+                alert("🔮 Η Μαντάμ Ζαΐρα συνάντησε ένα πνευματικό εμπόδιο. Δοκίμασε ξανά.");
                 resetScan();
             } finally {
                 document.getElementById('loading-box').style.display = 'none';
                 isAnalyzing = false;
+                console.log('🏁 Ανάλυση ολοκληρώθηκε');
             }
         }
     </script>
