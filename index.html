@@ -130,43 +130,120 @@
             letter-spacing: 1px;
         }
 
-        .controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin: 10px 0 15px; }
+        /* ===== ΜΕΓΑΛΥΤΕΡΑ ΚΟΥΜΠΙΑ ΜΕ ΕΦΕ ===== */
+        .controls { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 16px; 
+            margin: 15px 0 20px; 
+        }
         .btn {
-            padding: 12px 24px;
+            padding: 16px 28px;
             border: none;
             border-radius: 60px;
-            font-weight: 600;
-            font-size: 0.95rem;
+            font-weight: 700;
+            font-size: 1.05rem;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 10px;
             backdrop-filter: blur(4px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-            letter-spacing: 0.5px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.5);
+            letter-spacing: 0.8px;
+            position: relative;
+            overflow: hidden;
         }
-        .btn:active { transform: scale(0.95); }
+        .btn::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.6s;
+        }
+        .btn:hover::before { opacity: 1; }
+        .btn:active { transform: scale(0.92); }
         
-        .btn-gold { background: linear-gradient(145deg, #f7dc6f, #d4ac0d); color: #1a0e1f; }
-        .btn-gold:hover { transform: translateY(-3px); }
-        .btn-purple { background: linear-gradient(145deg, #a569bd, #7d3c98); color: #fff; }
-        .btn-purple:hover { transform: translateY(-3px); }
-        .btn-green { background: linear-gradient(145deg, #2ecc71, #1e8449); color: #fff; width: 100%; padding: 16px; font-size: 1.1rem; margin-top: 12px; border-radius: 50px; }
-        .btn-green:hover:not(:disabled) { transform: translateY(-3px); }
-        .btn-green:disabled { background: #3a3a4a; color: #777; cursor: not-allowed; }
-        .btn-red { background: linear-gradient(145deg, #e74c3c, #a93226); color: #fff; width: 100%; max-width: 300px; }
-        .btn-red:hover { transform: translateY(-2px); }
+        .btn-gold { 
+            background: linear-gradient(145deg, #f7dc6f, #d4ac0d); 
+            color: #1a0e1f; 
+            box-shadow: 0 6px 25px rgba(241,196,15,0.3);
+        }
+        .btn-gold:hover { 
+            transform: translateY(-5px) scale(1.03); 
+            box-shadow: 0 12px 40px rgba(241,196,15,0.5);
+        }
+        
+        .btn-purple { 
+            background: linear-gradient(145deg, #a569bd, #7d3c98); 
+            color: #fff; 
+            box-shadow: 0 6px 25px rgba(155,89,182,0.3);
+        }
+        .btn-purple:hover { 
+            transform: translateY(-5px) scale(1.03); 
+            box-shadow: 0 12px 40px rgba(155,89,182,0.5);
+        }
+        
+        .btn-green { 
+            background: linear-gradient(145deg, #2ecc71, #1e8449); 
+            color: #fff; 
+            width: 100%; 
+            padding: 18px; 
+            font-size: 1.15rem; 
+            margin-top: 12px; 
+            border-radius: 50px; 
+            box-shadow: 0 6px 25px rgba(46,204,113,0.25);
+        }
+        .btn-green:hover:not(:disabled) { 
+            transform: translateY(-5px) scale(1.02); 
+            box-shadow: 0 12px 45px rgba(46,204,113,0.45);
+        }
+        .btn-green:disabled { background: #3a3a4a; color: #777; cursor: not-allowed; box-shadow: none; }
+        .btn-red { 
+            background: linear-gradient(145deg, #e74c3c, #a93226); 
+            color: #fff; 
+            width: 100%; 
+            max-width: 300px; 
+        }
+        .btn-red:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(231,76,60,0.4); }
+
+        /* ===== GENDER BUTTONS ===== */
+        .gender-btn {
+            padding: 14px 32px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            border: 2px solid rgba(255,215,0,0.2);
+            background: rgba(20,12,30,0.6);
+            color: #b9a6d4;
+            transition: all 0.4s;
+        }
+        .gender-btn.active {
+            background: linear-gradient(145deg, #f7dc6f, #d4ac0d);
+            color: #1a0e1f;
+            border-color: #f7dc6f;
+            box-shadow: 0 0 30px rgba(241,196,15,0.4);
+            transform: scale(1.05);
+        }
+        .gender-btn:hover:not(.active) {
+            border-color: rgba(255,215,0,0.5);
+            color: #f7dc6f;
+            transform: translateY(-2px);
+        }
 
         #camera-wrapper { display: none; width: 100%; max-width: 420px; margin: 10px auto; border-radius: 30px; border: 2px solid rgba(255,215,0,0.3); overflow: hidden; background: #0f0a18; }
         video { width: 100%; display: block; border-radius: 28px; }
         
         #preview-wrapper { display: none; margin: 15px auto; text-align: center; }
-        #preview-img { max-width: 220px; width: 100%; border-radius: 30px; border: 2px solid #d4af37; }
+        #preview-img { max-width: 220px; width: 100%; border-radius: 30px; border: 2px solid #d4af37; box-shadow: 0 0 30px rgba(212,175,55,0.2); }
         .preview-label { color: #d4af37; font-weight: 300; letter-spacing: 2px; margin-bottom: 6px; font-size: 0.9rem; }
 
-        /* LOADING BOX - ΒΕΛΤΙΩΜΕΝΟ */
+        /* LOADING BOX */
         #loading-box {
             display: none;
             text-align: center;
@@ -278,7 +355,7 @@
         @media (max-width: 480px) {
             .splash-title { font-size: 2.4rem; }
             .splash-icon { width: 140px; height: 140px; }
-            .btn { padding: 10px 16px; font-size: 0.85rem; }
+            .btn { padding: 14px 20px; font-size: 0.9rem; }
             #loading-box .mantra { font-size: 1.3rem; }
         }
     </style>
@@ -305,10 +382,16 @@
         </div>
 
         <div class="controls" id="inputControls">
-            <button class="btn btn-gold" onclick="openCamera('environment')">📷 Πίσω Κάμερα</button>
+            <button class="btn btn-gold" onclick="openCamera('environment')">📷 Κάμερα</button>
             <button class="btn btn-gold" onclick="openCamera('user')">🤳 Selfie</button>
             <button class="btn btn-purple" onclick="document.getElementById('fileInput').click()">📁 Ανέβασμα</button>
             <input type="file" id="fileInput" style="display:none" accept="image/*" onchange="handleUpload(event)">
+        </div>
+
+        <!-- ΕΠΙΛΟΓΗ ΦΥΛΟΥ -->
+        <div id="gender-select" style="display: flex; gap: 15px; justify-content: center; margin: 5px 0 15px;">
+            <button class="btn gender-btn active" onclick="selectGender('f', this)">👩 Γυναίκα</button>
+            <button class="btn gender-btn" onclick="selectGender('m', this)">👨 Άντρας</button>
         </div>
 
         <div id="camera-wrapper">
@@ -323,7 +406,7 @@
 
         <button class="btn btn-green" id="scanBtn" onclick="startAnalysis()" disabled>🔮 Ανάλυση Φλιτζανιού</button>
 
-        <!-- LOADING BOX ΜΕ SPINNER -->
+        <!-- LOADING BOX -->
         <div id="loading-box">
             <div class="mantra">✨ Η Μαντάμ Ζαΐρα διαβάζει τις σκιές... ✨</div>
             <div class="loading-spinner"></div>
@@ -395,7 +478,17 @@
             document.getElementById('splash').classList.add('active');
         }
 
-        // ===== API URL - ΑΥΤΟΜΑΤΗ ΑΝΙΧΝΕΥΣΗ =====
+        // ===== GENDER SELECTION =====
+        let selectedGender = 'f';
+
+        function selectGender(gender, btn) {
+            selectedGender = gender;
+            document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            console.log('👤 Επιλέχθηκε:', gender === 'm' ? 'Άντρας' : 'Γυναίκα');
+        }
+
+        // ===== API URL =====
         const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? 'http://localhost:7860/analyze'
             : '/analyze';
@@ -425,6 +518,7 @@
             currentImageBase64 = null;
             isAnalyzing = false;
             document.getElementById('inputControls').style.display = 'flex';
+            document.getElementById('gender-select').style.display = 'flex';
             document.getElementById('scanBtn').style.display = 'block';
             document.getElementById('fileInput').value = "";
             console.log('🔄 Επαναφορά σάρωσης');
@@ -523,23 +617,26 @@
             scanBtn.disabled = true;
             scanBtn.style.display = 'none';
             
-            // Απόκρυψη όλων των άλλων
             document.getElementById('inputControls').style.display = 'none';
+            document.getElementById('gender-select').style.display = 'none';
             document.getElementById('preview-wrapper').style.display = 'none';
             
-            // ΕΜΦΑΝΙΣΗ LOADING BOX
             const loadingBox = document.getElementById('loading-box');
             loadingBox.style.display = 'block';
             loadingBox.scrollIntoView({ behavior: 'smooth' });
             
             console.log('🔮 Η Μαντάμ Ζαΐρα ξεκινά την ανάλυση...');
+            console.log('👤 Φύλο:', selectedGender === 'm' ? 'Άντρας' : 'Γυναίκα');
             console.log('📤 Μέγεθος εικόνας:', (currentImageBase64.length / 1024).toFixed(2), 'KB');
 
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ image: currentImageBase64 })
+                    body: JSON.stringify({ 
+                        image: currentImageBase64,
+                        gender: selectedGender
+                    })
                 });
 
                 console.log('📥 Status απάντησης:', response.status);
