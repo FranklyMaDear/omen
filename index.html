@@ -1,158 +1,315 @@
+```html
 <!DOCTYPE html>
 <html lang="el">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
     <title>OmenRead - Καφεμαντεία με AI</title>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    
+    <!-- ========== MONETAG SDK ========== -->
+    <script src='//libtl.com/sdk.js' data-zone='10985740' data-sdk='show_10985740'></script>
+    
     <style>
-        body { font-family: sans-serif; background: #0d0d0d; color: #fff; text-align: center; padding: 20px; }
-        #camera-wrapper { width: 100%; max-width: 500px; margin: 20px auto; border-radius: 20px; border: 3px solid #FFD700; overflow: hidden; background: #111; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0d0d0d; color: #fff; margin: 0; padding: 15px; text-align: center; }
+        h1 { color: #FFD700; text-shadow: 0 0 15px rgba(255,215,0,0.4); margin-bottom: 5px; }
+        p.subtitle { color: #aaa; margin-top: 0; margin-bottom: 25px; font-size: 14px; }
+        
+        #container { max-width: 600px; margin: 0 auto; }
+        
+        /* Camera & Preview Section */
+        #camera-wrapper { 
+            display: none; /* Κρυφό αρχικά */
+            width: 100%; 
+            max-width: 400px; 
+            margin: 15px auto; 
+            border-radius: 15px; 
+            border: 3px solid #FFD700; 
+            overflow: hidden; 
+            background: #111; 
+            position: relative;
+        }
         video { width: 100%; display: block; }
-        .btn { padding: 12px 24px; border: none; border-radius: 30px; font-weight: bold; cursor: pointer; margin: 5px; }
-        .btn-gold { background: #FFD700; color: #111; }
-        .btn-green { background: #2ecc71; color: #fff; }
-        .btn-blue { background: #3498db; color: #fff; }
-        #result-area { display: none; background: #1a1a1a; border-radius: 20px; padding: 20px; margin-top: 20px; text-align: left; }
-        .symbol-item { background: #222; padding: 12px; margin: 10px 0; border-radius: 10px; border-left: 3px solid #FFD700; }
-        #loading { display: none; margin: 15px; color: #FFD700; font-weight: bold; }
-        .controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 10px 0; }
-        select { padding: 10px; border-radius: 30px; background: #222; color: #fff; border: 1px solid #FFD700; }
-        .upload-wrapper { margin: 10px 0; }
-        input[type="file"] { display: none; }
-        .upload-label { display: inline-block; padding: 12px 24px; background: #e67e22; color: #fff; border-radius: 30px; cursor: pointer; font-weight: bold; }
+        
+        #preview-wrapper {
+            display: none; /* Κρυφό αρχικά */
+            margin: 20px auto;
+        }
+        #preview-img {
+            max-width: 200px;
+            border-radius: 15px;
+            border: 2px solid #2ecc71;
+            box-shadow: 0 0 15px rgba(46, 204, 113, 0.3);
+        }
+
+        /* Buttons */
+        .controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .btn { 
+            padding: 12px 20px; 
+            border: none; 
+            border-radius: 25px; 
+            font-weight: bold; 
+            font-size: 14px; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-gold { background: linear-gradient(135deg, #FFD700, #F39C12); color: #111; }
+        .btn-gold:hover { transform: scale(1.05); }
+        .btn-purple { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: #fff; }
+        .btn-purple:hover { transform: scale(1.05); }
+        .btn-green { background: linear-gradient(135deg, #2ecc71, #27ae60); color: #fff; width: 100%; padding: 15px; font-size: 16px; margin-top: 10px; }
+        .btn-green:disabled { background: #555; color: #888; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-red { background: #e74c3c; color: #fff; }
+
+        /* Specific Action Buttons */
+        #captureBtn { display: none; width: 100%; margin: 10px auto; max-width: 300px; background: #e74c3c; color: white; }
+
+        /* Loading & Results */
+        #loading { display: none; margin: 20px; color: #FFD700; font-weight: bold; font-size: 16px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+
+        #result-area { display: none; background: #1a1a1a; border-radius: 20px; padding: 20px; margin-top: 20px; text-align: left; border-top: 4px solid #FFD700; }
+        #result-area h2 { color: #FFD700; margin-top: 0; text-align: center; }
+        
+        .symbol-item { 
+            background: #222; 
+            padding: 15px; 
+            margin: 15px 0; 
+            border-radius: 12px; 
+            border-left: 4px solid #FFD700; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .symbol-name { color: #FFD700; font-weight: bold; font-size: 18px; margin-bottom: 5px; }
+        .symbol-position { color: #aaa; font-size: 13px; font-style: italic; margin-bottom: 10px; }
+        .symbol-interpretation { color: #eee; font-size: 15px; line-height: 1.6; }
     </style>
 </head>
 <body>
+
+<div id="container">
     <h1>OmenRead</h1>
+    <p class="subtitle">Καφεμαντεία με AI - Το Πολίτικο Φλιτζάνι</p>
+
+    <!-- Επιλογές Εισαγωγής -->
+    <div class="controls" id="inputControls">
+        <button class="btn btn-gold" onclick="openCamera('environment')">📷 Πίσω Κάμερα</button>
+        <button class="btn btn-gold" onclick="openCamera('user')">🤳 Selfie Κάμερα</button>
+        <button class="btn btn-purple" onclick="document.getElementById('fileInput').click()">📁 Ανέβασμα</button>
+        <input type="file" id="fileInput" style="display:none" accept="image/*" onchange="handleUpload(event)">
+    </div>
+
+    <!-- Περιοχή Κάμερας -->
     <div id="camera-wrapper">
-        <video id="webcam" playsinline></video>
+        <video id="webcam" playsinline autoplay></video>
+    </div>
+    <button class="btn btn-red" id="captureBtn" onclick="takePhoto()">📸 Λήψη Φωτογραφίας!</button>
+
+    <!-- Προεπισκόπηση Εικόνας -->
+    <div id="preview-wrapper">
+        <p style="color: #2ecc71; font-weight: bold; margin-bottom: 5px;">Η φωτογραφία είναι έτοιμη!</p>
+        <img id="preview-img" src="" alt="Προεπισκόπηση Φλιτζανιού">
     </div>
 
-    <div class="controls">
-        <select id="cameraSelect">
-            <option value="environment">📷 Πίσω κάμερα</option>
-            <option value="user">🤳 Selfie (μπροστινή)</option>
-        </select>
-        <button class="btn btn-gold" id="startBtn">▶️ Άνοιγμα Κάμερας</button>
-        <button class="btn btn-blue" id="captureBtn" disabled>📸 Λήψη Φωτογραφίας</button>
-    </div>
+    <!-- Κουμπί Ανάλυσης -->
+    <button class="btn btn-green" id="scanBtn" onclick="runAdAndAnalyze()" disabled>🔍 Ανάλυση Φλιτζανιού</button>
 
-    <div class="upload-wrapper">
-        <label class="upload-label" for="fileInput">📁 Upload Εικόνας</label>
-        <input type="file" id="fileInput" accept="image/*">
-    </div>
+    <!-- Φόρτωση -->
+    <div id="loading">🔮 Η Μαντάμ Ζαΐρα μελετά τις σκιές του καφέ σου...</div>
 
-    <button class="btn btn-green" id="scanBtn" disabled>🔍 Ανάλυση</button>
-
-    <div id="loading">⏳ Η Μαντάμ Ζαΐρα διαβάζει το φλιτζάνι...</div>
+    <!-- Αποτελέσματα -->
     <div id="result-area">
-        <h2>🔮 Αποτελέσματα</h2>
-        <div id="result-text"></div>
+        <h2>✨ Η Ετυμηγορία του Καφέ ✨</h2>
+        <div id="symbols-container"></div>
+        
+        <div style="text-align: center; margin-top: 25px;">
+            <button class="btn btn-gold" onclick="resetApp()" style="margin: 0 auto;">🔄 Διάβασε άλλο φλιτζάνι</button>
+        </div>
     </div>
+</div>
 
-    <script>
-        const video = document.getElementById('webcam');
-        const startBtn = document.getElementById('startBtn');
-        const captureBtn = document.getElementById('captureBtn');
-        const scanBtn = document.getElementById('scanBtn');
-        const fileInput = document.getElementById('fileInput');
-        const cameraSelect = document.getElementById('cameraSelect');
-        const loading = document.getElementById('loading');
+<script>
+    // URL του Hugging Face Backend σου
+    const API_URL = "https://franklymadear-omenread.hf.space/analyze";
+    
+    const video = document.getElementById('webcam');
+    let currentStream = null;
+    let currentImageBase64 = null;
+
+    // --- 1. Λειτουργίες Κάμερας ---
+    async function openCamera(facingMode) {
+        resetAppUI();
+        
+        try {
+            // Κλείσιμο προηγούμενης κάμερας αν υπάρχει
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+
+            currentStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: { ideal: facingMode } }
+            });
+            
+            video.srcObject = currentStream;
+            document.getElementById('camera-wrapper').style.display = 'block';
+            document.getElementById('captureBtn').style.display = 'flex';
+            
+            // Κάνουμε scroll λίγο προς τα κάτω για να φαίνεται η κάμερα
+            document.getElementById('camera-wrapper').scrollIntoView({ behavior: 'smooth' });
+            
+        } catch (err) {
+            console.error("Camera error:", err);
+            alert("Δεν ήταν δυνατή η πρόσβαση στην κάμερα. Δοκίμασε το 'Ανέβασμα'.");
+        }
+    }
+
+    function takePhoto() {
+        if (!currentStream) return;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        currentImageBase64 = canvas.toDataURL('image/jpeg');
+        
+        // Κλείσιμο κάμερας μετά τη λήψη
+        currentStream.getTracks().forEach(track => track.stop());
+        document.getElementById('camera-wrapper').style.display = 'none';
+        document.getElementById('captureBtn').style.display = 'none';
+        
+        showPreview(currentImageBase64);
+    }
+
+    // --- 2. Λειτουργία Upload ---
+    function handleUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        resetAppUI();
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            currentImageBase64 = e.target.result;
+            showPreview(currentImageBase64);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // Εμφάνιση προεπισκόπησης και ενεργοποίηση του κουμπιού Ανάλυσης
+    function showPreview(imageSrc) {
+        document.getElementById('preview-img').src = imageSrc;
+        document.getElementById('preview-wrapper').style.display = 'block';
+        document.getElementById('scanBtn').disabled = false;
+        document.getElementById('scanBtn').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // --- 3. Διαφήμιση Monetag & Εκκίνηση Ανάλυσης ---
+    function runAdAndAnalyze() {
+        if (!currentImageBase64) return;
+        
+        // Ελέγχουμε αν υπάρχει το Monetag SDK και η συνάρτηση show_10985740
+        if (typeof show_10985740 === 'function') {
+            console.log("Προσπάθεια προβολής διαφήμισης...");
+            // Η show_10985740 επιστρέφει Promise σύμφωνα με το documentation της Monetag
+            show_10985740().then(() => {
+                // Η διαφήμιση έκλεισε ή ολοκληρώθηκε
+                startAnalysis();
+            }).catch(e => {
+                // Αν κοπεί από adblocker, προχωράμε κανονικά
+                console.log("Η διαφήμιση παρακάμφθηκε.");
+                startAnalysis();
+            });
+        } else {
+            // Αν δεν φορτώσει καθόλου το SDK
+            startAnalysis();
+        }
+    }
+
+    // --- 4. Επικοινωνία με το Hugging Face (AI) ---
+    async function startAnalysis() {
+        document.getElementById('inputControls').style.display = 'none';
+        document.getElementById('preview-wrapper').style.display = 'none';
+        document.getElementById('scanBtn').style.display = 'none';
+        document.getElementById('loading').style.display = 'block';
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: currentImageBase64 })
+            });
+
+            if (!response.ok) throw new Error(`Server error: ${response.status}`);
+            
+            const data = await response.json();
+            
+            if (data.success && data.symbols) {
+                renderResults(data.symbols);
+            } else {
+                throw new Error(data.error || "Άγνωστο σφάλμα κατά την ανάλυση.");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Υπήρξε πρόβλημα με την ανάλυση. Δοκίμασε ξανά! (" + error.message + ")");
+            resetApp();
+        } finally {
+            document.getElementById('loading').style.display = 'none';
+        }
+    }
+
+    // --- 5. Εμφάνιση Αποτελεσμάτων ---
+    function renderResults(symbols) {
         const resultArea = document.getElementById('result-area');
-        const resultText = document.getElementById('result-text');
-
-        let currentImage = null;
-        let camera = null;
-        let isCameraActive = false;
-
-        async function startCamera() {
-            if (isCameraActive) {
-                if (camera) {
-                    await camera.stop();
-                    camera = null;
-                }
-                video.srcObject = null;
-                isCameraActive = false;
-                startBtn.textContent = "▶️ Άνοιγμα Κάμερας";
-                captureBtn.disabled = true;
-                return;
-            }
-
-            const facingMode = cameraSelect.value;
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: facingMode, width: 500, height: 500 }
-                });
-                video.srcObject = stream;
-                await video.play();
-                isCameraActive = true;
-                startBtn.textContent = "⏹️ Κλείσιμο Κάμερας";
-                captureBtn.disabled = false;
-            } catch (err) {
-                alert("Δεν ήταν δυνατή η πρόσβαση στην κάμερα: " + err.message);
-            }
-        }
-
-        startBtn.onclick = startCamera;
-
-        captureBtn.onclick = function() {
-            if (!isCameraActive) return;
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            currentImage = canvas.toDataURL('image/jpeg');
-            scanBtn.disabled = false;
-            alert("📸 Φωτογραφία λήφθηκε! Πάτα 'Ανάλυση'.");
-        };
-
-        fileInput.onchange = function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(ev) {
-                currentImage = ev.target.result;
-                scanBtn.disabled = false;
-                alert("📁 Εικόνα ανέβηκε! Πάτα 'Ανάλυση'.");
-            };
-            reader.readAsDataURL(file);
-        };
-
-        scanBtn.onclick = async function() {
-            if (!currentImage) {
-                alert("Πρέπει πρώτα να τραβήξεις φωτογραφία ή να ανεβάσεις εικόνα.");
-                return;
-            }
-            loading.style.display = 'block';
-            try {
-                const response = await fetch('/analyze', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ image: currentImage })
-                });
-                const data = await response.json();
-                if (data.success) {
-                    displayResult(data);
-                } else {
-                    alert("Σφάλμα: " + data.error);
-                }
-            } catch (err) {
-                alert("Σφάλμα σύνδεσης: " + err);
-            } finally {
-                loading.style.display = 'none';
-            }
-        };
-
-        function displayResult(r) {
-            resultArea.style.display = 'block';
-            resultText.innerHTML = r.symbols.map(s => `
+        const container = document.getElementById('symbols-container');
+        
+        let htmlContent = "";
+        
+        symbols.forEach(s => {
+            htmlContent += `
                 <div class="symbol-item">
-                    <strong>${s.name}</strong> (${s.position})<br>
-                    ${s.interpretation}
+                    <div class="symbol-name">🔮 ${s.name || "Άγνωστο Σύμβολο"}</div>
+                    <div class="symbol-position">📍 Θέση: ${s.position || "Δεν ορίστηκε"}</div>
+                    <div class="symbol-interpretation">${s.interpretation || ""}</div>
                 </div>
-            `).join('');
+            `;
+        });
+        
+        container.innerHTML = htmlContent;
+        resultArea.style.display = 'block';
+        resultArea.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // --- Βοηθητικές Συναρτήσεις ---
+    function resetAppUI() {
+        document.getElementById('result-area').style.display = 'none';
+        document.getElementById('camera-wrapper').style.display = 'none';
+        document.getElementById('captureBtn').style.display = 'none';
+        document.getElementById('preview-wrapper').style.display = 'none';
+        document.getElementById('scanBtn').disabled = true;
+        
+        if (currentStream) {
+            currentStream.getTracks().forEach(track => track.stop());
+            currentStream = null;
         }
-    </script>
+    }
+
+    function resetApp() {
+        resetAppUI();
+        currentImageBase64 = null;
+        document.getElementById('inputControls').style.display = 'flex';
+        document.getElementById('scanBtn').style.display = 'block';
+        document.getElementById('fileInput').value = ""; // Καθαρισμός του input file
+    }
+</script>
+
 </body>
 </html>
+
+
+```
