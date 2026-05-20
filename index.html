@@ -133,14 +133,14 @@
         #scan {
             gap: 20px;
             padding-top: 30px;
-            padding-bottom: 30px;
+            padding-bottom: 40px;
         }
         #scan .scan-header {
             text-align: center;
             width: 100%;
         }
         #scan .scan-header h2 {
-            font-size: 2.2rem;
+            font-size: 2rem;
             background: linear-gradient(135deg, #e6c27a, #d4af37);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -153,7 +153,38 @@
             letter-spacing: 1px;
         }
 
-        /* Εδώ αφαιρέσαμε τον gender selector */
+        /* Gender selector */
+        .gender-selector {
+            background: rgba(30, 18, 45, 0.6);
+            backdrop-filter: blur(4px);
+            border-radius: 40px;
+            padding: 15px 25px;
+            margin: 10px 0 15px;
+            border: 1px solid rgba(255, 215, 0, 0.1);
+            width: 100%;
+            max-width: 350px;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .gender-selector label {
+            color: #e6d5f5;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+        .gender-selector label:hover { color: #f7dc6f; }
+        .gender-selector input[type="radio"] {
+            accent-color: #d4af37;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
 
         /* Controls + Buttons */
         .controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin: 10px 0 15px; }
@@ -222,10 +253,9 @@
             color: #b9a6d4;
             font-size: 0.9rem;
             cursor: pointer;
+            margin-bottom: 10px;
             transition: 0.3s;
             letter-spacing: 2px;
-            padding: 10px 0;
-            margin-top: 10px;
         }
         .btn-back:hover { color: #f7dc6f; text-shadow: 0 0 20px rgba(241,196,15,0.3); }
 
@@ -233,6 +263,7 @@
             .splash-title { font-size: 2.4rem; }
             .splash-icon { width: 140px; height: 140px; }
             .btn { padding: 10px 16px; font-size: 0.85rem; }
+            .gender-selector { gap: 15px; padding: 12px 18px; }
         }
     </style>
 </head>
@@ -252,15 +283,23 @@
 
     <!-- ===== PAGE 2: SCAN ===== -->
     <div id="scan" class="page">
-        <!-- Λογότυπο + τίτλος όπως στο splash -->
+        <button class="btn-back" onclick="goToSplash()">☽ Πίσω στην αρχή</button>
         <div class="scan-header">
-            <img src="omen.png" alt="Omen" class="splash-icon" style="width: 120px; height: 120px; margin-bottom: 5px;">
-            <div style="font-size: 2.5rem; font-weight: 700; background: linear-gradient(135deg, #f9d976, #f39c12, #e67e22); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 4px;">Omen</div>
-            <div style="color: #b9a6d4; font-size: 0.9rem; letter-spacing: 2px; margin-top: 2px;">✦ Ανάλυση Φλιτζανιού ✦</div>
-            <!-- Εδώ αφαιρέθηκε η πρόταση: Διάλεξε μια εικόνα ή τράβηξε φωτογραφία -->
+            <h2>Ανάλυση Φλιτζανιού</h2>
+            <p>Διάλεξε μια εικόνα ή τράβηξε φωτογραφία</p>
         </div>
 
-        <!-- Εδώ αφαιρέθηκε το gender selector -->
+        <!-- ✨ ΕΠΙΛΟΓΗ ΦΥΛΟΥ ✨ -->
+        <div class="gender-selector">
+            <label>
+                <input type="radio" name="gender" value="γυναίκα" checked>
+                ♀ Γυναίκα
+            </label>
+            <label>
+                <input type="radio" name="gender" value="άντρας">
+                ♂ Άντρας
+            </label>
+        </div>
 
         <div class="controls" id="inputControls">
             <button class="btn btn-gold" onclick="openCamera('environment')">📷 Πίσω Κάμερα</button>
@@ -281,8 +320,7 @@
 
         <button class="btn btn-green" id="scanBtn" onclick="startAnalysis()" disabled>🔮 Ανάλυση Φλιτζανιού</button>
 
-        <!-- Εδώ η πρόταση "Η Μαντάμ Ζαΐρα διαβάζει τις σκιές..." είναι σε μία σειρά -->
-        <div id="loading">✨ Η Μαντάμ Ζαΐρα διαβάζει τις σκιές... ✨</div>
+        <div id="loading">Η Μαντάμ Ζαΐρα διαβάζει τις σκιές...</div>
 
         <div id="result-area">
             <h2>☽ Η Ετυμηγορία του Καφέ ☾</h2>
@@ -291,9 +329,6 @@
                 <button class="btn-reset" onclick="resetScan()">🔄 Διάβασε άλλο φλιτζάνι</button>
             </div>
         </div>
-
-        <!-- Το κουμπί "Πίσω στην αρχή" στο ΚΑΤΩ μέρος -->
-        <button class="btn-back" onclick="goToSplash()">☽ Πίσω στην αρχή</button>
     </div>
 
     <script>
@@ -337,6 +372,7 @@
                 ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
                 ctx.fillStyle = `rgba(255, 215, 150, ${s.alpha * 0.7})`;
                 ctx.fill();
+                // μικρή λάμψη
                 ctx.shadowColor = 'rgba(255, 215, 0, 0.1)';
                 ctx.shadowBlur = 12;
             });
@@ -359,7 +395,7 @@
         }
 
         // =============================================
-        // 3. SCAN LOGIC (χωρίς επιλογή φύλου)
+        // 3. SCAN LOGIC (με επιλογή φύλου)
         // =============================================
         const API_URL = "https://franklymadear-omenread.hf.space/analyze";
         const video = document.getElementById('webcam');
@@ -439,9 +475,12 @@
             document.getElementById('scanBtn').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // ===== ΕΝΗΜΕΡΩΜΕΝΗ startAnalysis (χωρίς φύλο) =====
+        // ===== ΕΝΗΜΕΡΩΜΕΝΗ startAnalysis ΜΕ ΦΥΛΟ =====
         async function startAnalysis() {
             if (!currentImageBase64) return;
+
+            // Παίρνουμε το επιλεγμένο φύλο
+            const gender = document.querySelector('input[name="gender"]:checked').value;
 
             document.getElementById('inputControls').style.display = 'none';
             document.getElementById('preview-wrapper').style.display = 'none';
@@ -453,8 +492,8 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        image: currentImageBase64
-                        // Δεν στέλνουμε gender
+                        image: currentImageBase64,
+                        gender: gender   // στέλνουμε το φύλο
                     })
                 });
                 if (!response.ok) throw new Error(`Server error: ${response.status}`);
