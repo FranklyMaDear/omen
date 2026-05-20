@@ -8,9 +8,9 @@
     <!-- Meta για Social & PWA -->
     <meta name="description" content="Διάβασε το φλιτζάνι του καφέ σου με AI. Μυστική εμπειρία.">
     <meta property="og:title" content="Omen - Καφεμαντεία">
-    <meta property="og:image" content="omen.png">
-    <meta name="apple-touch-icon" href="omen.png">
-    <link rel="icon" type="image/png" href="omen.png">
+    <meta property="og:image" content="">
+    <meta name="apple-touch-icon" href="">
+    <link rel="icon" type="image/png" href="">
     
     <style>
         /* ===== RESET & BASE ===== */
@@ -65,6 +65,12 @@
             transition: all 0.5s;
             animation: floatIcon 4s infinite ease-in-out;
             object-fit: cover;
+            background: linear-gradient(135deg, #2a1a3a, #1a0e2a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: #f7dc6f;
         }
         @keyframes floatIcon {
             0% { transform: translateY(0px) scale(1); }
@@ -323,7 +329,7 @@
 
     <!-- ===== PAGE 1: SPLASH ===== -->
     <div id="splash" class="page active">
-        <img src="omen.png" alt="Omen" class="splash-icon" id="splashIcon">
+        <div class="splash-icon">🔮</div>
         <div class="splash-title">Omen</div>
         <div class="splash-sub">✦ Καφεμαντεία με AI ✦</div>
         <div class="splash-desc">Η Μαντάμ Ζαΐρα σε περιμένει. Άφησε τις σκιές του καφέ να αποκαλύψουν το πεπρωμένο σου.</div>
