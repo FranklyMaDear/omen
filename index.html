@@ -133,14 +133,14 @@
         #scan {
             gap: 20px;
             padding-top: 30px;
-            padding-bottom: 40px;
+            padding-bottom: 30px;
         }
         #scan .scan-header {
             text-align: center;
             width: 100%;
         }
         #scan .scan-header h2 {
-            font-size: 2rem;
+            font-size: 2.2rem;
             background: linear-gradient(135deg, #e6c27a, #d4af37);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -253,9 +253,10 @@
             color: #b9a6d4;
             font-size: 0.9rem;
             cursor: pointer;
-            margin-bottom: 10px;
             transition: 0.3s;
             letter-spacing: 2px;
+            padding: 10px 0;
+            margin-top: 10px;
         }
         .btn-back:hover { color: #f7dc6f; text-shadow: 0 0 20px rgba(241,196,15,0.3); }
 
@@ -283,10 +284,12 @@
 
     <!-- ===== PAGE 2: SCAN ===== -->
     <div id="scan" class="page">
-        <button class="btn-back" onclick="goToSplash()">☽ Πίσω στην αρχή</button>
+        <!-- Εδώ το λογότυπο + τίτλος όπως στο splash -->
         <div class="scan-header">
-            <h2>Ανάλυση Φλιτζανιού</h2>
-            <p>Διάλεξε μια εικόνα ή τράβηξε φωτογραφία</p>
+            <img src="omen.png" alt="Omen" class="splash-icon" style="width: 120px; height: 120px; margin-bottom: 5px;">
+            <div style="font-size: 2.5rem; font-weight: 700; background: linear-gradient(135deg, #f9d976, #f39c12, #e67e22); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 4px;">Omen</div>
+            <div style="color: #b9a6d4; font-size: 0.9rem; letter-spacing: 2px; margin-top: 2px;">✦ Ανάλυση Φλιτζανιού ✦</div>
+            <p style="margin-top: 8px;">Διάλεξε μια εικόνα ή τράβηξε φωτογραφία</p>
         </div>
 
         <!-- ✨ ΕΠΙΛΟΓΗ ΦΥΛΟΥ ✨ -->
@@ -329,6 +332,9 @@
                 <button class="btn-reset" onclick="resetScan()">🔄 Διάβασε άλλο φλιτζάνι</button>
             </div>
         </div>
+
+        <!-- Το κουμπί "Πίσω στην αρχή" στο ΚΑΤΩ μέρος -->
+        <button class="btn-back" onclick="goToSplash()">☽ Πίσω στην αρχή</button>
     </div>
 
     <script>
