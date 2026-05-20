@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Omen - Καφεμαντεία με AI</title>
     
+    <!-- Meta για Social & PWA -->
     <meta name="description" content="Διάβασε το φλιτζάνι του καφέ σου με AI. Μυστική εμπειρία.">
     <meta property="og:title" content="Omen - Καφεμαντεία">
     <meta property="og:image" content="omen.png">
@@ -22,7 +23,7 @@
             overflow-x: hidden;
         }
 
-        /* ===== BACKGROUND MAGIC ===== */
+        /* ===== BACKGROUND MAGIC (κοινό) ===== */
         #bg-canvas {
             position: fixed;
             top: 0; left: 0;
@@ -100,10 +101,10 @@
         .btn-mystic {
             background: linear-gradient(145deg, #f7dc6f, #d4ac0d);
             color: #1a0e1f;
-            padding: 18px 54px;
+            padding: 16px 48px;
             border: none;
             border-radius: 60px;
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             font-weight: 700;
             cursor: pointer;
             box-shadow: 0 0 40px rgba(241, 196, 15, 0.2);
@@ -130,64 +131,41 @@
 
         /* ===== SCAN PAGE ===== */
         #scan {
-            gap: 15px;
-            padding-top: 20px;
-            padding-bottom: 30px;
-            justify-content: flex-start;
+            gap: 20px;
+            padding-top: 30px;
+            padding-bottom: 40px;
         }
-
-        /* Πάνω μέρος: τίτλος + εικόνα */
-        .scan-header {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 10px;
+        #scan .scan-header {
+            text-align: center;
             width: 100%;
         }
-        .scan-header .omen-logo {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 8px;
-        }
-        .scan-header .omen-logo img {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            box-shadow: 0 0 40px rgba(241, 196, 15, 0.2);
-            border: 2px solid rgba(255, 215, 0, 0.3);
-            object-fit: cover;
-        }
-        .scan-header .omen-logo h1 {
-            font-size: 2.4rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #f9d976, #f39c12, #e67e22);
+        #scan .scan-header h2 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, #e6c27a, #d4af37);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             letter-spacing: 3px;
-            text-shadow: 0 0 30px rgba(243, 156, 18, 0.2);
         }
-        .scan-header .sub-scan {
-            color: #b9a6d4;
+        #scan .scan-header p {
+            color: #b8a0d0;
             font-size: 0.9rem;
-            letter-spacing: 2px;
-            margin-top: -5px;
+            letter-spacing: 1px;
         }
 
-        /* Επιλογή φύλου */
+        /* Gender selector */
         .gender-selector {
-            background: rgba(30, 18, 45, 0.7);
+            background: rgba(30, 18, 45, 0.6);
             backdrop-filter: blur(4px);
             border-radius: 40px;
-            padding: 12px 20px;
-            margin: 5px 0 10px;
+            padding: 15px 25px;
+            margin: 10px 0 15px;
             border: 1px solid rgba(255, 215, 0, 0.1);
             width: 100%;
-            max-width: 360px;
+            max-width: 350px;
             display: flex;
             justify-content: center;
-            gap: 25px;
+            gap: 30px;
             align-items: center;
             flex-wrap: wrap;
         }
@@ -203,31 +181,30 @@
         .gender-selector label:hover { color: #f7dc6f; }
         .gender-selector input[type="radio"] {
             accent-color: #d4af37;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             cursor: pointer;
         }
 
         /* Controls + Buttons */
-        .controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin: 8px 0 12px; }
+        .controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin: 10px 0 15px; }
         .btn {
-            padding: 16px 32px;
+            padding: 12px 24px;
             border: none;
             border-radius: 60px;
-            font-weight: 700;
-            font-size: 1.1rem;
+            font-weight: 600;
+            font-size: 0.95rem;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.2,0.9,0.4,1.1);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
             backdrop-filter: blur(4px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
             letter-spacing: 0.5px;
             position: relative;
             overflow: hidden;
-            min-width: 140px;
         }
         .btn::before {
             content: ""; position: absolute; top:-50%; left:-50%; width:200%; height:200%;
@@ -237,28 +214,28 @@
         .btn:hover::before { opacity:1; }
         .btn:active { transform:scale(0.95); }
         
-        .btn-gold { background: linear-gradient(145deg, #f7dc6f, #d4ac0d); color:#1a0e1f; box-shadow:0 0 25px rgba(241,196,15,0.25); }
-        .btn-gold:hover { transform:translateY(-4px) scale(1.03); box-shadow:0 10px 40px rgba(241,196,15,0.5); }
-        .btn-purple { background: linear-gradient(145deg, #a569bd, #7d3c98); color:#fff; box-shadow:0 0 25px rgba(155,89,182,0.25); }
-        .btn-purple:hover { transform:translateY(-4px) scale(1.03); box-shadow:0 10px 40px rgba(155,89,182,0.5); }
-        .btn-green { background: linear-gradient(145deg, #2ecc71, #1e8449); color:#fff; width:100%; padding:18px; font-size:1.2rem; margin-top:12px; border-radius:50px; box-shadow:0 0 35px rgba(46,204,113,0.2); }
-        .btn-green:hover:not(:disabled) { transform:translateY(-4px) scale(1.02); box-shadow:0 10px 50px rgba(46,204,113,0.5); }
-        .btn-green:disabled { background:#3a3a4a; color:#777; box-shadow:none; cursor:not-allowed; transform:none; }
-        .btn-red { background: linear-gradient(145deg, #e74c3c, #a93226); color:#fff; box-shadow:0 0 25px rgba(231,76,60,0.25); width:100%; max-width:320px; }
-        .btn-red:hover { transform:translateY(-4px) scale(1.03); box-shadow:0 10px 40px rgba(231,76,60,0.5); }
+        .btn-gold { background: linear-gradient(145deg, #f7dc6f, #d4ac0d); color:#1a0e1f; box-shadow:0 0 20px rgba(241,196,15,0.2); }
+        .btn-gold:hover { transform:translateY(-3px) scale(1.02); box-shadow:0 8px 35px rgba(241,196,15,0.5); }
+        .btn-purple { background: linear-gradient(145deg, #a569bd, #7d3c98); color:#fff; box-shadow:0 0 20px rgba(155,89,182,0.2); }
+        .btn-purple:hover { transform:translateY(-3px) scale(1.02); box-shadow:0 8px 35px rgba(155,89,182,0.5); }
+        .btn-green { background: linear-gradient(145deg, #2ecc71, #1e8449); color:#fff; width:100%; padding:16px; font-size:1.1rem; margin-top:12px; border-radius:50px; box-shadow:0 0 30px rgba(46,204,113,0.15); }
+        .btn-green:hover:not(:disabled) { transform:translateY(-3px) scale(1.01); box-shadow:0 8px 45px rgba(46,204,113,0.4); }
+        .btn-green:disabled { background:#3a3a4a; color:#777; box-shadow:none; cursor:not-allowed; }
+        .btn-red { background: linear-gradient(145deg, #e74c3c, #a93226); color:#fff; box-shadow:0 0 20px rgba(231,76,60,0.2); width:100%; max-width:300px; }
+        .btn-red:hover { transform:translateY(-2px) scale(1.02); box-shadow:0 6px 35px rgba(231,76,60,0.4); }
 
-        #camera-wrapper { display:none; width:100%; max-width:420px; margin:8px auto; border-radius:30px; border:2px solid rgba(255,215,0,0.3); overflow:hidden; background:#0f0a18; box-shadow:0 0 50px rgba(241,196,15,0.06); }
+        #camera-wrapper { display:none; width:100%; max-width:420px; margin:10px auto; border-radius:30px; border:2px solid rgba(255,215,0,0.3); overflow:hidden; background:#0f0a18; box-shadow:0 0 50px rgba(241,196,15,0.06); }
         video { width:100%; display:block; border-radius:28px; }
-        #preview-wrapper { display:none; margin:12px auto; text-align:center; }
+        #preview-wrapper { display:none; margin:15px auto; text-align:center; }
         #preview-img { max-width:220px; width:100%; border-radius:30px; border:2px solid #d4af37; box-shadow:0 0 30px rgba(212,175,55,0.15); }
         .preview-label { color:#d4af37; font-weight:300; letter-spacing:2px; margin-bottom:6px; font-size:0.9rem; }
 
-        #loading { display:none; margin:15px 0; font-size:1.3rem; color:#f1c40f; font-weight:400; letter-spacing:2px; animation:mysticPulse 2s infinite ease-in-out; white-space: nowrap; }
+        #loading { display:none; margin:20px 0; font-size:1.2rem; color:#f1c40f; font-weight:400; letter-spacing:2px; animation:mysticPulse 2s infinite ease-in-out; }
         @keyframes mysticPulse { 0%{opacity:0.5; transform:scale(0.98);} 50%{opacity:1; transform:scale(1.04);} 100%{opacity:0.5; transform:scale(0.98);} }
         #loading::before { content:"✨ "; font-size:1.8rem; }
         #loading::after { content:" ✨"; font-size:1.8rem; }
 
-        #result-area { display:none; background:rgba(20,12,30,0.85); backdrop-filter:blur(8px); border-radius:40px; padding:25px 20px; margin-top:20px; border:1px solid rgba(255,215,0,0.1); box-shadow:0 0 70px rgba(100,70,150,0.1); width:100%; }
+        #result-area { display:none; background:rgba(20,12,30,0.8); backdrop-filter:blur(8px); border-radius:40px; padding:25px 20px; margin-top:20px; border:1px solid rgba(255,215,0,0.1); box-shadow:0 0 70px rgba(100,70,150,0.1); width:100%; }
         #result-area h2 { color:#f5d76e; font-weight:300; text-align:center; border-bottom:1px dashed rgba(255,215,0,0.2); padding-bottom:12px; margin-bottom:20px; letter-spacing:4px; font-size:1.8rem; }
         .symbol-item { background:rgba(30,18,45,0.7); padding:18px; margin:16px 0; border-radius:24px; border-left:6px solid #d4af37; box-shadow:0 6px 20px rgba(0,0,0,0.6); backdrop-filter:blur(2px); }
         .symbol-item:hover { transform:translateX(4px); border-left-color:#f1c40f; background:rgba(40,25,60,0.8); }
@@ -267,53 +244,35 @@
         .symbol-position { color:#b8a0d0; font-size:0.8rem; font-style:italic; margin:4px 0 10px; letter-spacing:1px; }
         .symbol-interpretation { color:#e6d5f5; font-size:0.98rem; line-height:1.6; padding-left:4px; }
 
-        .btn-reset { background:transparent; border:1px solid rgba(255,215,0,0.3); color:#f7dc6f; padding:14px 36px; border-radius:60px; font-weight:400; font-size:1rem; letter-spacing:2px; transition:all 0.3s; margin-top:10px; }
+        .btn-reset { background:transparent; border:1px solid rgba(255,215,0,0.3); color:#f7dc6f; padding:12px 30px; border-radius:60px; font-weight:400; letter-spacing:2px; transition:all 0.3s; margin-top:10px; }
         .btn-reset:hover { background:rgba(255,215,0,0.08); border-color:#f1c40f; box-shadow:0 0 30px rgba(241,196,15,0.1); }
 
-        /* Κουμπί «Πίσω στην αρχή» στο κάτω μέρος */
-        .btn-back-wrapper {
-            margin-top: auto;
-            padding-top: 20px;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-        }
         .btn-back {
             background: transparent;
-            border: 1px solid rgba(255, 215, 0, 0.15);
+            border: none;
             color: #b9a6d4;
-            padding: 14px 40px;
-            border-radius: 60px;
-            font-size: 1rem;
+            font-size: 0.9rem;
             cursor: pointer;
-            transition: 0.4s;
+            margin-bottom: 10px;
+            transition: 0.3s;
             letter-spacing: 2px;
-            backdrop-filter: blur(4px);
         }
-        .btn-back:hover {
-            color: #f7dc6f;
-            border-color: #d4af37;
-            box-shadow: 0 0 40px rgba(241, 196, 15, 0.1);
-            transform: scale(1.03);
-        }
+        .btn-back:hover { color: #f7dc6f; text-shadow: 0 0 20px rgba(241,196,15,0.3); }
 
         @media (max-width:480px) {
             .splash-title { font-size: 2.4rem; }
             .splash-icon { width: 140px; height: 140px; }
-            .btn { padding: 14px 24px; font-size: 0.95rem; min-width: 110px; }
-            .scan-header .omen-logo img { width: 55px; height: 55px; }
-            .scan-header .omen-logo h1 { font-size: 1.8rem; }
-            .gender-selector { gap: 15px; padding: 10px 16px; }
-            #loading { font-size: 1rem; white-space: normal; }
+            .btn { padding: 10px 16px; font-size: 0.85rem; }
+            .gender-selector { gap: 15px; padding: 12px 18px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- ===== BACKGROUND CANVAS ===== -->
+    <!-- ===== BACKGROUND CANVAS (κινούμενα αστέρια) ===== -->
     <canvas id="bg-canvas"></canvas>
 
-    <!-- ===== SPLASH ===== -->
+    <!-- ===== PAGE 1: SPLASH ===== -->
     <div id="splash" class="page active">
         <img src="omen.png" alt="Omen" class="splash-icon" id="splashIcon">
         <div class="splash-title">Omen</div>
@@ -322,18 +281,15 @@
         <button class="btn-mystic" onclick="goToScan()">🔮 Ξεκίνησε το ταξίδι</button>
     </div>
 
-    <!-- ===== SCAN ===== -->
+    <!-- ===== PAGE 2: SCAN ===== -->
     <div id="scan" class="page">
-        <!-- Πάνω μέρος: τίτλος Omen + εικόνα -->
+        <button class="btn-back" onclick="goToSplash()">☽ Πίσω στην αρχή</button>
         <div class="scan-header">
-            <div class="omen-logo">
-                <img src="omen.png" alt="Omen">
-                <h1>Omen</h1>
-            </div>
-            <div class="sub-scan">✦ Καφεμαντεία με AI ✦</div>
+            <h2>Ανάλυση Φλιτζανιού</h2>
+            <p>Διάλεξε μια εικόνα ή τράβηξε φωτογραφία</p>
         </div>
 
-        <!-- Επιλογή φύλου -->
+        <!-- ✨ ΕΠΙΛΟΓΗ ΦΥΛΟΥ ✨ -->
         <div class="gender-selector">
             <label>
                 <input type="radio" name="gender" value="γυναίκα" checked>
@@ -355,7 +311,7 @@
         <div id="camera-wrapper">
             <video id="webcam" playsinline autoplay></video>
         </div>
-        <button class="btn btn-red" id="captureBtn" onclick="takePhoto()" style="display:none; margin: 8px auto;">📸 Λήψη</button>
+        <button class="btn btn-red" id="captureBtn" onclick="takePhoto()" style="display:none; margin: 10px auto;">📸 Λήψη</button>
 
         <div id="preview-wrapper">
             <div class="preview-label">✧ Η εικόνα είναι έτοιμη ✧</div>
@@ -364,7 +320,6 @@
 
         <button class="btn btn-green" id="scanBtn" onclick="startAnalysis()" disabled>🔮 Ανάλυση Φλιτζανιού</button>
 
-        <!-- Το loading σε μία σειρά (white-space: nowrap) -->
         <div id="loading">Η Μαντάμ Ζαΐρα διαβάζει τις σκιές...</div>
 
         <div id="result-area">
@@ -374,15 +329,12 @@
                 <button class="btn-reset" onclick="resetScan()">🔄 Διάβασε άλλο φλιτζάνι</button>
             </div>
         </div>
-
-        <!-- Κουμπί «Πίσω στην αρχή» στο κάτω μέρος -->
-        <div class="btn-back-wrapper">
-            <button class="btn-back" onclick="goToSplash()">☽ Πίσω στην αρχή</button>
-        </div>
     </div>
 
     <script>
-        // ===== BACKGROUND STARS =====
+        // =============================================
+        // 1. BACKGROUND ANIMATION (αστέρια)
+        // =============================================
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
         let stars = [];
@@ -420,6 +372,7 @@
                 ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
                 ctx.fillStyle = `rgba(255, 215, 150, ${s.alpha * 0.7})`;
                 ctx.fill();
+                // μικρή λάμψη
                 ctx.shadowColor = 'rgba(255, 215, 0, 0.1)';
                 ctx.shadowBlur = 12;
             });
@@ -427,7 +380,9 @@
         }
         drawStars();
 
-        // ===== PAGE SWITCH =====
+        // =============================================
+        // 2. PAGE SWITCH
+        // =============================================
         function goToScan() {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById('scan').classList.add('active');
@@ -439,7 +394,9 @@
             document.getElementById('splash').classList.add('active');
         }
 
-        // ===== SCAN LOGIC =====
+        // =============================================
+        // 3. SCAN LOGIC (με επιλογή φύλου)
+        // =============================================
         const API_URL = "https://franklymadear-omenread.hf.space/analyze";
         const video = document.getElementById('webcam');
         let currentStream = null;
@@ -518,8 +475,11 @@
             document.getElementById('scanBtn').scrollIntoView({ behavior: 'smooth' });
         }
 
+        // ===== ΕΝΗΜΕΡΩΜΕΝΗ startAnalysis ΜΕ ΦΥΛΟ =====
         async function startAnalysis() {
             if (!currentImageBase64) return;
+
+            // Παίρνουμε το επιλεγμένο φύλο
             const gender = document.querySelector('input[name="gender"]:checked').value;
 
             document.getElementById('inputControls').style.display = 'none';
@@ -533,7 +493,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         image: currentImageBase64,
-                        gender: gender
+                        gender: gender   // στέλνουμε το φύλο
                     })
                 });
                 if (!response.ok) throw new Error(`Server error: ${response.status}`);
@@ -570,6 +530,7 @@
             resultArea.scrollIntoView({ behavior: 'smooth' });
         }
 
+        // Αν το splash icon πατηθεί, πάει στο scan
         document.getElementById('splashIcon').addEventListener('click', goToScan);
     </script>
 </body>
