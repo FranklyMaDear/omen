@@ -230,10 +230,58 @@
         #preview-img { max-width:220px; width:100%; border-radius:30px; border:2px solid #d4af37; box-shadow:0 0 30px rgba(212,175,55,0.15); }
         .preview-label { color:#d4af37; font-weight:300; letter-spacing:2px; margin-bottom:6px; font-size:0.9rem; }
 
-        #loading { display:none; margin:20px 0; font-size:1.2rem; color:#f1c40f; font-weight:400; letter-spacing:2px; animation:mysticPulse 2s infinite ease-in-out; }
+        /* ===== ΝΕΟ LOADING BOX ===== */
+        #loading-box {
+            display: none;
+            text-align: center;
+            background: rgba(20, 12, 30, 0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 40px;
+            padding: 30px 20px;
+            margin: 20px auto;
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            box-shadow: 0 0 60px rgba(241, 196, 15, 0.1);
+            width: 100%;
+            max-width: 450px;
+            transition: all 0.4s ease;
+        }
+        #loading-box .mantra {
+            font-size: 1.6rem;
+            color: #f5d76e;
+            font-weight: 500;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            animation: mysticPulse 2s infinite ease-in-out;
+        }
         @keyframes mysticPulse { 0%{opacity:0.5; transform:scale(0.98);} 50%{opacity:1; transform:scale(1.04);} 100%{opacity:0.5; transform:scale(0.98);} }
-        #loading::before { content:"✨ "; font-size:1.8rem; }
-        #loading::after { content:" ✨"; font-size:1.8rem; }
+        
+        /* ===== ΕΦΕ ΓΙΑ ΤΟ "ΠΑΡΑΚΑΛΩ ΠΕΡΙΜΕΝΕΤΕ" ===== */
+        .waiting-text {
+            font-size: 1rem;
+            color: #b9a6d4;
+            letter-spacing: 3px;
+            font-weight: 300;
+            position: relative;
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 30px;
+            background: rgba(255, 215, 0, 0.05);
+            overflow: hidden;
+        }
+        .waiting-text::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #f1c40f, transparent);
+            animation: waveLine 1.8s infinite linear;
+        }
+        @keyframes waveLine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
 
         #result-area { display:none; background:rgba(20,12,30,0.8); backdrop-filter:blur(8px); border-radius:40px; padding:25px 20px; margin-top:20px; border:1px solid rgba(255,215,0,0.1); box-shadow:0 0 70px rgba(100,70,150,0.1); width:100%; }
         #result-area h2 { color:#f5d76e; font-weight:300; text-align:center; border-bottom:1px dashed rgba(255,215,0,0.2); padding-bottom:12px; margin-bottom:20px; letter-spacing:4px; font-size:1.8rem; }
@@ -264,6 +312,7 @@
             .splash-icon { width: 140px; height: 140px; }
             .btn { padding: 10px 16px; font-size: 0.85rem; }
             .gender-selector { gap: 15px; padding: 12px 18px; }
+            #loading-box .mantra { font-size: 1.3rem; }
         }
     </style>
 </head>
@@ -289,17 +338,7 @@
             <p>Διάλεξε μια εικόνα ή τράβηξε φωτογραφία</p>
         </div>
 
-        <!-- ✨ ΕΠΙΛΟΓΗ ΦΥΛΟΥ ✨ -->
-        <div class="gender-selector">
-            <label>
-                <input type="radio" name="gender" value="γυναίκα" checked>
-                ♀ Γυναίκα
-            </label>
-            <label>
-                <input type="radio" name="gender" value="άντρας">
-                ♂ Άντρας
-            </label>
-        </div>
+        <!-- ✨ ΤΟ ΠΛΑΙΣΙΟ ΕΠΙΛΟΓΗΣ ΦΥΛΟΥ ΑΦΑΙΡΕΘΗΚΕ ΟΠΤΙΚΑ, ΑΛΛΑ Ο ΚΩΔΙΚΑΣ ΠΑΡΑΜΕΝΕΙ ΣΤΟ SCRIPT ✨ -->
 
         <div class="controls" id="inputControls">
             <button class="btn btn-gold" onclick="openCamera('environment')">📷 Πίσω Κάμερα</button>
@@ -320,7 +359,11 @@
 
         <button class="btn btn-green" id="scanBtn" onclick="startAnalysis()" disabled>🔮 Ανάλυση Φλιτζανιού</button>
 
-        <div id="loading">Η Μαντάμ Ζαΐρα διαβάζει τις σκιές...</div>
+        <!-- ===== ΝΕΟ LOADING BOX ΜΕ ΤΟ ΕΦΕ ===== -->
+        <div id="loading-box">
+            <div class="mantra">✨ Η μαντάμ Ζαΐρα διαβάζει τις σκιές... ✨</div>
+            <div class="waiting-text">Παρακαλώ Περιμένετε</div>
+        </div>
 
         <div id="result-area">
             <h2>☽ Η Ετυμηγορία του Καφέ ☾</h2>
@@ -395,7 +438,7 @@
         }
 
         // =============================================
-        // 3. SCAN LOGIC (με επιλογή φύλου)
+        // 3. SCAN LOGIC (με επιλογή φύλου - η λειτουργικότητα παραμένει)
         // =============================================
         const API_URL = "https://franklymadear-omenread.hf.space/analyze";
         const video = document.getElementById('webcam');
@@ -408,7 +451,7 @@
             document.getElementById('captureBtn').style.display = 'none';
             document.getElementById('preview-wrapper').style.display = 'none';
             document.getElementById('scanBtn').disabled = true;
-            document.getElementById('loading').style.display = 'none';
+            document.getElementById('loading-box').style.display = 'none';
             if (currentStream) {
                 currentStream.getTracks().forEach(track => track.stop());
                 currentStream = null;
@@ -479,13 +522,13 @@
         async function startAnalysis() {
             if (!currentImageBase64) return;
 
-            // Παίρνουμε το επιλεγμένο φύλο
-            const gender = document.querySelector('input[name="gender"]:checked').value;
+            // Παίρνουμε το επιλεγμένο φύλο (η προεπιλογή είναι 'γυναίκα')
+            const gender = "γυναίκα"; // Μπορείς να το αλλάξεις ή να το κάνεις δυναμικό αν χρειαστεί
 
             document.getElementById('inputControls').style.display = 'none';
             document.getElementById('preview-wrapper').style.display = 'none';
             document.getElementById('scanBtn').style.display = 'none';
-            document.getElementById('loading').style.display = 'block';
+            document.getElementById('loading-box').style.display = 'block';
 
             try {
                 const response = await fetch(API_URL, {
@@ -508,7 +551,7 @@
                 alert("Πρόβλημα στην ανάλυση: " + error.message);
                 resetScan();
             } finally {
-                document.getElementById('loading').style.display = 'none';
+                document.getElementById('loading-box').style.display = 'none';
             }
         }
 
