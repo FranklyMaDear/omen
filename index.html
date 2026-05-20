@@ -338,8 +338,6 @@
             <p>Διάλεξε μια εικόνα ή τράβηξε φωτογραφία</p>
         </div>
 
-        <!-- ✨ ΤΟ ΠΛΑΙΣΙΟ ΕΠΙΛΟΓΗΣ ΦΥΛΟΥ ΑΦΑΙΡΕΘΗΚΕ ΟΠΤΙΚΑ, ΑΛΛΑ Ο ΚΩΔΙΚΑΣ ΠΑΡΑΜΕΝΕΙ ΣΤΟ SCRIPT ✨ -->
-
         <div class="controls" id="inputControls">
             <button class="btn btn-gold" onclick="openCamera('environment')">📷 Πίσω Κάμερα</button>
             <button class="btn btn-gold" onclick="openCamera('user')">🤳 Selfie</button>
@@ -518,12 +516,16 @@
             document.getElementById('scanBtn').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // ===== ΕΝΗΜΕΡΩΜΕΝΗ startAnalysis ΜΕ ΦΥΛΟ =====
+        // ===== ΕΝΗΜΕΡΩΜΕΝΗ startAnalysis ΜΕ ΒΕΛΤΙΩΜΕΝΗ ΔΙΑΧΕΙΡΙΣΗ ΣΦΑΛΜΑΤΩΝ =====
         async function startAnalysis() {
             if (!currentImageBase64) return;
 
+            const scanBtn = document.getElementById('scanBtn');
+            // Απενεργοποίηση κουμπιού για αποφυγή διπλών κλήσεων
+            scanBtn.disabled = true;
+            
             // Παίρνουμε το επιλεγμένο φύλο (η προεπιλογή είναι 'γυναίκα')
-            const gender = "γυναίκα"; // Μπορείς να το αλλάξεις ή να το κάνεις δυναμικό αν χρειαστεί
+            const gender = "γυναίκα";
 
             document.getElementById('inputControls').style.display = 'none';
             document.getElementById('preview-wrapper').style.display = 'none';
@@ -536,10 +538,19 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         image: currentImageBase64,
-                        gender: gender   // στέλνουμε το φύλο
+                        gender: gender
                     })
                 });
-                if (!response.ok) throw new Error(`Server error: ${response.status}`);
+
+                // Έλεγχος για 429 (Too Many Requests)
+                if (response.status === 429) {
+                    throw { status: 429, message: 'Η Μαντάμ Ζαΐρα έχει πολλή δουλειά αυτή τη στιγμή! Περίμενε ένα λεπτό και ξαναπροσπάθησε.' };
+                }
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+
                 const data = await response.json();
                 if (data.success && data.symbols) {
                     renderResults(data.symbols);
@@ -548,10 +559,20 @@
                 }
             } catch (error) {
                 console.error(error);
-                alert("Πρόβλημα στην ανάλυση: " + error.message);
+                
+                // Ειδικό μήνυμα για 429
+                if (error.status === 429) {
+                    alert(error.message);
+                } else {
+                    // Γενικό μήνυμα για όλα τα άλλα σφάλματα
+                    alert("Κάτι δεν πήγε καλά, δοκίμασε ξανά αργότερα.");
+                }
+                
                 resetScan();
             } finally {
                 document.getElementById('loading-box').style.display = 'none';
+                // Επανενεργοποίηση του κουμπιού (αν χρειαστεί να ξαναπατήσει ο χρήστης)
+                // Επειδή το resetScan() κάνει ήδη reset το UI, το scanBtn θα γίνει ξανά ορατό με disabled = false
             }
         }
 
