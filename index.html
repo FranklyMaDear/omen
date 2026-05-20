@@ -3,112 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
-    <!-- ========== META TAGS για Social & Αρχική Οθόνη ========== -->
     <title>Omen - Καφεμαντεία με AI</title>
     
-    <!-- Βασικά Meta για SEO & Social -->
-    <meta name="description" content="Διάβασε το φλιτζάνι του καφέ σου με τη βοήθεια AI. Μαγική εμπειρία καφεμαντείας.">
-    <meta name="theme-color" content="#0a0a12">
+    <!-- Meta για Social & PWA -->
+    <meta name="description" content="Διάβασε το φλιτζάνι του καφέ σου με AI. Μυστική εμπειρία.">
+    <meta property="og:title" content="Omen - Καφεμαντεία">
+    <meta property="og:image" content="omen.png">
+    <meta name="apple-touch-icon" href="omen.png">
+    <link rel="icon" type="image/png" href="omen.png">
     
-    <!-- Open Graph (Facebook, LinkedIn, κλπ.) -->
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="Omen - Καφεμαντεία με AI">
-    <meta property="og:description" content="Η Μαντάμ Ζαΐρα διαβάζει τις σκιές του καφέ σου. Δοκίμασε τη μαγική εμπειρία.">
-    <meta property="og:url" content="https://franklymadear-omenread.hf.space">
-    <meta property="og:image" content="https://franklymadear-omenread.hf.space/omen.png">
-    <meta property="og:image:width" content="512">
-    <meta property="og:image:height" content="512">
-    <meta property="og:locale" content="el_GR">
-    
-    <!-- Twitter Card (X) -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Omen - Καφεμαντεία με AI">
-    <meta name="twitter:description" content="Διάβασε το φλιτζάνι του καφέ σου με AI. Μια μοναδική εμπειρία.">
-    <meta name="twitter:image" content="https://franklymadear-omenread.hf.space/omen.png">
-    
-    <!-- Apple Touch Icon (για iOS Αρχική Οθόνη) -->
-    <link rel="apple-touch-icon" href="omen.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="omen.png">
-    
-    <!-- Favicon & PWA Icon -->
-    <link rel="icon" type="image/png" sizes="32x32" href="omen.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="omen.png">
-    <link rel="shortcut icon" href="omen.png">
-    
-    <!-- Web App Manifest (για PWA - προσθήκη στην αρχική οθόνη) -->
-    <link rel="manifest" href="data:application/json,{
-        \"name\": \"Omen\",
-        \"short_name\": \"Omen\",
-        \"description\": \"Καφεμαντεία με AI\",
-        \"start_url\": \".\",
-        \"display\": \"standalone\",
-        \"background_color\": \"#0a0a12\",
-        \"theme_color\": \"#0a0a12\",
-        \"icons\": [
-            {
-                \"src\": \"omen.png\",
-                \"sizes\": \"512x512\",
-                \"type\": \"image/png\"
-            }
-        ]
-    }">
-    
-    <!-- ========== STYLES ========== -->
     <style>
-        /* ... (όλα τα styles σου όπως τα είχες) ... */
+        /* ===== RESET & BASE ===== */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
             background: #0a0a12;
-            background-image: radial-gradient(circle at 20% 30%, #1a1025 0%, #0a0a12 70%);
             min-height: 100vh;
             color: #f0e6ff;
-            padding: 20px 15px 40px;
-            display: flex;
+            overflow-x: hidden;
+        }
+
+        /* ===== BACKGROUND MAGIC (κοινό) ===== */
+        #bg-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* ===== PAGES ===== */
+        .page {
+            position: relative;
+            z-index: 1;
+            display: none;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
         }
-        #container { max-width: 600px; width: 100%; position: relative; }
-        .title-wrapper { text-align: center; margin-bottom: 20px; position: relative; }
-        h1 {
-            font-size: 2.6rem;
+        .page.active { display: flex; }
+
+        /* ===== SPLASH PAGE ===== */
+        #splash {
+            text-align: center;
+            gap: 20px;
+            animation: fadeIn 1.2s ease;
+        }
+        @keyframes fadeIn { 0% { opacity: 0; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1); } }
+
+        .splash-icon {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            box-shadow: 0 0 80px rgba(241, 196, 15, 0.25);
+            border: 3px solid rgba(255, 215, 0, 0.3);
+            transition: all 0.5s;
+            animation: floatIcon 4s infinite ease-in-out;
+            object-fit: cover;
+        }
+        @keyframes floatIcon {
+            0% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-12px) scale(1.02); box-shadow: 0 0 120px rgba(241, 196, 15, 0.4); }
+            100% { transform: translateY(0px) scale(1); }
+        }
+
+        .splash-title {
+            font-size: 3.2rem;
             font-weight: 700;
             background: linear-gradient(135deg, #f9d976, #f39c12, #e67e22);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            text-shadow: 0 0 30px rgba(243, 156, 18, 0.3);
-            letter-spacing: 2px;
-            display: inline-block;
+            letter-spacing: 4px;
+            text-shadow: 0 0 40px rgba(243, 156, 18, 0.2);
         }
-        h1::after { content: "☽"; font-size: 1.8rem; margin-left: 10px; -webkit-text-fill-color: initial; color: #b48bcf; opacity: 0.7; }
-        .subtitle {
+        .splash-sub {
             color: #b9a6d4;
-            font-size: 1rem;
-            letter-spacing: 3px;
-            margin-top: -5px;
-            font-weight: 300;
+            font-size: 1.1rem;
+            letter-spacing: 4px;
             border-top: 1px solid rgba(255, 215, 0, 0.15);
-            display: inline-block;
-            padding-top: 8px;
+            padding-top: 10px;
+            margin-top: 5px;
         }
-        .mystic-orb {
-            width: 70px;
-            height: 70px;
-            background: radial-gradient(circle at 30% 30%, #f1c40f, #b8860b);
-            border-radius: 50%;
-            filter: blur(55px);
-            opacity: 0.15;
+        .splash-desc {
+            color: #ccc;
+            max-width: 320px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            opacity: 0.8;
+        }
+
+        .btn-mystic {
+            background: linear-gradient(145deg, #f7dc6f, #d4ac0d);
+            color: #1a0e1f;
+            padding: 16px 48px;
+            border: none;
+            border-radius: 60px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 0 40px rgba(241, 196, 15, 0.2);
+            transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            letter-spacing: 3px;
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-mystic::after {
+            content: '';
             position: absolute;
-            top: -20px;
-            left: -20px;
-            z-index: -1;
-            animation: floatOrb 6s infinite alternate ease-in-out;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,240,0.2), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.8s;
         }
-        @keyframes floatOrb { 0% { transform: translate(0,0) scale(1); opacity:0.1; } 100% { transform: translate(30px,20px) scale(1.4); opacity:0.25; } }
-        
-        .controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin: 20px 0 25px; }
+        .btn-mystic:hover::after { opacity: 1; }
+        .btn-mystic:hover {
+            transform: scale(1.06) translateY(-4px);
+            box-shadow: 0 0 70px rgba(241, 196, 15, 0.5);
+        }
+
+        /* ===== SCAN PAGE ===== */
+        #scan {
+            gap: 20px;
+            padding-top: 30px;
+            padding-bottom: 40px;
+        }
+        #scan .scan-header {
+            text-align: center;
+            width: 100%;
+        }
+        #scan .scan-header h2 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, #e6c27a, #d4af37);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 3px;
+        }
+        #scan .scan-header p {
+            color: #b8a0d0;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        /* Controls + Buttons (ίδια με πριν, με extra glow) */
+        .controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin: 10px 0 15px; }
         .btn {
             padding: 12px 24px;
             border: none;
@@ -124,38 +170,39 @@
             backdrop-filter: blur(4px);
             box-shadow: 0 4px 15px rgba(0,0,0,0.4);
             letter-spacing: 0.5px;
+            position: relative;
             overflow: hidden;
         }
         .btn::before {
             content: ""; position: absolute; top:-50%; left:-50%; width:200%; height:200%;
-            background: radial-gradient(circle at 30%30%, rgba(255,255,240,0.1), transparent 70%);
-            opacity:0; transition: opacity 0.5s; pointer-events: none;
+            background: radial-gradient(circle at 30%30%, rgba(255,255,240,0.08), transparent 70%);
+            opacity:0; transition: opacity 0.6s; pointer-events: none;
         }
         .btn:hover::before { opacity:1; }
         .btn:active { transform:scale(0.95); }
         
-        .btn-gold { background: linear-gradient(145deg, #f7dc6f, #d4ac0d); color:#1a0e1f; box-shadow:0 0 20px rgba(241,196,15,0.25); }
-        .btn-gold:hover { transform:translateY(-3px) scale(1.02); box-shadow:0 8px 30px rgba(241,196,15,0.4); }
-        .btn-purple { background: linear-gradient(145deg, #a569bd, #7d3c98); color:#fff; box-shadow:0 0 20px rgba(155,89,182,0.25); }
-        .btn-purple:hover { transform:translateY(-3px) scale(1.02); box-shadow:0 8px 30px rgba(155,89,182,0.5); }
-        .btn-green { background: linear-gradient(145deg, #2ecc71, #1e8449); color:#fff; width:100%; padding:16px; font-size:1.1rem; margin-top:12px; border-radius:50px; box-shadow:0 0 30px rgba(46,204,113,0.2); }
-        .btn-green:hover:not(:disabled) { transform:translateY(-3px) scale(1.01); box-shadow:0 8px 40px rgba(46,204,113,0.5); }
+        .btn-gold { background: linear-gradient(145deg, #f7dc6f, #d4ac0d); color:#1a0e1f; box-shadow:0 0 20px rgba(241,196,15,0.2); }
+        .btn-gold:hover { transform:translateY(-3px) scale(1.02); box-shadow:0 8px 35px rgba(241,196,15,0.5); }
+        .btn-purple { background: linear-gradient(145deg, #a569bd, #7d3c98); color:#fff; box-shadow:0 0 20px rgba(155,89,182,0.2); }
+        .btn-purple:hover { transform:translateY(-3px) scale(1.02); box-shadow:0 8px 35px rgba(155,89,182,0.5); }
+        .btn-green { background: linear-gradient(145deg, #2ecc71, #1e8449); color:#fff; width:100%; padding:16px; font-size:1.1rem; margin-top:12px; border-radius:50px; box-shadow:0 0 30px rgba(46,204,113,0.15); }
+        .btn-green:hover:not(:disabled) { transform:translateY(-3px) scale(1.01); box-shadow:0 8px 45px rgba(46,204,113,0.4); }
         .btn-green:disabled { background:#3a3a4a; color:#777; box-shadow:none; cursor:not-allowed; }
-        .btn-red { background: linear-gradient(145deg, #e74c3c, #a93226); color:#fff; box-shadow:0 0 20px rgba(231,76,60,0.3); width:100%; max-width:300px; }
-        .btn-red:hover { transform:translateY(-2px) scale(1.02); box-shadow:0 6px 30px rgba(231,76,60,0.5); }
-        
-        #camera-wrapper { display:none; width:100%; max-width:420px; margin:15px auto; border-radius:30px; border:2px solid rgba(255,215,0,0.3); overflow:hidden; background:#0f0a18; box-shadow:0 0 50px rgba(241,196,15,0.08); }
+        .btn-red { background: linear-gradient(145deg, #e74c3c, #a93226); color:#fff; box-shadow:0 0 20px rgba(231,76,60,0.2); width:100%; max-width:300px; }
+        .btn-red:hover { transform:translateY(-2px) scale(1.02); box-shadow:0 6px 35px rgba(231,76,60,0.4); }
+
+        #camera-wrapper { display:none; width:100%; max-width:420px; margin:10px auto; border-radius:30px; border:2px solid rgba(255,215,0,0.3); overflow:hidden; background:#0f0a18; box-shadow:0 0 50px rgba(241,196,15,0.06); }
         video { width:100%; display:block; border-radius:28px; }
-        #preview-wrapper { display:none; margin:20px auto; text-align:center; }
-        #preview-img { max-width:220px; width:100%; border-radius:30px; border:2px solid #d4af37; box-shadow:0 0 30px rgba(212,175,55,0.2); }
-        .preview-label { color:#d4af37; font-weight:300; letter-spacing:2px; margin-bottom:8px; font-size:0.9rem; }
-        
-        #loading { display:none; margin:30px 0; font-size:1.2rem; color:#f1c40f; font-weight:400; letter-spacing:2px; animation:mysticPulse 2s infinite ease-in-out; }
+        #preview-wrapper { display:none; margin:15px auto; text-align:center; }
+        #preview-img { max-width:220px; width:100%; border-radius:30px; border:2px solid #d4af37; box-shadow:0 0 30px rgba(212,175,55,0.15); }
+        .preview-label { color:#d4af37; font-weight:300; letter-spacing:2px; margin-bottom:6px; font-size:0.9rem; }
+
+        #loading { display:none; margin:20px 0; font-size:1.2rem; color:#f1c40f; font-weight:400; letter-spacing:2px; animation:mysticPulse 2s infinite ease-in-out; }
         @keyframes mysticPulse { 0%{opacity:0.5; transform:scale(0.98);} 50%{opacity:1; transform:scale(1.04);} 100%{opacity:0.5; transform:scale(0.98);} }
         #loading::before { content:"✨ "; font-size:1.8rem; }
         #loading::after { content:" ✨"; font-size:1.8rem; }
-        
-        #result-area { display:none; background:rgba(20,12,30,0.75); backdrop-filter:blur(8px); border-radius:40px; padding:25px 20px; margin-top:25px; border:1px solid rgba(255,215,0,0.15); box-shadow:0 0 70px rgba(100,70,150,0.15); }
+
+        #result-area { display:none; background:rgba(20,12,30,0.8); backdrop-filter:blur(8px); border-radius:40px; padding:25px 20px; margin-top:20px; border:1px solid rgba(255,215,0,0.1); box-shadow:0 0 70px rgba(100,70,150,0.1); width:100%; }
         #result-area h2 { color:#f5d76e; font-weight:300; text-align:center; border-bottom:1px dashed rgba(255,215,0,0.2); padding-bottom:12px; margin-bottom:20px; letter-spacing:4px; font-size:1.8rem; }
         .symbol-item { background:rgba(30,18,45,0.7); padding:18px; margin:16px 0; border-radius:24px; border-left:6px solid #d4af37; box-shadow:0 6px 20px rgba(0,0,0,0.6); backdrop-filter:blur(2px); }
         .symbol-item:hover { transform:translateX(4px); border-left-color:#f1c40f; background:rgba(40,25,60,0.8); }
@@ -163,59 +210,154 @@
         .symbol-name::before { content:"🜁"; font-size:1.5rem; opacity:0.7; }
         .symbol-position { color:#b8a0d0; font-size:0.8rem; font-style:italic; margin:4px 0 10px; letter-spacing:1px; }
         .symbol-interpretation { color:#e6d5f5; font-size:0.98rem; line-height:1.6; padding-left:4px; }
-        
+
         .btn-reset { background:transparent; border:1px solid rgba(255,215,0,0.3); color:#f7dc6f; padding:12px 30px; border-radius:60px; font-weight:400; letter-spacing:2px; transition:all 0.3s; margin-top:10px; }
         .btn-reset:hover { background:rgba(255,215,0,0.08); border-color:#f1c40f; box-shadow:0 0 30px rgba(241,196,15,0.1); }
-        
-        @media (max-width:480px) { h1 { font-size:2rem; } .btn { padding:10px 18px; font-size:0.85rem; } }
+
+        .btn-back {
+            background: transparent;
+            border: none;
+            color: #b9a6d4;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: 0.3s;
+            letter-spacing: 2px;
+        }
+        .btn-back:hover { color: #f7dc6f; text-shadow: 0 0 20px rgba(241,196,15,0.3); }
+
+        @media (max-width:480px) {
+            .splash-title { font-size: 2.4rem; }
+            .splash-icon { width: 140px; height: 140px; }
+            .btn { padding: 10px 16px; font-size: 0.85rem; }
+        }
     </style>
 </head>
 <body>
-    <!-- (Το σώμα της σελίδας παραμένει ακριβώς ίδιο με το προηγούμενο) -->
-    <!-- Το έβαλα εδώ συνοπτικά για να μην χαθεί -->
-    <div id="container">
-        <div class="title-wrapper">
-            <div class="mystic-orb"></div>
-            <h1>OmenRead</h1>
-            <div class="subtitle">✦ Καφεμαντεία με AI ✦</div>
+
+    <!-- ===== BACKGROUND CANVAS (κινούμενα αστέρια) ===== -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- ===== PAGE 1: SPLASH ===== -->
+    <div id="splash" class="page active">
+        <img src="omen.png" alt="Omen" class="splash-icon" id="splashIcon">
+        <div class="splash-title">Omen</div>
+        <div class="splash-sub">✦ Καφεμαντεία με AI ✦</div>
+        <div class="splash-desc">Η Μαντάμ Ζαΐρα σε περιμένει. Άφησε τις σκιές του καφέ να αποκαλύψουν το πεπρωμένο σου.</div>
+        <button class="btn-mystic" onclick="goToScan()">🔮 Ξεκίνησε το ταξίδι</button>
+    </div>
+
+    <!-- ===== PAGE 2: SCAN ===== -->
+    <div id="scan" class="page">
+        <button class="btn-back" onclick="goToSplash()">☽ Πίσω στην αρχή</button>
+        <div class="scan-header">
+            <h2>Ανάλυση Φλιτζανιού</h2>
+            <p>Διάλεξε μια εικόνα ή τράβηξε φωτογραφία</p>
         </div>
-        <!-- Controls -->
+
         <div class="controls" id="inputControls">
             <button class="btn btn-gold" onclick="openCamera('environment')">📷 Πίσω Κάμερα</button>
             <button class="btn btn-gold" onclick="openCamera('user')">🤳 Selfie</button>
             <button class="btn btn-purple" onclick="document.getElementById('fileInput').click()">📁 Ανέβασμα</button>
             <input type="file" id="fileInput" style="display:none" accept="image/*" onchange="handleUpload(event)">
         </div>
-        <!-- Camera -->
+
         <div id="camera-wrapper">
             <video id="webcam" playsinline autoplay></video>
         </div>
         <button class="btn btn-red" id="captureBtn" onclick="takePhoto()" style="display:none; margin: 10px auto;">📸 Λήψη</button>
-        <!-- Preview -->
+
         <div id="preview-wrapper">
             <div class="preview-label">✧ Η εικόνα είναι έτοιμη ✧</div>
             <img id="preview-img" src="" alt="Φλιτζάνι">
         </div>
-        <!-- Scan -->
+
         <button class="btn btn-green" id="scanBtn" onclick="startAnalysis()" disabled>🔮 Ανάλυση Φλιτζανιού</button>
-        <!-- Loading -->
+
         <div id="loading">Η Μαντάμ Ζαΐρα διαβάζει τις σκιές...</div>
-        <!-- Results -->
+
         <div id="result-area">
             <h2>☽ Η Ετυμηγορία του Καφέ ☾</h2>
             <div id="symbols-container"></div>
             <div style="text-align: center; margin-top: 20px;">
-                <button class="btn-reset" onclick="resetApp()">🔄 Διάβασε άλλο φλιτζάνι</button>
+                <button class="btn-reset" onclick="resetScan()">🔄 Διάβασε άλλο φλιτζάνι</button>
             </div>
         </div>
     </div>
+
     <script>
-        // (Το script σου ακριβώς ίδιο - το παρέθεσα για πληρότητα)
+        // =============================================
+        // 1. BACKGROUND ANIMATION (αστέρια)
+        // =============================================
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let stars = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function createStars(count = 150) {
+            stars = [];
+            for (let i = 0; i < count; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    r: Math.random() * 1.5 + 0.5,
+                    dx: (Math.random() - 0.5) * 0.4,
+                    dy: (Math.random() - 0.5) * 0.4,
+                    alpha: Math.random() * 0.8 + 0.2
+                });
+            }
+        }
+        createStars();
+
+        function drawStars() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            stars.forEach(s => {
+                s.x += s.dx;
+                s.y += s.dy;
+                if (s.x < 0 || s.x > canvas.width) s.dx *= -1;
+                if (s.y < 0 || s.y > canvas.height) s.dy *= -1;
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 215, 150, ${s.alpha * 0.7})`;
+                ctx.fill();
+                // μικρή λάμψη
+                ctx.shadowColor = 'rgba(255, 215, 0, 0.1)';
+                ctx.shadowBlur = 12;
+            });
+            requestAnimationFrame(drawStars);
+        }
+        drawStars();
+
+        // =============================================
+        // 2. PAGE SWITCH
+        // =============================================
+        function goToScan() {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('scan').classList.add('active');
+            // reset UI αν χρειαστεί
+            resetScanUI();
+        }
+
+        function goToSplash() {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('splash').classList.add('active');
+        }
+
+        // =============================================
+        // 3. SCAN LOGIC (ίδια με πριν, χωρίς διαφημίσεις)
+        // =============================================
         const API_URL = "https://franklymadear-omenread.hf.space/analyze";
         const video = document.getElementById('webcam');
         let currentStream = null;
         let currentImageBase64 = null;
-        function resetAppUI() {
+
+        function resetScanUI() {
             document.getElementById('result-area').style.display = 'none';
             document.getElementById('camera-wrapper').style.display = 'none';
             document.getElementById('captureBtn').style.display = 'none';
@@ -227,15 +369,17 @@
                 currentStream = null;
             }
         }
-        function resetApp() {
-            resetAppUI();
+
+        function resetScan() {
+            resetScanUI();
             currentImageBase64 = null;
             document.getElementById('inputControls').style.display = 'flex';
             document.getElementById('scanBtn').style.display = 'block';
             document.getElementById('fileInput').value = "";
         }
+
         async function openCamera(facingMode) {
-            resetAppUI();
+            resetScanUI();
             try {
                 if (currentStream) {
                     currentStream.getTracks().forEach(track => track.stop());
@@ -252,6 +396,7 @@
                 alert("Δεν μπόρεσα να ανοίξω την κάμερα. Δοκίμασε το 'Ανέβασμα'.");
             }
         }
+
         function takePhoto() {
             if (!currentStream) return;
             const canvas = document.createElement('canvas');
@@ -265,10 +410,11 @@
             document.getElementById('captureBtn').style.display = 'none';
             showPreview(currentImageBase64);
         }
+
         function handleUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
-            resetAppUI();
+            resetScanUI();
             const reader = new FileReader();
             reader.onload = function(e) {
                 currentImageBase64 = e.target.result;
@@ -276,18 +422,21 @@
             };
             reader.readAsDataURL(file);
         }
+
         function showPreview(imageSrc) {
             document.getElementById('preview-img').src = imageSrc;
             document.getElementById('preview-wrapper').style.display = 'block';
             document.getElementById('scanBtn').disabled = false;
             document.getElementById('scanBtn').scrollIntoView({ behavior: 'smooth' });
         }
+
         async function startAnalysis() {
             if (!currentImageBase64) return;
             document.getElementById('inputControls').style.display = 'none';
             document.getElementById('preview-wrapper').style.display = 'none';
             document.getElementById('scanBtn').style.display = 'none';
             document.getElementById('loading').style.display = 'block';
+
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
@@ -304,11 +453,12 @@
             } catch (error) {
                 console.error(error);
                 alert("Πρόβλημα στην ανάλυση: " + error.message);
-                resetApp();
+                resetScan();
             } finally {
                 document.getElementById('loading').style.display = 'none';
             }
         }
+
         function renderResults(symbols) {
             const resultArea = document.getElementById('result-area');
             const container = document.getElementById('symbols-container');
@@ -326,6 +476,9 @@
             resultArea.style.display = 'block';
             resultArea.scrollIntoView({ behavior: 'smooth' });
         }
+
+        // αν το splash icon πατηθεί, πάει στο scan
+        document.getElementById('splashIcon').addEventListener('click', goToScan);
     </script>
 </body>
 </html>
