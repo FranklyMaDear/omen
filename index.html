@@ -159,39 +159,6 @@
             letter-spacing: 1px;
         }
 
-        /* Gender selector */
-        .gender-selector {
-            background: rgba(30, 18, 45, 0.6);
-            backdrop-filter: blur(4px);
-            border-radius: 40px;
-            padding: 15px 25px;
-            margin: 10px 0 15px;
-            border: 1px solid rgba(255, 215, 0, 0.1);
-            width: 100%;
-            max-width: 350px;
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .gender-selector label {
-            color: #e6d5f5;
-            font-size: 1rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: 0.3s;
-        }
-        .gender-selector label:hover { color: #f7dc6f; }
-        .gender-selector input[type="radio"] {
-            accent-color: #d4af37;
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-
         /* Controls + Buttons */
         .controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin: 10px 0 15px; }
         .btn {
@@ -317,7 +284,6 @@
             .splash-title { font-size: 2.4rem; }
             .splash-icon { width: 140px; height: 140px; }
             .btn { padding: 10px 16px; font-size: 0.85rem; }
-            .gender-selector { gap: 15px; padding: 12px 18px; }
             #loading-box .mantra { font-size: 1.3rem; }
         }
     </style>
@@ -442,12 +408,13 @@
         }
 
         // =============================================
-        // 3. SCAN LOGIC (με επιλογή φύλου - η λειτουργικότητα παραμένει)
+        // 3. SCAN LOGIC
         // =============================================
         const API_URL = "https://franklymadear-omenread.hf.space/analyze";
         const video = document.getElementById('webcam');
         let currentStream = null;
         let currentImageBase64 = null;
+        let isAnalyzing = false;
 
         function resetScanUI() {
             document.getElementById('result-area').style.display = 'none';
@@ -465,6 +432,7 @@
         function resetScan() {
             resetScanUI();
             currentImageBase64 = null;
+            isAnalyzing = false;
             document.getElementById('inputControls').style.display = 'flex';
             document.getElementById('scanBtn').style.display = 'block';
             document.getElementById('fileInput').value = "";
@@ -496,7 +464,10 @@
             canvas.height = video.videoHeight || 480;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            currentImageBase64 = canvas.toDataURL('image/jpeg');
+            
+            // Μετατροπή σε JPEG με ποιότητα 0.7
+            currentImageBase64 = canvas.toDataURL('image/jpeg', 0.7);
+            
             currentStream.getTracks().forEach(track => track.stop());
             document.getElementById('camera-wrapper').style.display = 'none';
             document.getElementById('captureBtn').style.display = 'none';
@@ -507,12 +478,48 @@
             const file = event.target.files[0];
             if (!file) return;
             resetScanUI();
+            
             const reader = new FileReader();
             reader.onload = function(e) {
-                currentImageBase64 = e.target.result;
-                showPreview(currentImageBase64);
+                // Αρχικό μέγεθος
+                const originalSize = e.target.result.length;
+                console.log(`📷 Αρχικό μέγεθος εικόνας: ${(originalSize / 1024).toFixed(2)} KB`);
+                
+                // Δημιουργία Image object για resize
+                const img = new Image();
+                img.onload = function() {
+                    // Συμπίεση και resize
+                    const compressed = compressImage(img, 800, 0.7);
+                    currentImageBase64 = compressed;
+                    console.log(`📦 Μέγεθος μετά από συμπίεση: ${(compressed.length / 1024).toFixed(2)} KB`);
+                    showPreview(currentImageBase64);
+                };
+                img.src = e.target.result;
             };
             reader.readAsDataURL(file);
+        }
+
+        // ===== ΣΥΝΑΡΤΗΣΗ ΣΥΜΠΙΕΣΗΣ ΕΙΚΟΝΑΣ =====
+        function compressImage(image, maxWidth, quality) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Υπολογισμός νέων διαστάσεων διατηρώντας την αναλογία
+            let width = image.width;
+            let height = image.height;
+            
+            if (width > maxWidth) {
+                const ratio = maxWidth / width;
+                width = maxWidth;
+                height = height * ratio;
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            
+            // Σχεδιασμός και συμπίεση
+            ctx.drawImage(image, 0, 0, width, height);
+            return canvas.toDataURL('image/jpeg', quality);
         }
 
         function showPreview(imageSrc) {
@@ -524,10 +531,10 @@
 
         // ===== ΕΝΗΜΕΡΩΜΕΝΗ startAnalysis ΜΕ ΒΕΛΤΙΩΜΕΝΗ ΔΙΑΧΕΙΡΙΣΗ ΣΦΑΛΜΑΤΩΝ =====
         async function startAnalysis() {
-            if (!currentImageBase64) return;
+            if (!currentImageBase64 || isAnalyzing) return;
 
             const scanBtn = document.getElementById('scanBtn');
-            // Απενεργοποίηση κουμπιού για αποφυγή διπλών κλήσεων
+            isAnalyzing = true;
             scanBtn.disabled = true;
             
             // Παίρνουμε το επιλεγμένο φύλο (η προεπιλογή είναι 'γυναίκα')
@@ -539,6 +546,9 @@
             document.getElementById('loading-box').style.display = 'block';
 
             try {
+                console.log('🔄 Αποστολή εικόνας στο backend...');
+                console.log(`📤 Μέγεθος εικόνας που αποστέλλεται: ${(currentImageBase64.length / 1024).toFixed(2)} KB`);
+                
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -577,6 +587,7 @@
                 resetScan();
             } finally {
                 document.getElementById('loading-box').style.display = 'none';
+                isAnalyzing = false;
                 // Επανενεργοποίηση του κουμπιού (αν χρειαστεί να ξαναπατήσει ο χρήστης)
                 // Επειδή το resetScan() κάνει ήδη reset το UI, το scanBtn θα γίνει ξανά ορατό με disabled = false
             }
