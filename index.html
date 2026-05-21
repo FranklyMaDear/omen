@@ -130,7 +130,6 @@
             letter-spacing: 1px;
         }
 
-        /* ===== ΜΕΓΑΛΥΤΕΡΑ ΚΟΥΜΠΙΑ ΜΕ ΕΦΕ ===== */
         .controls { 
             display: flex; 
             flex-wrap: wrap; 
@@ -213,7 +212,6 @@
         }
         .btn-red:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(231,76,60,0.4); }
 
-        /* ===== GENDER BUTTONS ===== */
         .gender-btn {
             padding: 14px 32px;
             font-size: 1.05rem;
@@ -295,6 +293,7 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* RESULT AREA ΜΕ ΑΣΤΕΡΑΚΙΑ */
         #result-area {
             display: none;
             background: rgba(20, 12, 30, 0.8);
@@ -304,6 +303,8 @@
             margin-top: 20px;
             border: 1px solid rgba(255,215,0,0.1);
             width: 100%;
+            position: relative;
+            overflow: hidden;
         }
         #result-area h2 {
             color: #f5d76e;
@@ -314,6 +315,8 @@
             margin-bottom: 20px;
             letter-spacing: 4px;
             font-size: 1.8rem;
+            position: relative;
+            z-index: 2;
         }
         #result-text {
             color: #e6d5f5;
@@ -321,6 +324,24 @@
             line-height: 1.8;
             white-space: pre-wrap;
             word-wrap: break-word;
+            position: relative;
+            z-index: 2;
+        }
+        
+        /* ΑΣΤΕΡΑΚΙΑ */
+        .result-star {
+            position: absolute;
+            color: #f7dc6f;
+            opacity: 0.6;
+            animation: floatStar 3s infinite ease-in-out;
+            pointer-events: none;
+            font-size: 1.2rem;
+            z-index: 1;
+        }
+        @keyframes floatStar {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0.3; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 0.8; }
+            100% { transform: translateY(0) rotate(360deg); opacity: 0.3; }
         }
 
         .btn-reset {
@@ -334,6 +355,8 @@
             transition: all 0.3s;
             margin-top: 10px;
             cursor: pointer;
+            position: relative;
+            z-index: 2;
         }
         .btn-reset:hover {
             background: rgba(255,215,0,0.08);
@@ -410,7 +433,7 @@
         <div id="loading-box">
             <div class="mantra">✨ Η Μαντάμ Ζαΐρα διαβάζει τις σκιές... ✨</div>
             <div class="loading-spinner"></div>
-            <div class="waiting-text">Παρακαλώ Περίμενε</div>
+            <div class="waiting-text">Παρακαλώ Περιμένετε</div>
         </div>
 
         <div id="result-area">
@@ -507,6 +530,8 @@
             document.getElementById('preview-wrapper').style.display = 'none';
             document.getElementById('scanBtn').disabled = true;
             document.getElementById('loading-box').style.display = 'none';
+            // Αφαίρεσε παλιά αστεράκια
+            document.querySelectorAll('.result-star').forEach(s => s.remove());
             if (currentStream) {
                 currentStream.getTracks().forEach(track => track.stop());
                 currentStream = null;
@@ -605,6 +630,26 @@
             console.log('🖼️ Προεπισκόπηση εμφανίστηκε');
         }
 
+        // ===== ΑΣΤΕΡΑΚΙΑ ΣΤΑ ΑΠΟΤΕΛΕΣΜΑΤΑ =====
+        function addStarsToResult() {
+            const resultArea = document.getElementById('result-area');
+            // Αφαίρεσε παλιά αστεράκια
+            document.querySelectorAll('.result-star').forEach(s => s.remove());
+            
+            const emojis = ['✨', '⭐', '💫', '🌟', '✨', '🔮', '💖', '🌙', '☽', '✧'];
+            
+            for (let i = 0; i < 15; i++) {
+                const star = document.createElement('span');
+                star.className = 'result-star';
+                star.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                star.style.left = Math.random() * 90 + '%';
+                star.style.top = Math.random() * 90 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                star.style.fontSize = (Math.random() * 1.5 + 0.8) + 'rem';
+                resultArea.appendChild(star);
+            }
+        }
+
         // ===== ΚΥΡΙΑ ΣΥΝΑΡΤΗΣΗ ΑΝΑΛΥΣΗΣ =====
         async function startAnalysis() {
             if (!currentImageBase64 || isAnalyzing) {
@@ -651,6 +696,8 @@
                 if (data.success && data.symbols) {
                     document.getElementById('result-text').textContent = data.symbols;
                     document.getElementById('result-area').style.display = 'block';
+                    // ΠΡΟΣΘΗΚΗ ΑΣΤΕΡΙΩΝ
+                    addStarsToResult();
                     document.getElementById('result-area').scrollIntoView({ behavior: 'smooth' });
                     console.log('✨ Αποτελέσματα έτοιμα!');
                 } else {
