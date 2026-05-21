@@ -11,22 +11,46 @@
     <!-- Open Graph (Facebook, WhatsApp, Viber) -->
     <meta property="og:title" content="🔮 Omen - Καφεμαντεία">
     <meta property="og:description" content="Ξεκίνησε το ταξίδι. Η Μαντάμ Ζαΐρα διαβάζει το φλιτζάνι σου!">
-    <meta property="og:image" content="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect width='200' height='200' fill='%230a0a12'/%3E%3Ctext x='50%25' y='55%25' font-size='100' text-anchor='middle' dominant-baseline='middle'%3E🔮%3C/text%3E%3C/svg%3E">
+    <meta property="og:image" content="https://omen.franklymadear.com/omen.png">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
+    <meta property="og:image:type" content="image/png">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://omen.franklymadear.com">
     <meta property="og:site_name" content="Omen - Καφεμαντεία">
+    <meta property="og:locale" content="el_GR">
     
     <!-- Twitter / X -->
-    <meta name="twitter:card" content="summary">
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="🔮 Omen - Καφεμαντεία με AI">
     <meta name="twitter:description" content="Ξεκίνησε το ταξίδι. Η Μαντάμ Ζαΐρα διαβάζει το φλιτζάνι σου!">
-    <meta name="twitter:image" content="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect width='200' height='200' fill='%230a0a12'/%3E%3Ctext x='50%25' y='55%25' font-size='100' text-anchor='middle' dominant-baseline='middle'%3E🔮%3C/text%3E%3C/svg%3E">
+    <meta name="twitter:image" content="https://omen.franklymadear.com/omen.png">
+    <meta name="twitter:image:alt" content="Omen - Καφεμαντεία">
     
     <!-- PWA / Add to Home Screen -->
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Omen">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect width='200' height='200' fill='%230a0a12'/%3E%3Ctext x='50%25' y='55%25' font-size='100' text-anchor='middle' dominant-baseline='middle'%3E🔮%3C/text%3E%3C/svg%3E">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect width='200' height='200' fill='%230a0a12'/%3E%3Ctext x='50%25' y='55%25' font-size='100' text-anchor='middle' dominant-baseline='middle'%3E🔮%3C/text%3E%3C/svg%3E">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0a0a12">
+    <link rel="apple-touch-icon" sizes="180x180" href="omen.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="omen.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="omen.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="omen.png">
+    <link rel="shortcut icon" href="omen.png">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Omen%20-%20%CE%9A%CE%B1%CF%86%CE%B5%CE%BC%CE%B1%CE%BD%CF%84%CE%B5%CE%AF%CE%B1%22%2C%22short_name%22%3A%22Omen%22%2C%22description%22%3A%22%CE%9A%CE%B1%CF%86%CE%B5%CE%BC%CE%B1%CE%BD%CF%84%CE%B5%CE%AF%CE%B1%20%CE%BC%CE%B5%20AI%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230a0a12%22%2C%22theme_color%22%3A%22%230a0a12%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22omen.png%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%7D%2C%7B%22src%22%3A%22omen.png%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
+    
+    <!-- Monetag SDK -->
+    <script>
+        (function(d) {
+            var s = d.createElement('script');
+            s.src = '//sdk.monetag.com/telegram-mini-app.js';
+            s.async = true;
+            d.body.appendChild(s);
+        })(document);
+    </script>
     
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -688,11 +712,11 @@
 
     <!-- ===== SPLASH PAGE ===== -->
     <div id="splash" class="page active">
-        <div class="splash-icon" id="splashIcon" onclick="goToScan()">🔮</div>
+        <div class="splash-icon" id="splashIcon" onclick="startJourney()">🔮</div>
         <div class="splash-title">Omen</div>
         <div class="splash-sub">✦ Καφεμαντεία με AI ✦</div>
         <div class="splash-desc">Η Μαντάμ Ζαΐρα σε περιμένει. Άφησε τις σκιές του καφέ να αποκαλύψουν το πεπρωμένο σου.</div>
-        <button class="btn-mystic" onclick="goToScan()">🔮 Ξεκίνησε το ταξίδι</button>
+        <button class="btn-mystic" onclick="startJourney()">🔮 Ξεκίνησε το ταξίδι</button>
     </div>
 
     <!-- ===== SCAN PAGE ===== -->
@@ -838,6 +862,22 @@
         drawStars();
 
         // ===== PAGE NAVIGATION =====
+        function startJourney() {
+            // Προσπάθεια εμφάνισης διαφήμισης Monetag
+            if (typeof show_10985740 === 'function') {
+                show_10985740().then(() => {
+                    // Ο χρήστης είδε τη διαφήμιση
+                    goToScan();
+                }).catch(() => {
+                    // Η διαφήμιση απέτυχε
+                    goToScan();
+                });
+            } else {
+                // Η Monetag δεν φόρτωσε
+                goToScan();
+            }
+        }
+
         function goToScan() {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById('scan').classList.add('active');
