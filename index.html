@@ -42,9 +42,6 @@
     <!-- Web App Manifest -->
     <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Omen%20-%20%CE%9A%CE%B1%CF%86%CE%B5%CE%BC%CE%B1%CE%BD%CF%84%CE%B5%CE%AF%CE%B1%22%2C%22short_name%22%3A%22Omen%22%2C%22description%22%3A%22%CE%9A%CE%B1%CF%86%CE%B5%CE%BC%CE%B1%CE%BD%CF%84%CE%B5%CE%AF%CE%B1%20%CE%BC%CE%B5%20AI%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230a0a12%22%2C%22theme_color%22%3A%22%230a0a12%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22omen.png%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%7D%2C%7B%22src%22%3A%22omen.png%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
     
-    <!-- Monetag Popunder -->
-    <script>(function(s){s.dataset.zone='10416274',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
-    
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -680,10 +677,10 @@
             <p>Δεν χρησιμοποιούμε τις φωτογραφίες για διαφημιστικούς σκοπούς, ούτε τις μοιραζόμαστε με τρίτους, εκτός από την ασφαλή, αυτοματοποιημένη αποστολή στο API της Google για την παραγωγή της πρόβλεψης.</p>
             
             <h3>2. Δεδομένα που Συλλέγουμε Αυτόματα (Cookies & Διαφημίσεις)</h3>
-            <p>Για τη σωστή λειτουργία της ιστοσελίδας και τη χρηματοδότησή της, συνεργαζόμαστε με τρίτες διαφημιστικές εταιρείες (όπως η Google AdSense και η Monetag). Αυτές οι εταιρείες ενδέχεται να συλλέγουν ανώνυμα τεχνικά δεδομένα:</p>
+            <p>Για τη σωστή λειτουργία της ιστοσελίδας και τη χρηματοδότησή της, συνεργαζόμαστε με τρίτες διαφημιστικές εταιρείες (όπως η Google AdSense). Αυτές οι εταιρείες ενδέχεται να συλλέγουν ανώνυμα τεχνικά δεδομένα:</p>
             <ul>
                 <li><strong>Cookies:</strong> Χρησιμοποιούμε cookies για να θυμόμαστε τις προτιμήσεις σας (π.χ. αν έχετε πατήσει το checkbox ηλικίας) και για να αναλύουμε την επισκεψιμότητα (μέσω Google Analytics).</li>
-                <li><strong>Διαφημίσεις Τρίτων (AdSense / Monetag):</strong> Οι διαφημιστές ενδέχεται να χρησιμοποιούν cookies για να προβάλλουν διαφημίσεις που σχετίζονται με τα ενδιαφέροντά σας. Μπορείτε να απενεργοποιήσετε τα εξατομικευμένα cookies μέσα από τις ρυθμίσεις του προγράμματος περιήγησής σας (browser).</li>
+                <li><strong>Διαφημίσεις Τρίτων (AdSense):</strong> Οι διαφημιστές ενδέχεται να χρησιμοποιούν cookies για να προβάλλουν διαφημίσεις που σχετίζονται με τα ενδιαφέροντά σας. Μπορείτε να απενεργοποιήσετε τα εξατομικευμένα cookies μέσα από τις ρυθμίσεις του προγράμματος περιήγησής σας (browser).</li>
                 <li><strong>Τοπική Αποθήκευση (Local Storage):</strong> Η εφαρμογή χρησιμοποιεί τοπική μνήμη στη συσκευή σας για να μετράει τις ημερήσιες προσπάθειές σας, ώστε να τηρούνται τα όρια χρήσης χωρίς να χρειάζεται να κάνετε εγγραφή (login).</li>
             </ul>
             
@@ -705,11 +702,11 @@
 
     <!-- ===== SPLASH PAGE ===== -->
     <div id="splash" class="page active">
-        <div class="splash-icon" id="splashIcon" onclick="startJourney()">🔮</div>
+        <div class="splash-icon" id="splashIcon" onclick="goToScan()">🔮</div>
         <div class="splash-title">Omen</div>
         <div class="splash-sub">✦ Καφεμαντεία με AI ✦</div>
         <div class="splash-desc">Η Μαντάμ Ζαΐρα σε περιμένει. Άφησε τις σκιές του καφέ να αποκαλύψουν το πεπρωμένο σου.</div>
-        <button class="btn-mystic" onclick="startJourney()">🔮 Ξεκίνησε το ταξίδι</button>
+        <button class="btn-mystic" onclick="goToScan()">🔮 Ξεκίνησε το ταξίδι</button>
     </div>
 
     <!-- ===== SCAN PAGE ===== -->
@@ -853,10 +850,6 @@
         drawStars();
 
         // ===== PAGE NAVIGATION =====
-        function startJourney() {
-            goToScan();
-        }
-
         function goToScan() {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById('scan').classList.add('active');
