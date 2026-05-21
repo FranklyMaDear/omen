@@ -42,6 +42,9 @@
     <!-- Web App Manifest -->
     <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Omen%20-%20%CE%9A%CE%B1%CF%86%CE%B5%CE%BC%CE%B1%CE%BD%CF%84%CE%B5%CE%AF%CE%B1%22%2C%22short_name%22%3A%22Omen%22%2C%22description%22%3A%22%CE%9A%CE%B1%CF%86%CE%B5%CE%BC%CE%B1%CE%BD%CF%84%CE%B5%CE%AF%CE%B1%20%CE%BC%CE%B5%20AI%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230a0a12%22%2C%22theme_color%22%3A%22%230a0a12%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22omen.png%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%7D%2C%7B%22src%22%3A%22omen.png%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
     
+    <!-- Monetag Popunder -->
+    <script>(function(s){s.dataset.zone='10416274',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+    
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -702,11 +705,11 @@
 
     <!-- ===== SPLASH PAGE ===== -->
     <div id="splash" class="page active">
-        <div class="splash-icon" id="splashIcon" onclick="goToScan()">🔮</div>
+        <div class="splash-icon" id="splashIcon" onclick="startJourney()">🔮</div>
         <div class="splash-title">Omen</div>
         <div class="splash-sub">✦ Καφεμαντεία με AI ✦</div>
         <div class="splash-desc">Η Μαντάμ Ζαΐρα σε περιμένει. Άφησε τις σκιές του καφέ να αποκαλύψουν το πεπρωμένο σου.</div>
-        <button class="btn-mystic" onclick="goToScan()">🔮 Ξεκίνησε το ταξίδι</button>
+        <button class="btn-mystic" onclick="startJourney()">🔮 Ξεκίνησε το ταξίδι</button>
     </div>
 
     <!-- ===== SCAN PAGE ===== -->
@@ -798,14 +801,12 @@
             }
         }
 
-        // Κλείσιμο νομικών παραθύρων με κλικ εκτός
         document.addEventListener('click', function(e) {
             if (e.target.classList.contains('legal-overlay')) {
                 e.target.classList.remove('active');
             }
         });
 
-        // Έλεγχος συναίνεσης κατά την εκκίνηση
         checkConsent();
 
         // ===== BACKGROUND STARS =====
@@ -852,6 +853,10 @@
         drawStars();
 
         // ===== PAGE NAVIGATION =====
+        function startJourney() {
+            goToScan();
+        }
+
         function goToScan() {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById('scan').classList.add('active');
@@ -873,11 +878,8 @@
             console.log('👤 Επιλέχθηκε:', gender === 'm' ? 'Άντρας' : 'Γυναίκα');
         }
 
-        // ===== API URL =====
-        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? 'http://localhost:7860/analyze'
-            : '/analyze';
-
+        // ===== API URL (Hugging Face) =====
+        const API_URL = 'https://franklymadear-omen.hf.space/analyze';
         console.log('🌐 API URL:', API_URL);
 
         const video = document.getElementById('webcam');
