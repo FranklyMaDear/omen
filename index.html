@@ -42,6 +42,9 @@
     <!-- Web App Manifest -->
     <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Omen%20-%20%CE%9A%CE%B1%CF%86%CE%B5%CE%BC%CE%B1%CE%BD%CF%84%CE%B5%CE%AF%CE%B1%22%2C%22short_name%22%3A%22Omen%22%2C%22description%22%3A%22%CE%9A%CE%B1%CF%86%CE%B5%CE%BC%CE%B1%CE%BD%CF%84%CE%B5%CE%AF%CE%B1%20%CE%BC%CE%B5%20AI%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230a0a12%22%2C%22theme_color%22%3A%22%230a0a12%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22omen.png%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%7D%2C%7B%22src%22%3A%22omen.png%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
     
+    <!-- Monetag SDK -->
+    <script src='//libtl.com/sdk.js' data-zone='10985740' data-sdk='show_10985740'></script>
+    
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -425,9 +428,7 @@
             justify-content: center;
             padding: 20px;
         }
-        #consent-overlay.hidden {
-            display: none;
-        }
+        #consent-overlay.hidden { display: none; }
         #consent-modal {
             background: linear-gradient(145deg, #1a0e2a, #2a1a3a);
             border: 2px solid rgba(241, 196, 15, 0.3);
@@ -500,6 +501,131 @@
             box-shadow: 0 0 70px rgba(241, 196, 15, 0.5);
         }
 
+        /* ===== AD MODAL ===== */
+        #ad-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 9998;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        #ad-modal-overlay.active { display: flex; }
+
+        #ad-modal {
+            background: linear-gradient(145deg, #1a0e2a, #2a1a3a);
+            border: 3px solid #f7dc6f;
+            border-radius: 20px;
+            padding: 30px 25px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 
+                0 0 60px rgba(241, 196, 15, 0.4),
+                0 0 100px rgba(155, 89, 182, 0.3);
+            animation: modalPopIn 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes modalPopIn {
+            0% { opacity: 0; transform: scale(0.8) translateY(20px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        #ad-modal::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(241,196,15,0.1) 0%, transparent 60%);
+            animation: rotateGlow 6s linear infinite;
+        }
+
+        @keyframes rotateGlow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #ad-modal .modal-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            animation: floatIcon 2s infinite ease-in-out;
+            position: relative;
+            z-index: 1;
+        }
+
+        #ad-modal h3 {
+            color: #f7dc6f;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 1;
+        }
+
+        #ad-modal p {
+            color: #d5c8e8;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        #ad-modal .btn-ad-now {
+            background: linear-gradient(145deg, #f7dc6f, #d4ac0d);
+            color: #1a0e1f;
+            padding: 14px 35px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 0 25px rgba(241, 196, 15, 0.4);
+            animation: pulseBtn 2s infinite;
+        }
+
+        @keyframes pulseBtn {
+            0%, 100% { box-shadow: 0 0 25px rgba(241, 196, 15, 0.4); }
+            50% { box-shadow: 0 0 50px rgba(241, 196, 15, 0.7); }
+        }
+
+        #ad-modal .btn-ad-now:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 60px rgba(241, 196, 15, 0.8);
+        }
+
+        #ad-modal .btn-continue {
+            background: linear-gradient(145deg, #2ecc71, #1e8449);
+            color: #fff;
+            padding: 14px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 1;
+            display: none;
+            box-shadow: 0 0 25px rgba(46, 204, 113, 0.4);
+        }
+
+        #ad-modal .btn-continue:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px rgba(46, 204, 113, 0.6);
+        }
+
         /* ===== FOOTER ===== */
         #site-footer {
             position: relative;
@@ -546,9 +672,7 @@
             justify-content: center;
             padding: 20px;
         }
-        .legal-overlay.active {
-            display: flex;
-        }
+        .legal-overlay.active { display: flex; }
         .legal-modal {
             background: linear-gradient(145deg, #1a0e2a, #2a1a3a);
             border: 2px solid rgba(241, 196, 15, 0.3);
@@ -578,9 +702,7 @@
             line-height: 1.6;
             margin-bottom: 10px;
         }
-        .legal-modal ul, .legal-modal ol {
-            padding-left: 20px;
-        }
+        .legal-modal ul, .legal-modal ol { padding-left: 20px; }
         .legal-close-btn {
             position: sticky;
             top: 10px;
@@ -612,6 +734,8 @@
             #consent-modal { padding: 25px 18px; }
             #consent-modal h2 { font-size: 1.3rem; }
             #consent-modal p { font-size: 0.85rem; }
+            #ad-modal { padding: 20px 15px; }
+            #ad-modal h3 { font-size: 1rem; }
         }
     </style>
 </head>
@@ -635,31 +759,33 @@
         </div>
     </div>
 
+    <!-- ===== AD MODAL ===== -->
+    <div id="ad-modal-overlay">
+        <div id="ad-modal">
+            <div class="modal-icon">📺</div>
+            <h3>Δείτε αυτή τη διαφήμιση</h3>
+            <p>Παρακαλούμε δείτε τη διαφήμιση και μετά πατήστε <strong>Continue</strong> για να επιστρέψετε στη σελίδα και να ολοκληρώσετε την καφεμαντεία σας.</p>
+            <button class="btn-ad-now" id="btn-ad-now" onclick="showAd()">▶ Διαφήμιση Τώρα</button>
+            <button class="btn-continue" id="btn-continue-ad" onclick="closeAdModal()">✓ Continue</button>
+        </div>
+    </div>
+
     <!-- ===== ΟΡΟΙ ΧΡΗΣΗΣ ===== -->
     <div id="terms-overlay" class="legal-overlay">
         <div class="legal-modal">
             <button class="legal-close-btn" onclick="closeLegal('terms')">✕</button>
             <h2>📜 Όροι και Προϋποθέσεις Χρήσης</h2>
             <p><strong>Τελευταία ενημέρωση: Μάιος 2026</strong></p>
-            
             <h3>1. Όριο Ηλικίας (Αυστηρά 18+)</h3>
             <p>Η χρήση της εφαρμογής Omen επιτρέπεται <strong>αποκλειστικά και μόνο</strong> σε άτομα που έχουν συμπληρώσει το 18ο έτος της ηλικίας τους (ενήλικες).</p>
-            <p>Με την αποδοχή των όρων και την επιλογή του σχετικού πλαισίου (checkbox), ο χρήστης δηλώνει υπεύθυνα ότι είναι ενήλικος.</p>
-            <p>Οι διαχειριστές του Omen δεν φέρουν καμία ευθύνη για ψευδείς δηλώσεις ηλικίας από πλευράς των επισκεπτών.</p>
-            
+            <p>Με την αποδοχή των όρων, ο χρήστης δηλώνει υπεύθυνα ότι είναι ενήλικος.</p>
             <h3>2. Ψυχαγωγικός, Μη Κατευθυντικός και Χιουμοριστικός Χαρακτήρας</h3>
-            <p>Το Omen είναι μια ψηφιακή εφαρμογή που χρησιμοποιεί αλγόριθμους τεχνητής νοημοσύνης (AI) για να αναλύει σχήματα σε φωτογραφίες φλιτζανιών καφέ και να παράγει κείμενα βασισμένα σε ένα παραδοσιακό λεξικό συμβόλων.</p>
+            <p>Το Omen είναι μια ψηφιακή εφαρμογή που χρησιμοποιεί αλγόριθμους τεχνητής νοημοσύνης (AI).</p>
             <p>Η υπηρεσία παρέχεται <strong>αποκλειστικά και μόνο για σκοπούς χιούμορ, διασκέδασης και ψυχαγωγίας</strong>.</p>
-            <p>Τα αποτελέσματα της ανάλυσης <strong>δεν αποτελούν σε καμία περίπτωση</strong> πραγματικές, επιστημονικές, ιατρικές, ψυχολογικές, νομικές ή χρηματοοικονομικές προβλέψεις και συμβουλές.</p>
-            <p>Οι παραγόμενες απαντήσεις δεν έχουν σκοπό, πρόθεση ή ικανότητα να καθοδηγήσουν, να επηρεάσουν ή να κατευθύνουν τις αποφάσεις, τις πράξεις, την προσωπική ή την επαγγελματική ζωή των χρηστών.</p>
-            
             <h3>3. Περιορισμός Ευθύνης (Disclaimer)</h3>
             <p>Ο χρήστης συμφωνεί ότι χρησιμοποιεί την εφαρμογή με δική του αποκλειστική ευθύνη.</p>
-            <p>Οι δημιουργοί, οι ιδιοκτήτες και οι συνεργάτες του Omen <strong>δεν φέρουν καμία απολύτως αστική ή ποινική ευθύνη</strong> για οποιαδήποτε πράξη, απόφαση, απώλεια, ζημία (άμεση ή έμμεση) ή ψυχική αναστάτωση προκύψει από την ανάγνωση, την παρερμηνεία ή την εφαρμογή των χιουμοριστικών αποτελεσμάτων της καφεμαντείας στην πραγματική ζωή.</p>
-            
             <h3>4. Πνευματική Ιδιοκτησία</h3>
-            <p>Όλο το περιεχόμενο του ιστοτόπου (συμπεριλαμβανομένων των κειμένων, του λογότυπου, των γραφικών, των κωδίκων της εφαρμογής και του λεξικού συμβόλων) αποτελεί πνευματική ιδιοκτησία του Omen και προστατεύεται από τις σχετικές διατάξεις του ελληνικού και ευρωπαϊκού δικαίου.</p>
-            <p>Απαγορεύεται αυστηρά η αντιγραφή, αναπαραγωγή, αναδημοσίευση ή εμπορική εκμετάλλευση μέρους ή του συνόλου του κώδικα και των κειμένων χωρίς την έγγραφη άδεια των ιδιοκτητών.</p>
+            <p>Όλο το περιεχόμενο του ιστοτόπου αποτελεί πνευματική ιδιοκτησία του Omen.</p>
         </div>
     </div>
 
@@ -669,31 +795,14 @@
             <button class="legal-close-btn" onclick="closeLegal('privacy')">✕</button>
             <h2>🔒 Πολιτική Απορρήτου & Εμπιστευτικότητα</h2>
             <p><strong>Τελευταία ενημέρωση: Μάιος 2026</strong></p>
-            <p>Στο Omen, η ιδιωτικότητα και η ασφάλεια των δεδομένων σας είναι η απόλυτη προτεραιότητά μας. Η παρούσα πολιτική εξηγεί πώς διαχειριζόμαστε τις πληροφορίες σας σύμφωνα με τον Γενικό Κανονισμό Προστασίας Δεδομένων της ΕΕ (GDPR).</p>
-            
             <h3>1. Πώς Διαχειριζόμαστε τις Φωτογραφίες σας</h3>
-            <p><strong>Δεν Αποθηκεύουμε τις Φωτογραφίες:</strong> Όταν τραβάτε ή ανεβάζετε μια φωτογραφία του φλιτζανιού σας, αυτή η εικόνα μετατρέπεται σε προσωρινή μορφή κώδικα (Base64) στη συσκευή σας και στέλνεται στον server μας αποκλειστικά και μόνο για να μεταφερθεί στο Gemini API της Google για την οπτική ανάλυση.</p>
-            <p><strong>Καμία Μόνιμη Αποθήκευση:</strong> Οι φωτογραφίες σας ΔΕΝ αποθηκεύονται σε καμία βάση δεδομένων, ΔΕΝ κρατούνται στον server μας και διαγράφονται οριστικά από τη μνήμη αμέσως μόλις ολοκληρωθεί η ανάλυση.</p>
-            <p>Δεν χρησιμοποιούμε τις φωτογραφίες για διαφημιστικούς σκοπούς, ούτε τις μοιραζόμαστε με τρίτους, εκτός από την ασφαλή, αυτοματοποιημένη αποστολή στο API της Google για την παραγωγή της πρόβλεψης.</p>
-            
-            <h3>2. Δεδομένα που Συλλέγουμε Αυτόματα (Cookies & Διαφημίσεις)</h3>
-            <p>Για τη σωστή λειτουργία της ιστοσελίδας και τη χρηματοδότησή της, συνεργαζόμαστε με τρίτες διαφημιστικές εταιρείες (όπως η Google AdSense). Αυτές οι εταιρείες ενδέχεται να συλλέγουν ανώνυμα τεχνικά δεδομένα:</p>
-            <ul>
-                <li><strong>Cookies:</strong> Χρησιμοποιούμε cookies για να θυμόμαστε τις προτιμήσεις σας (π.χ. αν έχετε πατήσει το checkbox ηλικίας) και για να αναλύουμε την επισκεψιμότητα (μέσω Google Analytics).</li>
-                <li><strong>Διαφημίσεις Τρίτων (AdSense):</strong> Οι διαφημιστές ενδέχεται να χρησιμοποιούν cookies για να προβάλλουν διαφημίσεις που σχετίζονται με τα ενδιαφέροντά σας. Μπορείτε να απενεργοποιήσετε τα εξατομικευμένα cookies μέσα από τις ρυθμίσεις του προγράμματος περιήγησής σας (browser).</li>
-                <li><strong>Τοπική Αποθήκευση (Local Storage):</strong> Η εφαρμογή χρησιμοποιεί τοπική μνήμη στη συσκευή σας για να μετράει τις ημερήσιες προσπάθειές σας, ώστε να τηρούνται τα όρια χρήσης χωρίς να χρειάζεται να κάνετε εγγραφή (login).</li>
-            </ul>
-            
+            <p><strong>Δεν Αποθηκεύουμε τις Φωτογραφίες.</strong></p>
+            <h3>2. Δεδομένα που Συλλέγουμε Αυτόματα</h3>
+            <p>Συνεργαζόμαστε με τρίτες διαφημιστικές εταιρείες (Monetag).</p>
             <h3>3. Δικαιώματα των Χρηστών (GDPR)</h3>
-            <p>Σύμφωνα με τον ευρωπαϊκό νόμο, έχετε τα εξής δικαιώματα:</p>
-            <ul>
-                <li>Το δικαίωμα να γνωρίζετε ποια δεδομένα σας επεξεργαζόμαστε (όπως εξηγείται στην παρούσα πολιτική, δεν κρατάμε προσωπικά σας στοιχεία ή φωτογραφίες).</li>
-                <li>Το δικαίωμα να διαγράψετε τα cookies και το ιστορικό του Omen από τον browser σας ανά πάσα στιγμή.</li>
-            </ul>
-            
-            <h3>4. Αλλαγές στους Όρους και την Πολιτική Απορρήτου</h3>
-            <p>Το Omen διατηρεί το δικαίωμα να αλλάξει ή να επικαιροποιήσει αυτούς τους όρους και την πολιτική απορρήτου οποιαδήποτε στιγμή, προκειμένου να συμμορφώνεται με νέους νόμους ή τεχνικές αναβαθμίσεις. Οι αλλαγές θα εμφανίζονται σε αυτή τη σελίδα.</p>
-            <p style="margin-top:15px;"><strong>Για οποιαδήποτε απορία ή επικοινωνία σχετικά με τους όρους, παρακαλούμε επικοινωνήστε μαζί μας στη διεύθυνση ηλεκτρονικού ταχυδρομείου της ιστοσελίδας μας.</strong></p>
+            <p>Έχετε δικαίωμα να διαγράψετε τα cookies σας.</p>
+            <h3>4. Αλλαγές στους Όρους</h3>
+            <p>Το Omen διατηρεί το δικαίωμα να αλλάξει αυτούς τους όρους.</p>
         </div>
     </div>
 
@@ -724,7 +833,6 @@
             <input type="file" id="fileInput" style="display:none" accept="image/*" onchange="handleUpload(event)">
         </div>
 
-        <!-- ΕΠΙΛΟΓΗ ΦΥΛΟΥ -->
         <div id="gender-select" style="display: flex; gap: 15px; justify-content: center; margin: 5px 0 15px;">
             <button class="btn gender-btn active" onclick="selectGender('f', this)">👩 Γυναίκα</button>
             <button class="btn gender-btn" onclick="selectGender('m', this)">👨 Άντρας</button>
@@ -742,7 +850,6 @@
 
         <button class="btn btn-green" id="scanBtn" onclick="startAnalysis()" disabled>🔮 Ανάλυση Φλιτζανιού</button>
 
-        <!-- LOADING BOX -->
         <div id="loading-box">
             <div class="mantra">✨ Η Μαντάμ Ζαΐρα διαβάζει τις σκιές... ✨</div>
             <div class="loading-spinner"></div>
@@ -757,7 +864,6 @@
             </div>
         </div>
 
-        <!-- FOOTER -->
         <div id="site-footer">
             <div class="footer-links">
                 <button class="footer-link" onclick="showLegal('terms')">📜 Όροι Χρήσης</button>
@@ -767,7 +873,7 @@
     </div>
 
     <script>
-        // ===== CONSENT LOGIC =====
+        // ===== CONSENT =====
         function checkConsent() {
             const consent = localStorage.getItem('omen_consent');
             if (consent === 'true') {
@@ -805,6 +911,31 @@
         });
 
         checkConsent();
+
+        // ===== AD MODAL =====
+        function showAdModal() {
+            document.getElementById('ad-modal-overlay').classList.add('active');
+            document.getElementById('btn-ad-now').style.display = 'inline-block';
+            document.getElementById('btn-continue-ad').style.display = 'none';
+        }
+
+        function showAd() {
+            document.getElementById('btn-ad-now').style.display = 'none';
+            
+            if (typeof show_10985740 === 'function') {
+                show_10985740().then(() => {
+                    document.getElementById('btn-continue-ad').style.display = 'inline-block';
+                }).catch(() => {
+                    document.getElementById('btn-continue-ad').style.display = 'inline-block';
+                });
+            } else {
+                document.getElementById('btn-continue-ad').style.display = 'inline-block';
+            }
+        }
+
+        function closeAdModal() {
+            document.getElementById('ad-modal-overlay').classList.remove('active');
+        }
 
         // ===== BACKGROUND STARS =====
         const canvas = document.getElementById('bg-canvas');
@@ -854,6 +985,11 @@
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById('scan').classList.add('active');
             resetScanUI();
+            
+            // Εμφάνιση ad modal μετά από 5 δευτερόλεπτα
+            setTimeout(() => {
+                showAdModal();
+            }, 5000);
         }
 
         function goToSplash() {
@@ -868,12 +1004,10 @@
             selectedGender = gender;
             document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            console.log('👤 Επιλέχθηκε:', gender === 'm' ? 'Άντρας' : 'Γυναίκα');
         }
 
-        // ===== API URL (Hugging Face Direct URL) =====
+        // ===== API URL =====
         const API_URL = 'https://franklymadear-omenread.hf.space/analyze';
-        console.log('🌐 API URL:', API_URL);
 
         const video = document.getElementById('webcam');
         let currentStream = null;
@@ -902,7 +1036,6 @@
             document.getElementById('gender-select').style.display = 'flex';
             document.getElementById('scanBtn').style.display = 'block';
             document.getElementById('fileInput').value = "";
-            console.log('🔄 Επαναφορά σάρωσης');
         }
 
         async function openCamera(facingMode) {
@@ -917,9 +1050,7 @@
                 video.srcObject = currentStream;
                 document.getElementById('camera-wrapper').style.display = 'block';
                 document.getElementById('captureBtn').style.display = 'flex';
-                console.log('📷 Κάμερα άνοιξε:', facingMode);
             } catch (err) {
-                console.error("❌ Σφάλμα κάμερας:", err);
                 alert("Δεν μπόρεσα να ανοίξω την κάμερα. Δοκίμασε το 'Ανέβασμα'.");
             }
         }
@@ -937,14 +1068,12 @@
             document.getElementById('camera-wrapper').style.display = 'none';
             document.getElementById('captureBtn').style.display = 'none';
             showPreview(currentImageBase64);
-            console.log('📸 Φωτογραφία τραβήχτηκε');
         }
 
         function handleUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
             resetScanUI();
-            console.log('📁 Αρχείο επιλέχθηκε:', file.name);
             
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -953,7 +1082,6 @@
                     const compressed = compressImage(img, 800, 0.7);
                     currentImageBase64 = compressed;
                     showPreview(currentImageBase64);
-                    console.log('✅ Εικόνα συμπιέστηκε και είναι έτοιμη');
                 };
                 img.src = e.target.result;
             };
@@ -983,10 +1111,8 @@
             document.getElementById('preview-wrapper').style.display = 'block';
             document.getElementById('scanBtn').disabled = false;
             document.getElementById('scanBtn').scrollIntoView({ behavior: 'smooth' });
-            console.log('🖼️ Προεπισκόπηση εμφανίστηκε');
         }
 
-        // ===== ΑΣΤΕΡΑΚΙΑ ΣΤΑ ΑΠΟΤΕΛΕΣΜΑΤΑ =====
         function addStarsToResult() {
             const resultArea = document.getElementById('result-area');
             document.querySelectorAll('.result-star').forEach(s => s.remove());
@@ -1005,12 +1131,8 @@
             }
         }
 
-        // ===== ΚΥΡΙΑ ΣΥΝΑΡΤΗΣΗ ΑΝΑΛΥΣΗΣ =====
         async function startAnalysis() {
-            if (!currentImageBase64 || isAnalyzing) {
-                console.log('⚠️ Δεν υπάρχει εικόνα ή ήδη αναλύεται');
-                return;
-            }
+            if (!currentImageBase64 || isAnalyzing) return;
 
             const scanBtn = document.getElementById('scanBtn');
             isAnalyzing = true;
@@ -1024,10 +1146,6 @@
             const loadingBox = document.getElementById('loading-box');
             loadingBox.style.display = 'block';
             loadingBox.scrollIntoView({ behavior: 'smooth' });
-            
-            console.log('🔮 Η Μαντάμ Ζαΐρα ξεκινά την ανάλυση...');
-            console.log('👤 Φύλο:', selectedGender === 'm' ? 'Άντρας' : 'Γυναίκα');
-            console.log('📤 Μέγεθος εικόνας:', (currentImageBase64.length / 1024).toFixed(2), 'KB');
 
             try {
                 const response = await fetch(API_URL, {
@@ -1039,32 +1157,24 @@
                     })
                 });
 
-                console.log('📥 Status απάντησης:', response.status);
-
-                if (!response.ok) {
-                    throw new Error(`Server error: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`Server error: ${response.status}`);
 
                 const data = await response.json();
-                console.log('✅ Δεδομένα από backend:', data);
                 
                 if (data.success && data.symbols) {
                     document.getElementById('result-text').textContent = data.symbols;
                     document.getElementById('result-area').style.display = 'block';
                     addStarsToResult();
                     document.getElementById('result-area').scrollIntoView({ behavior: 'smooth' });
-                    console.log('✨ Αποτελέσματα έτοιμα!');
                 } else {
                     throw new Error(data.error || "Άγνωστο σφάλμα");
                 }
             } catch (error) {
-                console.error('❌ ΣΦΑΛΜΑ:', error);
                 alert("🔮 Η Μαντάμ Ζαΐρα συνάντησε ένα πνευματικό εμπόδιο. Δοκίμασε ξανά.");
                 resetScan();
             } finally {
                 document.getElementById('loading-box').style.display = 'none';
                 isAnalyzing = false;
-                console.log('🏁 Ανάλυση ολοκληρώθηκε');
             }
         }
     </script>
