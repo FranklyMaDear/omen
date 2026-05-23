@@ -8,10 +8,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <title>Omen - Καφεμαντεία με AI</title>
     
-    <!-- Meta για Social Sharing -->
     <meta name="description" content="🔮 Ξεκίνησε το ταξίδι. Η Μαντάμ Ζαΐρα διαβάζει το φλιτζάνι σου και αποκαλύπτει τα μυστικά του καφέ!">
-    
-    <!-- Open Graph (Facebook, WhatsApp, Viber) -->
     <meta property="og:title" content="🔮 Omen - Καφεμαντεία">
     <meta property="og:description" content="Ξεκίνησε το ταξίδι. Η Μαντάμ Ζαΐρα διαβάζει το φλιτζάνι σου!">
     <meta property="og:image" content="https://omen.franklymadear.com/omen.png">
@@ -22,15 +19,12 @@
     <meta property="og:url" content="https://omen.franklymadear.com">
     <meta property="og:site_name" content="Omen - Καφεμαντεία">
     <meta property="og:locale" content="el_GR">
-    
-    <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="🔮 Omen - Καφεμαντεία με AI">
     <meta name="twitter:description" content="Ξεκίνησε το ταξίδι. Η Μαντάμ Ζαΐρα διαβάζει το φλιτζάνι σου!">
     <meta name="twitter:image" content="https://omen.franklymadear.com/omen.png">
     <meta name="twitter:image:alt" content="Omen - Καφεμαντεία">
     
-    <!-- PWA / Add to Home Screen -->
     <meta name="apple-mobile-web-app-title" content="Omen">
     <meta name="theme-color" content="#0a0a12">
     <link rel="apple-touch-icon" sizes="180x180" href="omen.png">
@@ -38,8 +32,6 @@
     <link rel="icon" type="image/png" sizes="192x192" href="omen.png">
     <link rel="icon" type="image/png" sizes="512x512" href="omen.png">
     <link rel="shortcut icon" href="omen.png">
-    
-    <!-- Web App Manifest -->
     <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Omen%20-%20%CE%9A%CE%B1%CF%86%CE%B5%CE%BC%CE%B1%CE%BD%CF%84%CE%B5%CE%AF%CE%B1%22%2C%22short_name%22%3A%22Omen%22%2C%22description%22%3A%22%CE%9A%CE%B1%CF%86%CE%B5%CE%BC%CE%B1%CE%BD%CF%84%CE%B5%CE%AF%CE%B1%20%CE%BC%CE%B5%20AI%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230a0a12%22%2C%22theme_color%22%3A%22%230a0a12%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22omen.png%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%7D%2C%7B%22src%22%3A%22omen.png%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
     
     <style>
@@ -138,13 +130,12 @@
         .splash-desc {
             color: #ccc;
             max-width: 320px;
-            font-size: 0.95rem;
-            line-height: 1.6;
+            font-size: 0.8rem;
+            line-height: 1.4;
             opacity: 0.8;
             text-align: center;
         }
 
-        /* Πρόταση για εγκατάσταση στην αρχική οθόνη */
         .install-prompt {
             display: flex;
             align-items: center;
@@ -198,7 +189,6 @@
             box-shadow: 0 0 70px rgba(241, 196, 15, 0.5);
         }
 
-        /* ===== LANGUAGE BAR ===== */
         #language-bar {
             display: flex; align-items: center; gap: 8px;
             background: rgba(20, 10, 40, 0.8); backdrop-filter: blur(8px);
@@ -248,7 +238,6 @@
         }
         #reset-lang-btn:hover { transform: scale(1.1); box-shadow: 0 0 25px rgba(155, 89, 182, 0.6); }
 
-        /* ===== ROLL-UP BANNER ΓΙΑ LIFELINE (ΜΟΝΟ SPLASH, ΠΡΩΤΗ ΦΟΡΑ) ===== */
         #lifeline-rollup {
             position: fixed;
             bottom: 0;
@@ -448,7 +437,6 @@
         #preview-img { max-width: 220px; width: 100%; border-radius: 30px; border: 2px solid #d4af37; box-shadow: 0 0 30px rgba(212,175,55,0.2); }
         .preview-label { color: #d4af37; font-weight: 300; letter-spacing: 2px; margin-bottom: 6px; font-size: 0.9rem; }
 
-        /* LOADING BOX */
         #loading-box {
             display: none;
             text-align: center;
@@ -500,7 +488,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* RESULT AREA ΜΕ ΑΣΤΕΡΑΚΙΑ */
         #result-area {
             display: none;
             background: rgba(20, 12, 30, 0.8);
@@ -535,7 +522,6 @@
             z-index: 2;
         }
         
-        /* ΑΣΤΕΡΑΚΙΑ */
         .result-star {
             position: absolute;
             color: #f7dc6f;
@@ -582,7 +568,6 @@
         }
         .btn-back:hover { color: #f7dc6f; }
 
-        /* ===== CONSENT MODAL ===== */
         #consent-overlay {
             position: fixed;
             top: 0;
@@ -670,7 +655,6 @@
             box-shadow: 0 0 70px rgba(241, 196, 15, 0.5);
         }
 
-        /* ===== FOOTER ===== */
         #site-footer {
             position: relative;
             z-index: 2;
@@ -701,7 +685,6 @@
             text-shadow: 0 0 10px rgba(241,196,15,0.3);
         }
 
-        /* ===== LEGAL MODALS ===== */
         .legal-overlay {
             position: fixed;
             top: 0;
@@ -788,12 +771,12 @@
             #reset-lang-btn { width: 30px; height: 30px; min-width: 30px; font-size: 0.8rem; }
             .install-prompt .install-text { font-size: 0.7rem; }
             .install-prompt .install-icon { font-size: 1.4rem; }
+            .splash-desc { font-size: 0.7rem; }
         }
     </style>
 </head>
 <body>
 
-    <!-- ===== CONSENT OVERLAY ===== -->
     <div id="consent-overlay">
         <div id="consent-modal">
             <div class="consent-icon">🔮</div>
@@ -811,7 +794,6 @@
         </div>
     </div>
 
-    <!-- ===== ΟΡΟΙ ΧΡΗΣΗΣ ===== -->
     <div id="terms-overlay" class="legal-overlay">
         <div class="legal-modal">
             <button class="legal-close-btn" onclick="closeLegal('terms')">✕</button>
@@ -830,7 +812,6 @@
         </div>
     </div>
 
-    <!-- ===== ΠΟΛΙΤΙΚΗ ΑΠΟΡΡΗΤΟΥ ===== -->
     <div id="privacy-overlay" class="legal-overlay">
         <div class="legal-modal">
             <button class="legal-close-btn" onclick="closeLegal('privacy')">✕</button>
@@ -847,10 +828,8 @@
         </div>
     </div>
 
-    <!-- ===== BACKGROUND CANVAS ===== -->
     <canvas id="bg-canvas"></canvas>
 
-    <!-- ===== SPLASH PAGE ===== -->
     <div id="splash" class="page active">
         <div class="splash-icon" id="splashIcon" onclick="goToScan()">🔮</div>
         <div class="splash-title">Omen</div>
@@ -860,7 +839,6 @@
             Άφησε τις σκιές του καφέ να αποκαλύψουν το πεπρωμένο σου.
         </div>
         
-        <!-- Πρόταση εγκατάστασης στην αρχική οθόνη -->
         <div class="install-prompt">
             <span class="install-icon">📲</span>
             <span class="install-text" data-translate="true">
@@ -870,7 +848,6 @@
         
         <button class="btn-mystic" onclick="goToScan()" data-translate="true">🔮 Ξεκίνησε το ταξίδι</button>
         
-        <!-- ===== LANGUAGE BAR ===== -->
         <div id="language-bar">
             <span class="lang-label" id="lang-label">🌐 Γλώσσα</span>
             <select id="language-select">
@@ -908,7 +885,6 @@
         </div>
     </div>
 
-    <!-- ===== ROLL-UP BANNER ΓΙΑ LIFELINE (ΜΟΝΟ SPLASH, ΠΡΩΤΗ ΦΟΡΑ) ===== -->
     <div id="lifeline-rollup">
         <a href="https://lifeline.franklymadear.com" target="_blank" class="rollup-inner">
             <span class="rollup-stars rollup-star-1">✨</span>
@@ -920,7 +896,6 @@
         </a>
     </div>
 
-    <!-- ===== SCAN PAGE ===== -->
     <div id="scan" class="page">
         <button class="btn-back" onclick="goToSplash()">☽ <span data-translate="true">Πίσω στην αρχή</span></button>
         <div class="scan-header">
@@ -980,8 +955,7 @@
             const consent = localStorage.getItem('omen_consent');
             if (consent === 'true') {
                 document.getElementById('consent-overlay').classList.add('hidden');
-                // Έλεγχος αν είναι η πρώτη επίσκεψη
-                checkFirstVisit();
+                startLifelineCycle();
             } else {
                 document.getElementById('consent-overlay').classList.remove('hidden');
             }
@@ -990,42 +964,19 @@
         function acceptConsent() {
             localStorage.setItem('omen_consent', 'true');
             document.getElementById('consent-overlay').classList.add('hidden');
-            // Έλεγχος αν είναι η πρώτη επίσκεψη
-            checkFirstVisit();
-        }
-
-        // ===== LIFELINE ROLL-UP BANNER (MONO SPLASH, ΠΡΩΤΗ ΦΟΡΑ ΜΕ ΚΥΚΛΙΚΗ ΕΜΦΑΝΙΣΗ) =====
-        let lifelineCycleInterval = null;
-        let lifelineShowTimer = null;
-        let lifelineHideTimer = null;
-        let hasShownLifeline = false;
-
-        function checkFirstVisit() {
-            const splashPage = document.getElementById('splash');
-            if (!splashPage.classList.contains('active')) return;
-            
-            // Έλεγχος αν έχει ήδη εμφανιστεί στη συνεδρία
-            if (hasShownLifeline) return;
-            
-            // Έλεγχος αν έχει ήδη εμφανιστεί ποτέ (αποθηκευμένο)
-            const lifelineShown = sessionStorage.getItem('lifeline_shown');
-            if (lifelineShown === 'true') return;
-            
-            // Πρώτη φορά - σημείωσε και ξεκίνα τον κύκλο
-            hasShownLifeline = true;
-            sessionStorage.setItem('lifeline_shown', 'true');
             startLifelineCycle();
         }
 
+        // ===== LIFELINE ROLL-UP BANNER =====
+        let lifelineShowTimer = null;
+        let lifelineHideTimer = null;
+
         function startLifelineCycle() {
-            // Καθαρισμός προηγούμενων timers
             stopLifelineCycle();
             
-            // Συνάρτηση για εμφάνιση του banner
             function showBanner() {
                 const splashPage = document.getElementById('splash');
                 if (!splashPage.classList.contains('active')) {
-                    // Αν δεν είμαστε στο splash, περίμενε και ξαναέλεγξε
                     lifelineShowTimer = setTimeout(showBanner, 1000);
                     return;
                 }
@@ -1033,37 +984,20 @@
                 const rollup = document.getElementById('lifeline-rollup');
                 rollup.classList.add('visible');
                 
-                // Κρύψιμο μετά από 5 δευτερόλεπτα
                 lifelineHideTimer = setTimeout(() => {
                     rollup.classList.remove('visible');
-                    
-                    // Προγραμματισμός επόμενης εμφάνισης μετά από 5 δευτερόλεπτα
                     lifelineShowTimer = setTimeout(showBanner, 5000);
                 }, 5000);
             }
             
-            // Πρώτη εμφάνιση μετά από 5 δευτερόλεπτα
             lifelineShowTimer = setTimeout(showBanner, 5000);
         }
 
         function stopLifelineCycle() {
-            if (lifelineShowTimer) {
-                clearTimeout(lifelineShowTimer);
-                lifelineShowTimer = null;
-            }
-            if (lifelineHideTimer) {
-                clearTimeout(lifelineHideTimer);
-                lifelineHideTimer = null;
-            }
-            if (lifelineCycleInterval) {
-                clearInterval(lifelineCycleInterval);
-                lifelineCycleInterval = null;
-            }
-            // Κρύψιμο του banner
+            if (lifelineShowTimer) { clearTimeout(lifelineShowTimer); lifelineShowTimer = null; }
+            if (lifelineHideTimer) { clearTimeout(lifelineHideTimer); lifelineHideTimer = null; }
             const rollup = document.getElementById('lifeline-rollup');
-            if (rollup) {
-                rollup.classList.remove('visible');
-            }
+            if (rollup) { rollup.classList.remove('visible'); }
         }
 
         function hideLifelineRollup() {
@@ -1110,99 +1044,42 @@
 
         var correctionMap = {
             'en': {
-                'Coffee schop': 'Coffee Reading',
-                'coffee schop': 'Coffee Reading',
-                'Coffee shop': 'Coffee Reading',
-                'coffee shop': 'Coffee Reading',
-                'Καφεμαντεία': 'Coffee Reading',
-                'καφεμαντεία': 'Coffee Reading',
-                'Καφεμαντεία με AI': 'Coffee Reading with AI',
-                'καφεμαντεία με AI': 'Coffee Reading with AI',
-                'Ανάλυση Φλιτζανιού': 'Cup Analysis',
-                'ανάλυση φλιτζανιού': 'Cup Analysis',
-                'Η Ετυμηγορία του Καφέ': 'The Coffee Verdict',
-                'η ετυμηγορία του καφέ': 'The Coffee Verdict'
+                'Coffee schop': 'Coffee Reading', 'coffee schop': 'Coffee Reading',
+                'Coffee shop': 'Coffee Reading', 'coffee shop': 'Coffee Reading',
+                'Καφεμαντεία': 'Coffee Reading', 'καφεμαντεία': 'Coffee Reading',
+                'Καφεμαντεία με AI': 'Coffee Reading with AI', 'καφεμαντεία με AI': 'Coffee Reading with AI',
+                'Ανάλυση Φλιτζανιού': 'Cup Analysis', 'ανάλυση φλιτζανιού': 'Cup Analysis',
+                'Η Ετυμηγορία του Καφέ': 'The Coffee Verdict', 'η ετυμηγορία του καφέ': 'The Coffee Verdict'
             },
             'de': {
-                'Coffee schop': 'Kaffee Lesen',
-                'coffee schop': 'Kaffee Lesen',
-                'Coffee shop': 'Kaffee Lesen',
-                'coffee shop': 'Kaffee Lesen',
-                'Καφεμαντεία': 'Kaffee Lesen',
-                'καφεμαντεία': 'Kaffee Lesen',
-                'Καφεμαντεία mit AI': 'Kaffee Lesen mit AI',
-                'καφεμαντεία mit AI': 'Kaffee Lesen mit AI'
+                'Coffee schop': 'Kaffee Lesen', 'coffee schop': 'Kaffee Lesen',
+                'Coffee shop': 'Kaffee Lesen', 'coffee shop': 'Kaffee Lesen',
+                'Καφεμαντεία': 'Kaffee Lesen', 'καφεμαντεία': 'Kaffee Lesen',
+                'Καφεμαντεία mit AI': 'Kaffee Lesen mit AI', 'καφεμαντεία mit AI': 'Kaffee Lesen mit AI'
             },
             'fr': {
-                'Coffee schop': 'Lecture de Café',
-                'coffee schop': 'Lecture de Café',
-                'Coffee shop': 'Lecture de Café',
-                'coffee shop': 'Lecture de Café',
-                'Καφεμαντεία': 'Lecture de Café',
-                'καφεμαντεία': 'Lecture de Café',
-                'Καφεμαντεία avec AI': 'Lecture de Café avec AI',
-                'καφεμαντεία avec AI': 'Lecture de Café avec AI'
+                'Coffee schop': 'Lecture de Café', 'coffee schop': 'Lecture de Café',
+                'Coffee shop': 'Lecture de Café', 'coffee shop': 'Lecture de Café',
+                'Καφεμαντεία': 'Lecture de Café', 'καφεμαντεία': 'Lecture de Café',
+                'Καφεμαντεία avec AI': 'Lecture de Café avec AI', 'καφεμαντεία avec AI': 'Lecture de Café avec AI'
             },
             'es': {
-                'Coffee schop': 'Lectura de Café',
-                'coffee schop': 'Lectura de Café',
-                'Coffee shop': 'Lectura de Café',
-                'coffee shop': 'Lectura de Café',
-                'Καφεμαντεία': 'Lectura de Café',
-                'καφεμαντεία': 'Lectura de Café',
-                'Καφεμαντεία con AI': 'Lectura de Café con AI',
-                'καφεμαντεία con AI': 'Lectura de Café con AI'
+                'Coffee schop': 'Lectura de Café', 'coffee schop': 'Lectura de Café',
+                'Coffee shop': 'Lectura de Café', 'coffee shop': 'Lectura de Café',
+                'Καφεμαντεία': 'Lectura de Café', 'καφεμαντεία': 'Lectura de Café',
+                'Καφεμαντεία con AI': 'Lectura de Café con AI', 'καφεμαντεία con AI': 'Lectura de Café con AI'
             },
             'it': {
-                'Coffee schop': 'Lettura del Caffè',
-                'coffee schop': 'Lettura del Caffè',
-                'Coffee shop': 'Lettura del Caffè',
-                'coffee shop': 'Lettura del Caffè',
-                'Καφεμαντεία': 'Lettura del Caffè',
-                'καφεμαντεία': 'Lettura del Caffè',
-                'Καφεμαντεία con AI': 'Lettura del Caffè con AI',
-                'καφεμαντεία con AI': 'Lettura del Caffè con AI'
+                'Coffee schop': 'Lettura del Caffè', 'coffee schop': 'Lettura del Caffè',
+                'Coffee shop': 'Lettura del Caffè', 'coffee shop': 'Lettura del Caffè',
+                'Καφεμαντεία': 'Lettura del Caffè', 'καφεμαντεία': 'Lettura del Caffè',
+                'Καφεμαντεία con AI': 'Lettura del Caffè con AI', 'καφεμαντεία con AI': 'Lettura del Caffè con AI'
             },
-            'ar': {
-                'Coffee schop': 'قراءة الفنجان',
-                'coffee schop': 'قراءة الفنجان',
-                'Coffee shop': 'قراءة الفنجان',
-                'coffee shop': 'قراءة الفنجان',
-                'Καφεμαντεία': 'قراءة الفنجان',
-                'καφεμαντεία': 'قراءة الفنجان'
-            },
-            'zh-CN': {
-                'Coffee schop': '咖啡占卜',
-                'coffee schop': '咖啡占卜',
-                'Coffee shop': '咖啡占卜',
-                'coffee shop': '咖啡占卜',
-                'Καφεμαντεία': '咖啡占卜',
-                'καφεμαντεία': '咖啡占卜'
-            },
-            'ja': {
-                'Coffee schop': 'コーヒー占い',
-                'coffee schop': 'コーヒー占い',
-                'Coffee shop': 'コーヒー占い',
-                'coffee shop': 'コーヒー占い',
-                'Καφεμαντεία': 'コーヒー占い',
-                'καφεμαντεία': 'コーヒー占い'
-            },
-            'ru': {
-                'Coffee schop': 'Гадание на кофе',
-                'coffee schop': 'Гадание на кофе',
-                'Coffee shop': 'Гадание на кофе',
-                'coffee shop': 'Гадание на кофе',
-                'Καφεμαντεία': 'Гадание на кофе',
-                'καφεμαντεία': 'Гадание на кофе'
-            },
-            'tr': {
-                'Coffee schop': 'Kahve Falı',
-                'coffee schop': 'Kahve Falı',
-                'Coffee shop': 'Kahve Falı',
-                'coffee shop': 'Kahve Falı',
-                'Καφεμαντεία': 'Kahve Falı',
-                'καφεμαντεία': 'Kahve Falı'
-            }
+            'ar': { 'Coffee schop': 'قراءة الفنجان', 'Coffee shop': 'قراءة الفنجان', 'Καφεμαντεία': 'قراءة الفنجان' },
+            'zh-CN': { 'Coffee schop': '咖啡占卜', 'Coffee shop': '咖啡占卜', 'Καφεμαντεία': '咖啡占卜' },
+            'ja': { 'Coffee schop': 'コーヒー占い', 'Coffee shop': 'コーヒー占い', 'Καφεμαντεία': 'コーヒー占い' },
+            'ru': { 'Coffee schop': 'Гадание на кофе', 'Coffee shop': 'Гадание на кофе', 'Καφεμαντεία': 'Гадание на кофе' },
+            'tr': { 'Coffee schop': 'Kahve Falı', 'Coffee shop': 'Kahve Falı', 'Καφεμαντεία': 'Kahve Falı' }
         };
 
         function applyCorrections(text, targetLang) {
@@ -1392,7 +1269,7 @@
 
         // ===== PAGE NAVIGATION =====
         function goToScan() {
-            hideLifelineRollup(); // Σταμάτημα του κύκλου όταν φεύγουμε από το splash
+            hideLifelineRollup();
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById('scan').classList.add('active');
             resetScanUI();
@@ -1401,7 +1278,6 @@
         function goToSplash() {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById('splash').classList.add('active');
-            // Δεν επανεκκινούμε τον κύκλο - μόνο την πρώτη φορά
         }
 
         // ===== GENDER SELECTION =====
