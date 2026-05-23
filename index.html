@@ -192,6 +192,16 @@
         #translate-btn:hover { transform: scale(1.1); box-shadow: 0 0 25px rgba(241, 196, 15, 0.6); }
         #translate-btn:active { transform: scale(0.9); }
         #translate-btn.translating { animation: spin 0.8s linear infinite; pointer-events: none; opacity: 0.7; }
+        #reset-lang-btn {
+            background: linear-gradient(145deg, #a569bd, #7d3c98);
+            color: #fff; border: none; border-radius: 50%;
+            width: 36px; height: 36px; min-width: 36px;
+            font-size: 0.9rem; cursor: pointer; font-weight: 700;
+            display: none; align-items: center; justify-content: center;
+            box-shadow: 0 0 15px rgba(155, 89, 182, 0.3);
+            transition: all 0.3s;
+        }
+        #reset-lang-btn:hover { transform: scale(1.1); box-shadow: 0 0 25px rgba(155, 89, 182, 0.6); }
 
         /* ===== ΑΣΤΕΡΟΕΙΔΗΣ LIFELINE ===== */
         #kafemanteia-container {
@@ -242,29 +252,58 @@
             50% { opacity: 1; transform: translate(5px, -8px) scale(1.3); }
         }
 
-        @keyframes cometFullCycle {
+        /* Κίνηση 1: Από δεξιά προς αριστερά */
+        @keyframes cometRightToLeft {
             0% { left: auto; right: -300px; bottom: 30px; opacity: 0; transform: scale(1); }
-            4% { opacity: 1; }
-            21% { left: auto; right: 50%; bottom: 30px; opacity: 1; transform: scale(1); }
-            24.5% { opacity: 0; }
-            25% { left: auto; right: calc(100% + 300px); bottom: 30px; opacity: 0; transform: scale(1); }
-            25.1% { left: 50%; right: auto; bottom: 10px; opacity: 0; transform: scale(0.3) translateX(-50%); }
-            32% { opacity: 1; transform: scale(1.05) translateX(-50%); }
-            42% { opacity: 1; transform: scale(1) translateX(-50%); }
-            49% { opacity: 0; transform: scale(0.3) translateX(-50%); }
-            50% { opacity: 0; transform: scale(0.3) translateX(-50%); }
-            50.1% { left: -300px; right: auto; bottom: 50px; opacity: 0; transform: scale(1); }
-            54% { opacity: 1; }
-            71% { left: 50%; right: auto; bottom: 50px; opacity: 1; transform: scale(1); }
-            74.5% { opacity: 0; }
-            75% { left: calc(100% + 300px); right: auto; bottom: 50px; opacity: 0; transform: scale(1); }
-            75.1% { left: 50%; right: auto; bottom: -80px; opacity: 0; transform: scale(0.8) translateX(-50%); }
-            82% { opacity: 1; bottom: 10px; transform: scale(1) translateX(-50%); }
-            94% { opacity: 1; bottom: 60px; transform: scale(1) translateX(-50%); }
-            99% { opacity: 0; bottom: 60px; transform: scale(1) translateX(-50%); }
-            100% { opacity: 0; bottom: 60px; transform: scale(1) translateX(-50%); }
+            5% { opacity: 1; }
+            40% { left: auto; right: calc(100% + 300px); bottom: 30px; opacity: 1; transform: scale(1); }
+            45% { opacity: 0; }
+            50% { left: auto; right: calc(100% + 300px); bottom: 30px; opacity: 0; transform: scale(1); }
+            100% { left: auto; right: calc(100% + 300px); bottom: 30px; opacity: 0; transform: scale(1); }
         }
-        .kafemanteia-comet.animating { animation: cometFullCycle 24s linear infinite; }
+
+        /* Κίνηση 2: Από αριστερά προς δεξιά */
+        @keyframes cometLeftToRight {
+            0% { left: -300px; right: auto; bottom: 50px; opacity: 0; transform: scale(1); }
+            5% { opacity: 1; }
+            40% { left: calc(100% + 300px); right: auto; bottom: 50px; opacity: 1; transform: scale(1); }
+            45% { opacity: 0; }
+            50% { left: calc(100% + 300px); right: auto; bottom: 50px; opacity: 0; transform: scale(1); }
+            100% { left: calc(100% + 300px); right: auto; bottom: 50px; opacity: 0; transform: scale(1); }
+        }
+
+        /* Κίνηση 3: Από το βάθος μπροστά στην οθόνη και εξαφάνιση */
+        @keyframes cometDepthForward {
+            0% { left: 50%; right: auto; bottom: -80px; opacity: 0; transform: scale(0.3) translateX(-50%); }
+            15% { opacity: 1; bottom: 10px; transform: scale(1.1) translateX(-50%); }
+            35% { opacity: 1; bottom: 40px; transform: scale(1) translateX(-50%); }
+            45% { opacity: 0; bottom: 60px; transform: scale(1.2) translateX(-50%); }
+            50% { opacity: 0; bottom: 60px; transform: scale(1.2) translateX(-50%); }
+            100% { opacity: 0; bottom: 60px; transform: scale(1.2) translateX(-50%); }
+        }
+
+        /* Συνδυασμένο animation με τις 3 κινήσεις διαδοχικά */
+        @keyframes cometTripleMotion {
+            0% { left: auto; right: -300px; bottom: 30px; opacity: 0; transform: scale(1); }
+            3% { opacity: 1; }
+            20% { left: auto; right: calc(100% + 300px); bottom: 30px; opacity: 1; transform: scale(1); }
+            24% { opacity: 0; }
+            25% { left: auto; right: calc(100% + 300px); bottom: 30px; opacity: 0; transform: scale(1); }
+            /* Παύση πριν την επόμενη κίνηση */
+            28% { left: -300px; right: auto; bottom: 50px; opacity: 0; transform: scale(1); }
+            31% { opacity: 1; }
+            48% { left: calc(100% + 300px); right: auto; bottom: 50px; opacity: 1; transform: scale(1); }
+            52% { opacity: 0; }
+            55% { left: calc(100% + 300px); right: auto; bottom: 50px; opacity: 0; transform: scale(1); }
+            /* Παύση πριν την τρίτη κίνηση */
+            58% { left: 50%; right: auto; bottom: -80px; opacity: 0; transform: scale(0.3) translateX(-50%); }
+            63% { opacity: 1; bottom: 10px; transform: scale(1.1) translateX(-50%); }
+            83% { opacity: 1; bottom: 40px; transform: scale(1) translateX(-50%); }
+            93% { opacity: 0; bottom: 60px; transform: scale(1.2) translateX(-50%); }
+            100% { opacity: 0; bottom: 60px; transform: scale(1.2) translateX(-50%); }
+        }
+        
+        .kafemanteia-comet.animating { animation: cometTripleMotion 18s ease-in-out infinite; }
 
         #scan { gap: 20px; padding-top: 30px; padding-bottom: 40px; }
         #scan .scan-header { text-align: center; width: 100%; }
@@ -858,6 +897,7 @@
             #language-bar .lang-label { font-size: 0.7rem; min-width: 50px; }
             #language-bar select { font-size: 0.7rem; padding: 6px 25px 6px 8px; min-width: 80px; }
             #translate-btn { width: 30px; height: 30px; min-width: 30px; font-size: 0.8rem; }
+            #reset-lang-btn { width: 30px; height: 30px; min-width: 30px; font-size: 0.8rem; }
         }
     </style>
 </head>
@@ -973,6 +1013,7 @@
                 <option value="iw">🇮🇱 עברית</option>
             </select>
             <button id="translate-btn" onclick="startTranslation()" title="Μετάφραση">▶</button>
+            <button id="reset-lang-btn" onclick="resetToGreek()" title="Επιστροφή στα Ελληνικά">↺</button>
         </div>
     </div>
 
@@ -1123,11 +1164,121 @@
         }
         saveOriginalTexts();
 
+        // Διόρθωση: Αντικατάσταση λάθος μεταφράσεων
+        var correctionMap = {
+            'en': {
+                'Coffee schop': 'Coffee Reading',
+                'coffee schop': 'Coffee Reading',
+                'Coffee shop': 'Coffee Reading',
+                'coffee shop': 'Coffee Reading',
+                'Καφεμαντεία': 'Coffee Reading',
+                'καφεμαντεία': 'Coffee Reading',
+                'Καφεμαντεία με AI': 'Coffee Reading with AI',
+                'καφεμαντεία με AI': 'Coffee Reading with AI',
+                'Ανάλυση Φλιτζανιού': 'Cup Analysis',
+                'ανάλυση φλιτζανιού': 'Cup Analysis',
+                'Η Ετυμηγορία του Καφέ': 'The Coffee Verdict',
+                'η ετυμηγορία του καφέ': 'The Coffee Verdict'
+            },
+            'de': {
+                'Coffee schop': 'Kaffee Lesen',
+                'coffee schop': 'Kaffee Lesen',
+                'Coffee shop': 'Kaffee Lesen',
+                'coffee shop': 'Kaffee Lesen',
+                'Καφεμαντεία': 'Kaffee Lesen',
+                'καφεμαντεία': 'Kaffee Lesen',
+                'Καφεμαντεία mit AI': 'Kaffee Lesen mit AI',
+                'καφεμαντεία mit AI': 'Kaffee Lesen mit AI'
+            },
+            'fr': {
+                'Coffee schop': 'Lecture de Café',
+                'coffee schop': 'Lecture de Café',
+                'Coffee shop': 'Lecture de Café',
+                'coffee shop': 'Lecture de Café',
+                'Καφεμαντεία': 'Lecture de Café',
+                'καφεμαντεία': 'Lecture de Café',
+                'Καφεμαντεία avec AI': 'Lecture de Café avec AI',
+                'καφεμαντεία avec AI': 'Lecture de Café avec AI'
+            },
+            'es': {
+                'Coffee schop': 'Lectura de Café',
+                'coffee schop': 'Lectura de Café',
+                'Coffee shop': 'Lectura de Café',
+                'coffee shop': 'Lectura de Café',
+                'Καφεμαντεία': 'Lectura de Café',
+                'καφεμαντεία': 'Lectura de Café',
+                'Καφεμαντεία con AI': 'Lectura de Café con AI',
+                'καφεμαντεία con AI': 'Lectura de Café con AI'
+            },
+            'it': {
+                'Coffee schop': 'Lettura del Caffè',
+                'coffee schop': 'Lettura del Caffè',
+                'Coffee shop': 'Lettura del Caffè',
+                'coffee shop': 'Lettura del Caffè',
+                'Καφεμαντεία': 'Lettura del Caffè',
+                'καφεμαντεία': 'Lettura del Caffè',
+                'Καφεμαντεία con AI': 'Lettura del Caffè con AI',
+                'καφεμαντεία con AI': 'Lettura del Caffè con AI'
+            },
+            'ar': {
+                'Coffee schop': 'قراءة الفنجان',
+                'coffee schop': 'قراءة الفنجان',
+                'Coffee shop': 'قراءة الفنجان',
+                'coffee shop': 'قراءة الفنجان',
+                'Καφεμαντεία': 'قراءة الفنجان',
+                'καφεμαντεία': 'قراءة الفنجان'
+            },
+            'zh-CN': {
+                'Coffee schop': '咖啡占卜',
+                'coffee schop': '咖啡占卜',
+                'Coffee shop': '咖啡占卜',
+                'coffee shop': '咖啡占卜',
+                'Καφεμαντεία': '咖啡占卜',
+                'καφεμαντεία': '咖啡占卜'
+            },
+            'ja': {
+                'Coffee schop': 'コーヒー占い',
+                'coffee schop': 'コーヒー占い',
+                'Coffee shop': 'コーヒー占い',
+                'coffee shop': 'コーヒー占い',
+                'Καφεμαντεία': 'コーヒー占い',
+                'καφεμαντεία': 'コーヒー占い'
+            },
+            'ru': {
+                'Coffee schop': 'Гадание на кофе',
+                'coffee schop': 'Гадание на кофе',
+                'Coffee shop': 'Гадание на кофе',
+                'coffee shop': 'Гадание на кофе',
+                'Καφεμαντεία': 'Гадание на кофе',
+                'καφεμαντεία': 'Гадание на кофе'
+            },
+            'tr': {
+                'Coffee schop': 'Kahve Falı',
+                'coffee schop': 'Kahve Falı',
+                'Coffee shop': 'Kahve Falı',
+                'coffee shop': 'Kahve Falı',
+                'Καφεμαντεία': 'Kahve Falı',
+                'καφεμαντεία': 'Kahve Falı'
+            }
+        };
+
+        function applyCorrections(text, targetLang) {
+            if (correctionMap[targetLang]) {
+                var corrections = correctionMap[targetLang];
+                for (var wrong in corrections) {
+                    var regex = new RegExp(wrong.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'gi');
+                    text = text.replace(regex, corrections[wrong]);
+                }
+            }
+            return text;
+        }
+
         function startTranslation() {
             var lang = document.getElementById('language-select').value;
             if (lang === 'el') {
                 restoreOriginalTexts();
                 currentLang = 'el';
+                document.getElementById('reset-lang-btn').style.display = 'none';
                 return;
             }
             
@@ -1166,7 +1317,9 @@
                     var translatedTexts = await translateBatch(batch, targetLang);
                     for (var j = 0; j < batchElements.length; j++) {
                         if (translatedTexts[j]) {
-                            batchElements[j].textContent = translatedTexts[j];
+                            // Εφαρμογή διορθώσεων στη μετάφραση
+                            var correctedText = applyCorrections(translatedTexts[j], targetLang);
+                            batchElements[j].textContent = correctedText;
                         }
                     }
                 } catch (e) {
@@ -1177,6 +1330,8 @@
             currentLang = targetLang;
             document.getElementById('translate-btn').classList.remove('translating');
             document.getElementById('translate-btn').textContent = '▶';
+            // Εμφάνιση του κουμπιού επαναφοράς στα Ελληνικά
+            document.getElementById('reset-lang-btn').style.display = 'flex';
         }
 
         async function translateBatch(texts, targetLang) {
@@ -1205,6 +1360,14 @@
                     el.textContent = originalTexts[key];
                 }
             });
+        }
+
+        // Νέα συνάρτηση: Επαναφορά στα Ελληνικά
+        function resetToGreek() {
+            restoreOriginalTexts();
+            currentLang = 'el';
+            document.getElementById('language-select').value = 'el';
+            document.getElementById('reset-lang-btn').style.display = 'none';
         }
 
         function detectLanguage() {
@@ -1287,11 +1450,22 @@
         }
         drawStars();
 
+        // ===== ΕΠΑΝΕΚΚΙΝΗΣΗ ΑΣΤΕΡΟΕΙΔΗ =====
+        function restartComet() {
+            var comet = document.getElementById('kafemanteia-comet');
+            if (comet) {
+                comet.classList.remove('animating');
+                void comet.offsetWidth;
+                comet.classList.add('animating');
+            }
+        }
+
         // ===== PAGE NAVIGATION =====
         function goToScan() {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById('scan').classList.add('active');
             resetScanUI();
+            restartComet();
             
             setTimeout(() => {
                 showAdModal();
@@ -1301,13 +1475,7 @@
         function goToSplash() {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById('splash').classList.add('active');
-            // Επανεκκίνηση του αστεροειδή
-            var comet = document.getElementById('kafemanteia-comet');
-            if (comet) {
-                comet.classList.remove('animating');
-                void comet.offsetWidth;
-                comet.classList.add('animating');
-            }
+            restartComet();
         }
 
         // ===== GENDER SELECTION =====
