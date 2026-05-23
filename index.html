@@ -141,6 +141,7 @@
             font-size: 0.95rem;
             line-height: 1.6;
             opacity: 0.8;
+            text-align: center;
         }
 
         /* Πρόταση για εγκατάσταση στην αρχική οθόνη */
@@ -247,7 +248,7 @@
         }
         #reset-lang-btn:hover { transform: scale(1.1); box-shadow: 0 0 25px rgba(155, 89, 182, 0.6); }
 
-        /* ===== ROLL-UP BANNER ΓΙΑ LIFELINE (ΜΟΝΟ SPLASH) ===== */
+        /* ===== ROLL-UP BANNER ΓΙΑ LIFELINE (ΜΟΝΟ SPLASH, ΠΡΩΤΗ ΦΟΡΑ) ===== */
         #lifeline-rollup {
             position: fixed;
             bottom: 0;
@@ -854,7 +855,10 @@
         <div class="splash-icon" id="splashIcon" onclick="goToScan()">🔮</div>
         <div class="splash-title">Omen</div>
         <div class="splash-sub" data-translate="true">✦ Καφεμαντεία με AI ✦</div>
-        <div class="splash-desc" data-translate="true">Η Μαντάμ Ζαΐρα σε περιμένει. Άφησε τις σκιές του καφέ να αποκαλύψουν το πεπρωμένο σου.</div>
+        <div class="splash-desc" data-translate="true">
+            Η Μαντάμ Ζαΐρα σε περιμένει.<br>
+            Άφησε τις σκιές του καφέ να αποκαλύψουν το πεπρωμένο σου.
+        </div>
         
         <!-- Πρόταση εγκατάστασης στην αρχική οθόνη -->
         <div class="install-prompt">
@@ -904,7 +908,7 @@
         </div>
     </div>
 
-    <!-- ===== ROLL-UP BANNER ΓΙΑ LIFELINE (ΜΟΝΟ SPLASH) ===== -->
+    <!-- ===== ROLL-UP BANNER ΓΙΑ LIFELINE (ΜΟΝΟ SPLASH, ΠΡΩΤΗ ΦΟΡΑ) ===== -->
     <div id="lifeline-rollup">
         <a href="https://lifeline.franklymadear.com" target="_blank" class="rollup-inner">
             <span class="rollup-stars rollup-star-1">✨</span>
@@ -976,8 +980,8 @@
             const consent = localStorage.getItem('omen_consent');
             if (consent === 'true') {
                 document.getElementById('consent-overlay').classList.add('hidden');
-                // Εμφάνιση του roll-up banner μετά από 1 δευτερόλεπτο
-                setTimeout(showLifelineRollup, 1000);
+                // Έλεγχος αν είναι η πρώτη επίσκεψη
+                checkFirstVisit();
             } else {
                 document.getElementById('consent-overlay').classList.remove('hidden');
             }
@@ -986,35 +990,84 @@
         function acceptConsent() {
             localStorage.setItem('omen_consent', 'true');
             document.getElementById('consent-overlay').classList.add('hidden');
-            // Εμφάνιση του roll-up banner
-            setTimeout(showLifelineRollup, 500);
+            // Έλεγχος αν είναι η πρώτη επίσκεψη
+            checkFirstVisit();
         }
 
-        // ===== LIFELINE ROLL-UP BANNER (MONO SPLASH) =====
-        let lifelineTimer = null;
+        // ===== LIFELINE ROLL-UP BANNER (MONO SPLASH, ΠΡΩΤΗ ΦΟΡΑ ΜΕ ΚΥΚΛΙΚΗ ΕΜΦΑΝΙΣΗ) =====
+        let lifelineCycleInterval = null;
+        let lifelineShowTimer = null;
+        let lifelineHideTimer = null;
+        let hasShownLifeline = false;
 
-        function showLifelineRollup() {
-            // Εμφάνιση μόνο αν είμαστε στην splash οθόνη
+        function checkFirstVisit() {
             const splashPage = document.getElementById('splash');
             if (!splashPage.classList.contains('active')) return;
             
-            const rollup = document.getElementById('lifeline-rollup');
-            rollup.classList.add('visible');
+            // Έλεγχος αν έχει ήδη εμφανιστεί στη συνεδρία
+            if (hasShownLifeline) return;
             
-            // Εξαφάνιση μετά από 5 δευτερόλεπτα
-            if (lifelineTimer) clearTimeout(lifelineTimer);
-            lifelineTimer = setTimeout(() => {
+            // Έλεγχος αν έχει ήδη εμφανιστεί ποτέ (αποθηκευμένο)
+            const lifelineShown = sessionStorage.getItem('lifeline_shown');
+            if (lifelineShown === 'true') return;
+            
+            // Πρώτη φορά - σημείωσε και ξεκίνα τον κύκλο
+            hasShownLifeline = true;
+            sessionStorage.setItem('lifeline_shown', 'true');
+            startLifelineCycle();
+        }
+
+        function startLifelineCycle() {
+            // Καθαρισμός προηγούμενων timers
+            stopLifelineCycle();
+            
+            // Συνάρτηση για εμφάνιση του banner
+            function showBanner() {
+                const splashPage = document.getElementById('splash');
+                if (!splashPage.classList.contains('active')) {
+                    // Αν δεν είμαστε στο splash, περίμενε και ξαναέλεγξε
+                    lifelineShowTimer = setTimeout(showBanner, 1000);
+                    return;
+                }
+                
+                const rollup = document.getElementById('lifeline-rollup');
+                rollup.classList.add('visible');
+                
+                // Κρύψιμο μετά από 5 δευτερόλεπτα
+                lifelineHideTimer = setTimeout(() => {
+                    rollup.classList.remove('visible');
+                    
+                    // Προγραμματισμός επόμενης εμφάνισης μετά από 5 δευτερόλεπτα
+                    lifelineShowTimer = setTimeout(showBanner, 5000);
+                }, 5000);
+            }
+            
+            // Πρώτη εμφάνιση μετά από 5 δευτερόλεπτα
+            lifelineShowTimer = setTimeout(showBanner, 5000);
+        }
+
+        function stopLifelineCycle() {
+            if (lifelineShowTimer) {
+                clearTimeout(lifelineShowTimer);
+                lifelineShowTimer = null;
+            }
+            if (lifelineHideTimer) {
+                clearTimeout(lifelineHideTimer);
+                lifelineHideTimer = null;
+            }
+            if (lifelineCycleInterval) {
+                clearInterval(lifelineCycleInterval);
+                lifelineCycleInterval = null;
+            }
+            // Κρύψιμο του banner
+            const rollup = document.getElementById('lifeline-rollup');
+            if (rollup) {
                 rollup.classList.remove('visible');
-            }, 5000);
+            }
         }
 
         function hideLifelineRollup() {
-            const rollup = document.getElementById('lifeline-rollup');
-            rollup.classList.remove('visible');
-            if (lifelineTimer) {
-                clearTimeout(lifelineTimer);
-                lifelineTimer = null;
-            }
+            stopLifelineCycle();
         }
 
         function showLegal(type) {
@@ -1049,7 +1102,7 @@
             document.querySelectorAll('[data-translate="true"]').forEach(function(el) {
                 var key = el.outerHTML;
                 if (!originalTexts[key]) {
-                    originalTexts[key] = el.textContent.trim();
+                    originalTexts[key] = el.innerHTML.trim();
                 }
             });
         }
@@ -1245,7 +1298,7 @@
             document.querySelectorAll('[data-translate="true"]').forEach(function(el) {
                 var key = el.outerHTML;
                 if (originalTexts[key]) {
-                    el.textContent = originalTexts[key];
+                    el.innerHTML = originalTexts[key];
                 }
             });
         }
@@ -1339,7 +1392,7 @@
 
         // ===== PAGE NAVIGATION =====
         function goToScan() {
-            hideLifelineRollup(); // Κρύβουμε το banner όταν φεύγουμε από το splash
+            hideLifelineRollup(); // Σταμάτημα του κύκλου όταν φεύγουμε από το splash
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById('scan').classList.add('active');
             resetScanUI();
@@ -1348,8 +1401,7 @@
         function goToSplash() {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById('splash').classList.add('active');
-            // Επανεμφάνιση του roll-up banner όταν επιστρέφουμε στο splash
-            setTimeout(showLifelineRollup, 300);
+            // Δεν επανεκκινούμε τον κύκλο - μόνο την πρώτη φορά
         }
 
         // ===== GENDER SELECTION =====
