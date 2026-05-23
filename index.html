@@ -2,60 +2,68 @@
 <html lang="el">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Omen - Καφεμαντεία με AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>LiFe LiNe - Χειρομαντεία με AI</title>
     
-    <!-- Meta για Social Sharing -->
-    <meta name="description" content="🔮 Ξεκίνησε το ταξίδι. Η Μαντάμ Ζαΐρα διαβάζει το φλιτζάνι σου και αποκαλύπτει τα μυστικά του καφέ!">
+    <meta name="description" content="🖐️ Η Aziram διαβάζει την παλάμη σου! Ανακάλυψε τα μυστικά των γραμμών του χεριού σου με Χειρομαντεία & Αστρολογία.">
     
-    <!-- Open Graph (Facebook, WhatsApp, Viber) -->
-    <meta property="og:title" content="🔮 Omen - Καφεμαντεία">
-    <meta property="og:description" content="Ξεκίνησε το ταξίδι. Η Μαντάμ Ζαΐρα διαβάζει το φλιτζάνι σου!">
-    <meta property="og:image" content="https://omen.franklymadear.com/omen.png">
+    <meta property="og:title" content="🖐️ LiFe LiNe - Χειρομαντεία με AI">
+    <meta property="og:description" content="Η Aziram διαβάζει την παλάμη σου! Ανακάλυψε τα μυστικά των γραμμών του χεριού σου με Χειρομαντεία & Αστρολογία.">
+    <meta property="og:image" content="https://lifeline.franklymadear.com/lifeline.png">
     <meta property="og:image:width" content="512">
     <meta property="og:image:height" content="512">
     <meta property="og:image:type" content="image/png">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://omen.franklymadear.com">
-    <meta property="og:site_name" content="Omen - Καφεμαντεία">
+    <meta property="og:url" content="https://lifeline.franklymadear.com">
+    <meta property="og:site_name" content="LiFe LiNe - Χειρομαντεία">
     <meta property="og:locale" content="el_GR">
     
-    <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="🔮 Omen - Καφεμαντεία με AI">
-    <meta name="twitter:description" content="Ξεκίνησε το ταξίδι. Η Μαντάμ Ζαΐρα διαβάζει το φλιτζάνι σου!">
-    <meta name="twitter:image" content="https://omen.franklymadear.com/omen.png">
-    <meta name="twitter:image:alt" content="Omen - Καφεμαντεία">
+    <meta name="twitter:title" content="🖐️ LiFe LiNe - Χειρομαντεία με AI">
+    <meta name="twitter:description" content="Η Aziram διαβάζει την παλάμη σου! Ανακάλυψε τα μυστικά των γραμμών του χεριού σου.">
+    <meta name="twitter:image" content="https://lifeline.franklymadear.com/lifeline.png">
+    <meta name="twitter:image:alt" content="LiFe LiNe - Χειρομαντεία">
     
-    <!-- PWA / Add to Home Screen -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Omen">
+    <meta name="apple-mobile-web-app-title" content="LiFe LiNe">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#0a0a12">
-    <link rel="apple-touch-icon" sizes="180x180" href="omen.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="omen.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="omen.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="omen.png">
-    <link rel="shortcut icon" href="omen.png">
+    <meta name="theme-color" content="#1a0033">
+    <link rel="apple-touch-icon" sizes="180x180" href="lifeline.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="lifeline.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="lifeline.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="lifeline.png">
+    <link rel="shortcut icon" href="lifeline.png">
     
-    <!-- Web App Manifest -->
-    <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Omen%20-%20%CE%9A%CE%B1%CF%86%CE%B5%CE%BC%CE%B1%CE%BD%CF%84%CE%B5%CE%AF%CE%B1%22%2C%22short_name%22%3A%22Omen%22%2C%22description%22%3A%22%CE%9A%CE%B1%CF%86%CE%B5%CE%BC%CE%B1%CE%BD%CF%84%CE%B5%CE%AF%CE%B1%20%CE%BC%CE%B5%20AI%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230a0a12%22%2C%22theme_color%22%3A%22%230a0a12%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22omen.png%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%7D%2C%7B%22src%22%3A%22omen.png%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
+    <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22LiFe%20LiNe%20-%20%CE%A7%CE%B5%CE%B9%CF%81%CE%BF%CE%BC%CE%B1%CE%BD%CF%84%CE%B5%CE%AF%CE%B1%22%2C%22short_name%22%3A%22LiFe%20LiNe%22%2C%22description%22%3A%22%CE%A7%CE%B5%CE%B9%CF%81%CE%BF%CE%BC%CE%B1%CE%BD%CF%84%CE%B5%CE%AF%CE%B1%20%CE%BC%CE%B5%20AI%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%231a0033%22%2C%22theme_color%22%3A%22%231a0033%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22lifeline.png%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%7D%2C%7B%22src%22%3A%22lifeline.png%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
     
-    <!-- Monetag SDK -->
-    <script src='//libtl.com/sdk.js' data-zone='10985740' data-sdk='show_10985740'></script>
+    <script src='//libtl.com/sdk.js' data-zone='11042671' data-sdk='show_11042671'></script>
     
     <style>
+        :root {
+            --gold: #FFD700;
+            --gold-dark: #B8860B;
+            --purple: #6a0dad;
+            --purple-dark: #1a0033;
+            --purple-light: #9b59b6;
+            --bg: #0a0015;
+            --card: rgba(30, 10, 60, 0.9);
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
             font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
-            background: #0a0a12;
+            background: var(--bg);
             min-height: 100vh;
             color: #f0e6ff;
             overflow-x: hidden;
+            background-image: 
+                radial-gradient(ellipse at top, rgba(106, 13, 173, 0.3) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom, rgba(255, 215, 0, 0.1) 0%, transparent 50%);
         }
 
-        #bg-canvas {
+        #starfield {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
@@ -71,357 +79,19 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            padding: 20px;
+            padding: 15px;
             width: 100%;
-            max-width: 600px;
+            max-width: 700px;
             margin: 0 auto;
         }
         .page.active { display: flex; }
 
-        #splash {
-            text-align: center;
-            gap: 20px;
-            animation: fadeIn 1.2s ease;
-        }
-        @keyframes fadeIn { 0% { opacity: 0; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1); } }
-
-        .splash-icon {
-            width: 180px;
-            height: 180px;
-            border-radius: 50%;
-            box-shadow: 0 0 80px rgba(241, 196, 15, 0.25);
-            border: 3px solid rgba(255, 215, 0, 0.3);
-            transition: all 0.5s;
-            animation: floatIcon 4s infinite ease-in-out;
-            object-fit: cover;
-            background: linear-gradient(135deg, #2a1a3a, #1a0e2a);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 4rem;
-            color: #f7dc6f;
-            cursor: pointer;
-        }
-        @keyframes floatIcon {
-            0% { transform: translateY(0px) scale(1); }
-            50% { transform: translateY(-12px) scale(1.02); box-shadow: 0 0 120px rgba(241, 196, 15, 0.4); }
-            100% { transform: translateY(0px) scale(1); }
-        }
-
-        .splash-title {
-            font-size: 3.2rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #f9d976, #f39c12, #e67e22);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: 4px;
-        }
-        .splash-sub {
-            color: #b9a6d4;
-            font-size: 1.1rem;
-            letter-spacing: 4px;
-            border-top: 1px solid rgba(255, 215, 0, 0.15);
-            padding-top: 10px;
-            margin-top: 5px;
-        }
-        .splash-desc {
-            color: #ccc;
-            max-width: 320px;
-            font-size: 0.95rem;
-            line-height: 1.6;
-            opacity: 0.8;
-        }
-
-        .btn-mystic {
-            background: linear-gradient(145deg, #f7dc6f, #d4ac0d);
-            color: #1a0e1f;
-            padding: 16px 48px;
-            border: none;
-            border-radius: 60px;
-            font-size: 1.2rem;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 0 40px rgba(241, 196, 15, 0.2);
-            transition: all 0.4s;
-            letter-spacing: 3px;
-            margin-top: 10px;
-        }
-        .btn-mystic:hover {
-            transform: scale(1.06) translateY(-4px);
-            box-shadow: 0 0 70px rgba(241, 196, 15, 0.5);
-        }
-
-        #scan { gap: 20px; padding-top: 30px; padding-bottom: 40px; }
-        #scan .scan-header { text-align: center; width: 100%; }
-        #scan .scan-header h2 {
-            font-size: 2rem;
-            background: linear-gradient(135deg, #e6c27a, #d4af37);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: 3px;
-        }
-        #scan .scan-header p {
-            color: #b8a0d0;
-            font-size: 0.9rem;
-            letter-spacing: 1px;
-        }
-
-        .controls { 
-            display: flex; 
-            flex-wrap: wrap; 
-            justify-content: center; 
-            gap: 16px; 
-            margin: 15px 0 20px; 
-        }
-        .btn {
-            padding: 16px 28px;
-            border: none;
-            border-radius: 60px;
-            font-weight: 700;
-            font-size: 1.05rem;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            backdrop-filter: blur(4px);
-            box-shadow: 0 6px 25px rgba(0,0,0,0.5);
-            letter-spacing: 0.8px;
-            position: relative;
-            overflow: hidden;
-        }
-        .btn::before {
-            content: "";
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
-            opacity: 0;
-            transition: opacity 0.6s;
-        }
-        .btn:hover::before { opacity: 1; }
-        .btn:active { transform: scale(0.92); }
-        
-        .btn-gold { 
-            background: linear-gradient(145deg, #f7dc6f, #d4ac0d); 
-            color: #1a0e1f; 
-            box-shadow: 0 6px 25px rgba(241,196,15,0.3);
-        }
-        .btn-gold:hover { 
-            transform: translateY(-5px) scale(1.03); 
-            box-shadow: 0 12px 40px rgba(241,196,15,0.5);
-        }
-        
-        .btn-purple { 
-            background: linear-gradient(145deg, #a569bd, #7d3c98); 
-            color: #fff; 
-            box-shadow: 0 6px 25px rgba(155,89,182,0.3);
-        }
-        .btn-purple:hover { 
-            transform: translateY(-5px) scale(1.03); 
-            box-shadow: 0 12px 40px rgba(155,89,182,0.5);
-        }
-        
-        .btn-green { 
-            background: linear-gradient(145deg, #2ecc71, #1e8449); 
-            color: #fff; 
-            width: 100%; 
-            padding: 18px; 
-            font-size: 1.15rem; 
-            margin-top: 12px; 
-            border-radius: 50px; 
-            box-shadow: 0 6px 25px rgba(46,204,113,0.25);
-        }
-        .btn-green:hover:not(:disabled) { 
-            transform: translateY(-5px) scale(1.02); 
-            box-shadow: 0 12px 45px rgba(46,204,113,0.45);
-        }
-        .btn-green:disabled { background: #3a3a4a; color: #777; cursor: not-allowed; box-shadow: none; }
-        .btn-red { 
-            background: linear-gradient(145deg, #e74c3c, #a93226); 
-            color: #fff; 
-            width: 100%; 
-            max-width: 300px; 
-        }
-        .btn-red:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(231,76,60,0.4); }
-
-        .gender-btn {
-            padding: 14px 32px;
-            font-size: 1.05rem;
-            font-weight: 600;
-            border: 2px solid rgba(255,215,0,0.2);
-            background: rgba(20,12,30,0.6);
-            color: #b9a6d4;
-            transition: all 0.4s;
-        }
-        .gender-btn.active {
-            background: linear-gradient(145deg, #f7dc6f, #d4ac0d);
-            color: #1a0e1f;
-            border-color: #f7dc6f;
-            box-shadow: 0 0 30px rgba(241,196,15,0.4);
-            transform: scale(1.05);
-        }
-        .gender-btn:hover:not(.active) {
-            border-color: rgba(255,215,0,0.5);
-            color: #f7dc6f;
-            transform: translateY(-2px);
-        }
-
-        #camera-wrapper { display: none; width: 100%; max-width: 420px; margin: 10px auto; border-radius: 30px; border: 2px solid rgba(255,215,0,0.3); overflow: hidden; background: #0f0a18; }
-        video { width: 100%; display: block; border-radius: 28px; }
-        
-        #preview-wrapper { display: none; margin: 15px auto; text-align: center; }
-        #preview-img { max-width: 220px; width: 100%; border-radius: 30px; border: 2px solid #d4af37; box-shadow: 0 0 30px rgba(212,175,55,0.2); }
-        .preview-label { color: #d4af37; font-weight: 300; letter-spacing: 2px; margin-bottom: 6px; font-size: 0.9rem; }
-
-        /* LOADING BOX */
-        #loading-box {
-            display: none;
-            text-align: center;
-            background: rgba(20, 12, 30, 0.95);
-            backdrop-filter: blur(12px);
-            border-radius: 40px;
-            padding: 40px 30px;
-            margin: 20px auto;
-            border: 2px solid rgba(255, 215, 0, 0.3);
-            box-shadow: 0 0 80px rgba(241, 196, 15, 0.2);
-            width: 100%;
-            max-width: 450px;
-        }
-        #loading-box .mantra {
-            font-size: 1.6rem;
-            color: #f5d76e;
-            font-weight: 500;
-            letter-spacing: 2px;
-            margin-bottom: 20px;
-            animation: mysticPulse 2s infinite ease-in-out;
-        }
-        @keyframes mysticPulse { 
-            0% { opacity: 0.5; transform: scale(0.98); } 
-            50% { opacity: 1; transform: scale(1.04); } 
-            100% { opacity: 0.5; transform: scale(0.98); } 
-        }
-        
-        .waiting-text {
-            font-size: 1.1rem;
-            color: #b9a6d4;
-            letter-spacing: 3px;
-            font-weight: 300;
-            padding: 10px 25px;
-            border-radius: 30px;
-            background: rgba(255, 215, 0, 0.08);
-        }
-        
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(255, 215, 0, 0.2);
-            border-top: 3px solid #f7dc6f;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* RESULT AREA ΜΕ ΑΣΤΕΡΑΚΙΑ */
-        #result-area {
-            display: none;
-            background: rgba(20, 12, 30, 0.8);
-            backdrop-filter: blur(8px);
-            border-radius: 40px;
-            padding: 25px 20px;
-            margin-top: 20px;
-            border: 1px solid rgba(255,215,0,0.1);
-            width: 100%;
-            position: relative;
-            overflow: hidden;
-        }
-        #result-area h2 {
-            color: #f5d76e;
-            font-weight: 300;
-            text-align: center;
-            border-bottom: 1px dashed rgba(255,215,0,0.2);
-            padding-bottom: 12px;
-            margin-bottom: 20px;
-            letter-spacing: 4px;
-            font-size: 1.8rem;
-            position: relative;
-            z-index: 2;
-        }
-        #result-text {
-            color: #e6d5f5;
-            font-size: 1rem;
-            line-height: 1.8;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            position: relative;
-            z-index: 2;
-        }
-        
-        /* ΑΣΤΕΡΑΚΙΑ */
-        .result-star {
-            position: absolute;
-            color: #f7dc6f;
-            opacity: 0.6;
-            animation: floatStar 3s infinite ease-in-out;
-            pointer-events: none;
-            font-size: 1.2rem;
-            z-index: 1;
-        }
-        @keyframes floatStar {
-            0% { transform: translateY(0) rotate(0deg); opacity: 0.3; }
-            50% { transform: translateY(-20px) rotate(180deg); opacity: 0.8; }
-            100% { transform: translateY(0) rotate(360deg); opacity: 0.3; }
-        }
-
-        .btn-reset {
-            background: transparent;
-            border: 1px solid rgba(255,215,0,0.3);
-            color: #f7dc6f;
-            padding: 12px 30px;
-            border-radius: 60px;
-            font-weight: 400;
-            letter-spacing: 2px;
-            transition: all 0.3s;
-            margin-top: 10px;
-            cursor: pointer;
-            position: relative;
-            z-index: 2;
-        }
-        .btn-reset:hover {
-            background: rgba(255,215,0,0.08);
-            border-color: #f1c40f;
-        }
-
-        .btn-back {
-            background: transparent;
-            border: none;
-            color: #b9a6d4;
-            font-size: 0.9rem;
-            cursor: pointer;
-            margin-bottom: 10px;
-            transition: 0.3s;
-            letter-spacing: 2px;
-        }
-        .btn-back:hover { color: #f7dc6f; }
-
-        /* ===== CONSENT MODAL ===== */
         #consent-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(10px);
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.88);
+            backdrop-filter: blur(12px);
             z-index: 9999;
             display: flex;
             align-items: center;
@@ -429,121 +99,139 @@
             padding: 20px;
         }
         #consent-overlay.hidden { display: none; }
+
         #consent-modal {
             background: linear-gradient(145deg, #1a0e2a, #2a1a3a);
-            border: 2px solid rgba(241, 196, 15, 0.3);
-            border-radius: 30px;
+            border: 3px solid var(--gold);
+            border-radius: 25px;
             padding: 35px 25px;
             max-width: 480px;
             width: 100%;
             text-align: center;
-            box-shadow: 0 0 100px rgba(241, 196, 15, 0.2);
+            box-shadow: 
+                0 0 60px rgba(255, 215, 0, 0.4),
+                0 0 100px rgba(106, 13, 173, 0.3);
             animation: modalFadeIn 0.5s ease;
         }
+
         @keyframes modalFadeIn {
             0% { opacity: 0; transform: scale(0.9) translateY(20px); }
             100% { opacity: 1; transform: scale(1) translateY(0); }
         }
+
         #consent-modal .consent-icon {
-            font-size: 4rem;
-            margin-bottom: 15px;
-            animation: floatIcon 3s infinite ease-in-out;
+            font-size: 3.5rem;
+            margin-bottom: 12px;
+            animation: floatIcon 2s infinite ease-in-out;
         }
+
+        @keyframes floatIcon {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
         #consent-modal h2 {
-            color: #f7dc6f;
-            font-size: 1.6rem;
-            margin-bottom: 15px;
+            color: var(--gold);
+            font-size: 1.4rem;
+            margin-bottom: 12px;
             letter-spacing: 2px;
         }
+
         #consent-modal p {
             color: #d5c8e8;
-            font-size: 0.95rem;
-            line-height: 1.7;
-            margin-bottom: 20px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: 18px;
         }
+
         #consent-modal .consent-links {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
             flex-wrap: wrap;
         }
+
         #consent-modal .consent-link {
-            color: #f7dc6f;
+            color: var(--gold);
             text-decoration: underline;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             transition: all 0.3s;
-            background: none;
-            border: none;
-            font-family: inherit;
         }
+
         #consent-modal .consent-link:hover {
             color: #fff;
-            text-shadow: 0 0 15px rgba(241,196,15,0.5);
+            text-shadow: 0 0 10px rgba(255,215,0,0.5);
         }
+
         #consent-btn {
-            background: linear-gradient(145deg, #f7dc6f, #d4ac0d);
-            color: #1a0e1f;
-            padding: 16px 32px;
+            background: linear-gradient(145deg, #FFD700, #B8860B);
+            color: #1a0033;
+            padding: 15px 28px;
             border: none;
             border-radius: 60px;
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 0 40px rgba(241, 196, 15, 0.3);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
             transition: all 0.4s;
             letter-spacing: 1px;
             width: 100%;
         }
+
         #consent-btn:hover {
             transform: scale(1.04) translateY(-3px);
-            box-shadow: 0 0 70px rgba(241, 196, 15, 0.5);
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.6);
         }
 
-        /* ===== AD MODAL ===== */
-        #ad-modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            z-index: 9998;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        #ad-modal-overlay.active { display: flex; }
-
-        #ad-modal {
-            background: linear-gradient(145deg, #1a0e2a, #2a1a3a);
-            border: 3px solid #f7dc6f;
-            border-radius: 20px;
-            padding: 30px 25px;
-            max-width: 500px;
-            width: 90%;
+        #splash-page {
             text-align: center;
-            box-shadow: 
-                0 0 60px rgba(241, 196, 15, 0.4),
-                0 0 100px rgba(155, 89, 182, 0.3);
-            animation: modalPopIn 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            gap: 20px;
+            animation: fadeInUp 1s ease;
             position: relative;
-            overflow: hidden;
+            padding-bottom: 120px;
         }
 
-        @keyframes modalPopIn {
-            0% { opacity: 0; transform: scale(0.8) translateY(20px); }
-            100% { opacity: 1; transform: scale(1) translateY(0); }
+        @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
 
-        #ad-modal::before {
+        .logo-container {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            margin: 0 auto;
+            animation: floatLogo 4s infinite ease-in-out;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        @keyframes floatLogo {
+            0% { transform: translateY(0px) rotate(0deg); }
+            25% { transform: translateY(-10px) rotate(2deg); }
+            75% { transform: translateY(-18px) rotate(-2deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+
+        .logo-circle {
+            width: 140px; height: 140px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2a0040, #1a0030, #0d0020);
+            border: 4px solid var(--gold);
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.4), 0 0 80px rgba(106, 13, 173, 0.3), inset 0 0 40px rgba(255, 215, 0, 0.1);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 4.5rem;
+            position: relative; overflow: hidden;
+        }
+
+        .logo-circle::before {
             content: '';
-            position: absolute;
-            top: -50%; left: -50%;
+            position: absolute; top: -50%; left: -50%;
             width: 200%; height: 200%;
-            background: radial-gradient(circle, rgba(241,196,15,0.1) 0%, transparent 60%);
-            animation: rotateGlow 6s linear infinite;
+            background: radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 60%);
+            animation: rotateGlow 8s linear infinite;
         }
 
         @keyframes rotateGlow {
@@ -551,331 +239,748 @@
             100% { transform: rotate(360deg); }
         }
 
-        #ad-modal .modal-icon {
-            font-size: 3rem;
-            margin-bottom: 10px;
-            animation: floatIcon 2s infinite ease-in-out;
-            position: relative;
-            z-index: 1;
+        .logo-hand {
+            position: relative; z-index: 1;
+            filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.5));
+            animation: pulseHand 2s infinite ease-in-out;
+            font-size: 4.5rem;
         }
 
-        #ad-modal h3 {
-            color: #f7dc6f;
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-            letter-spacing: 1px;
-            position: relative;
-            z-index: 1;
+        @keyframes pulseHand {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
         }
 
-        #ad-modal p {
-            color: #d5c8e8;
-            font-size: 0.9rem;
-            line-height: 1.6;
-            margin-bottom: 20px;
-            position: relative;
-            z-index: 1;
-        }
-
-        #ad-modal .btn-ad-now {
-            background: linear-gradient(145deg, #f7dc6f, #d4ac0d);
-            color: #1a0e1f;
-            padding: 14px 35px;
-            border: none;
-            border-radius: 50px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-            letter-spacing: 1px;
-            position: relative;
-            z-index: 1;
-            box-shadow: 0 0 25px rgba(241, 196, 15, 0.4);
-            animation: pulseBtn 2s infinite;
-        }
-
-        @keyframes pulseBtn {
-            0%, 100% { box-shadow: 0 0 25px rgba(241, 196, 15, 0.4); }
-            50% { box-shadow: 0 0 50px rgba(241, 196, 15, 0.7); }
-        }
-
-        #ad-modal .btn-ad-now:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 60px rgba(241, 196, 15, 0.8);
-        }
-
-        #ad-modal .btn-continue {
-            background: linear-gradient(145deg, #2ecc71, #1e8449);
-            color: #fff;
-            padding: 14px 30px;
-            border: none;
-            border-radius: 50px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-            letter-spacing: 1px;
-            position: relative;
-            z-index: 1;
-            display: none;
-            box-shadow: 0 0 25px rgba(46, 204, 113, 0.4);
-        }
-
-        #ad-modal .btn-continue:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 40px rgba(46, 204, 113, 0.6);
-        }
-
-        /* ===== FOOTER ===== */
-        #site-footer {
+        .splash-title {
+            font-size: clamp(2rem, 6vw, 3.2rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, #FFD700, #FFA500, #FFD700, #FFA500);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 4px;
+            animation: shimmer 3s infinite;
             position: relative;
             z-index: 2;
-            text-align: center;
-            padding: 20px;
-            margin-top: 30px;
-            border-top: 1px solid rgba(255,215,0,0.1);
-        }
-        #site-footer .footer-links {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        #site-footer .footer-link {
-            color: #b9a6d4;
-            cursor: pointer;
-            font-size: 0.8rem;
-            text-decoration: underline;
-            transition: all 0.3s;
-            background: none;
-            border: none;
-            font-family: inherit;
-            letter-spacing: 1px;
-        }
-        #site-footer .footer-link:hover {
-            color: #f7dc6f;
-            text-shadow: 0 0 10px rgba(241,196,15,0.3);
         }
 
-        /* ===== LEGAL MODALS ===== */
-        .legal-overlay {
+        @keyframes shimmer {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .splash-subtitle {
+            color: #c9a0dc;
+            font-size: clamp(0.85rem, 2.5vw, 1.1rem);
+            letter-spacing: 4px;
+            border-top: 1px solid rgba(255, 215, 0, 0.2);
+            padding-top: 10px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .splash-desc {
+            color: #b8a0d0;
+            max-width: 420px;
+            font-size: clamp(0.8rem, 2vw, 0.95rem);
+            line-height: 1.6;
+            padding: 0 10px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .btn-mystic {
+            background: linear-gradient(145deg, #FFD700, #B8860B);
+            color: #1a0033;
+            padding: 16px 40px;
+            border: none;
+            border-radius: 60px;
+            font-size: clamp(0.95rem, 2.5vw, 1.15rem);
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.3), 0 8px 25px rgba(0,0,0,0.5);
+            transition: all 0.4s;
+            letter-spacing: 2px;
+            width: 90%;
+            max-width: 380px;
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-mystic .btn-icon {
+            font-size: 1.3rem;
+            animation: pulseHand 2s infinite ease-in-out;
+        }
+
+        .btn-mystic:hover { transform: scale(1.05) translateY(-3px); box-shadow: 0 0 80px rgba(255, 215, 0, 0.6); }
+        .btn-mystic:active { transform: scale(0.95); }
+
+        /* ===== ΑΣΤΕΡΟΕΙΔΗΣ ΚΑΦΕΜΑΝΤΕΙΑ ===== */
+        #kafemanteia-container {
             position: fixed;
-            top: 0;
+            bottom: 0;
             left: 0;
             width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            backdrop-filter: blur(8px);
-            z-index: 10000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .legal-overlay.active { display: flex; }
-        .legal-modal {
-            background: linear-gradient(145deg, #1a0e2a, #2a1a3a);
-            border: 2px solid rgba(241, 196, 15, 0.3);
-            border-radius: 25px;
-            padding: 30px 20px;
-            max-width: 550px;
-            width: 100%;
-            max-height: 80vh;
-            overflow-y: auto;
-            position: relative;
-        }
-        .legal-modal h2 {
-            color: #f7dc6f;
-            text-align: center;
-            margin-bottom: 20px;
-            letter-spacing: 2px;
-            font-size: 1.4rem;
-        }
-        .legal-modal h3 {
-            color: #f7dc6f;
-            margin-top: 15px;
-            font-size: 1.05rem;
-        }
-        .legal-modal p, .legal-modal li {
-            color: #d5c8e8;
-            font-size: 0.9rem;
-            line-height: 1.6;
-            margin-bottom: 10px;
-        }
-        .legal-modal ul, .legal-modal ol { padding-left: 20px; }
-        .legal-close-btn {
-            position: sticky;
-            top: 10px;
-            float: right;
-            background: rgba(255,215,0,0.2);
-            border: 1px solid rgba(255,215,0,0.4);
-            color: #f7dc6f;
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1.2rem;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            height: 150px;
             z-index: 5;
-        }
-        .legal-close-btn:hover {
-            background: rgba(255,215,0,0.4);
-            transform: rotate(90deg);
+            pointer-events: none;
+            overflow: hidden;
         }
 
-        @media (max-width: 480px) {
-            .splash-title { font-size: 2.4rem; }
-            .splash-icon { width: 140px; height: 140px; }
-            .btn { padding: 14px 20px; font-size: 0.9rem; }
-            #loading-box .mantra { font-size: 1.3rem; }
-            #consent-modal { padding: 25px 18px; }
-            #consent-modal h2 { font-size: 1.3rem; }
-            #consent-modal p { font-size: 0.85rem; }
+        .kafemanteia-comet {
+            position: absolute;
+            cursor: pointer;
+            pointer-events: auto;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(20, 10, 40, 0.8);
+            backdrop-filter: blur(8px);
+            border: 2px solid rgba(155, 89, 182, 0.6);
+            border-radius: 50px;
+            padding: 12px 22px;
+            box-shadow: 
+                0 0 30px rgba(155, 89, 182, 0.4),
+                0 0 60px rgba(106, 13, 173, 0.3),
+                0 0 100px rgba(255, 215, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            white-space: nowrap;
+            will-change: transform, opacity, left, right, bottom;
+            transform: scale(1);
+        }
+
+        .kafemanteia-comet:hover {
+            transform: scale(1.1) !important;
+            box-shadow: 
+                0 0 50px rgba(155, 89, 182, 0.8),
+                0 0 80px rgba(106, 13, 173, 0.6),
+                0 0 120px rgba(255, 215, 0, 0.3);
+            border-color: var(--purple-light);
+            background: rgba(30, 15, 50, 0.95);
+        }
+
+        .kafemanteia-comet .comet-icon {
+            font-size: 1.6rem;
+            animation: crystalGlow 2s infinite ease-in-out;
+        }
+
+        .kafemanteia-comet .comet-text {
+            color: #e0c5f0;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(155, 89, 182, 0.5);
+        }
+
+        .comet-star {
+            position: absolute;
+            color: #FFD700;
+            pointer-events: none;
+            animation: starOrbit 3s infinite ease-in-out;
+            font-size: 0.9rem;
+        }
+
+        .comet-star:nth-child(2) { animation-delay: 0s; top: -15px; left: -10px; }
+        .comet-star:nth-child(3) { animation-delay: 0.5s; top: -10px; right: -15px; }
+        .comet-star:nth-child(4) { animation-delay: 1s; bottom: -15px; left: 20px; }
+        .comet-star:nth-child(5) { animation-delay: 1.5s; bottom: -10px; right: 10px; }
+        .comet-star:nth-child(6) { animation-delay: 2s; top: 5px; left: -20px; }
+        .comet-star:nth-child(7) { animation-delay: 2.5s; top: 5px; right: -20px; }
+
+        @keyframes crystalGlow {
+            0%, 100% { 
+                filter: drop-shadow(0 0 5px rgba(155, 89, 182, 0.5));
+                transform: scale(1);
+            }
+            50% { 
+                filter: drop-shadow(0 0 15px rgba(155, 89, 182, 1));
+                transform: scale(1.2);
+            }
+        }
+
+        @keyframes starOrbit {
+            0%, 100% { 
+                opacity: 0.2;
+                transform: translate(0, 0) scale(0.8);
+            }
+            50% { 
+                opacity: 1;
+                transform: translate(5px, -8px) scale(1.3);
+            }
+        }
+
+        /* ===== GOOGLE TRANSLATE WIDGET ===== */
+        #google-translate-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            opacity: 0.85;
+            transition: opacity 0.3s;
+        }
+        #google-translate-container:hover {
+            opacity: 1;
+        }
+        #google_translate_element {
+            background: rgba(20, 10, 40, 0.8);
+            border-radius: 12px;
+            padding: 5px 8px;
+            border: 1px solid rgba(155, 89, 182, 0.4);
+            box-shadow: 0 0 20px rgba(106, 13, 173, 0.2);
+        }
+        .goog-te-banner-frame {
+            display: none !important;
+        }
+        .goog-te-gadget {
+            color: #e0c5f0 !important;
+            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif !important;
+            font-size: 12px !important;
+        }
+        .goog-te-gadget-simple {
+            background: transparent !important;
+            border: none !important;
+            color: #e0c5f0 !important;
+            font-size: 12px !important;
+        }
+        .goog-te-gadget-simple span {
+            color: #e0c5f0 !important;
+        }
+        .goog-te-menu-value span {
+            color: #e0c5f0 !important;
+        }
+        .goog-te-menu-value:hover {
+            text-decoration: none !important;
+        }
+
+        /* Απόκρυψη της επάνω μπάρας μετάφρασης */
+        body { top: 0 !important; }
+        .skiptranslate { display: none !important; }
+        iframe.goog-te-banner-frame { display: none !important; }
+
+        @keyframes cometFullCycle {
+            0% {
+                left: auto;
+                right: -250px;
+                bottom: 30px;
+                opacity: 0;
+                transform: scale(1);
+            }
+            3% { opacity: 1; }
+            22% {
+                left: auto;
+                right: calc(100% + 50px);
+                bottom: 30px;
+                opacity: 1;
+                transform: scale(1);
+            }
+            25% {
+                left: auto;
+                right: calc(100% + 250px);
+                bottom: 30px;
+                opacity: 0;
+                transform: scale(1);
+            }
+            25.1% {
+                left: 50%;
+                right: auto;
+                bottom: 10px;
+                opacity: 0;
+                transform: scale(0.3) translateX(-50%);
+            }
+            31% {
+                opacity: 1;
+                transform: scale(1) translateX(-50%);
+            }
+            44% {
+                opacity: 1;
+                transform: scale(1) translateX(-50%);
+            }
+            49% {
+                opacity: 0;
+                transform: scale(0.3) translateX(-50%);
+            }
+            50% {
+                opacity: 0;
+                transform: scale(0.3) translateX(-50%);
+            }
+            50.1% {
+                left: -250px;
+                right: auto;
+                bottom: 50px;
+                opacity: 0;
+                transform: scale(1);
+            }
+            53% { opacity: 1; }
+            72% {
+                left: calc(100% + 50px);
+                right: auto;
+                bottom: 50px;
+                opacity: 1;
+                transform: scale(1);
+            }
+            75% {
+                left: calc(100% + 250px);
+                right: auto;
+                bottom: 50px;
+                opacity: 0;
+                transform: scale(1);
+            }
+            75.1% {
+                left: 50%;
+                right: auto;
+                bottom: -80px;
+                opacity: 0;
+                transform: scale(0.8) translateX(-50%);
+            }
+            81% {
+                opacity: 1;
+                bottom: 10px;
+                transform: scale(1) translateX(-50%);
+            }
+            94% {
+                opacity: 1;
+                bottom: 60px;
+                transform: scale(1) translateX(-50%);
+            }
+            99% {
+                opacity: 0;
+                bottom: 60px;
+                transform: scale(1) translateX(-50%);
+            }
+            100% {
+                opacity: 0;
+                bottom: 60px;
+                transform: scale(1) translateX(-50%);
+            }
+        }
+
+        .kafemanteia-comet.animating {
+            animation: cometFullCycle 24s linear infinite;
+        }
+
+        #scan-page { gap: 12px; padding-top: 10px; padding-bottom: 25px; }
+        .scan-header { text-align: center; width: 100%; }
+        .scan-header h2 {
+            font-size: clamp(1.6rem, 5vw, 2.2rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 3px;
+        }
+        .scan-header p { color: #b8a0d0; font-size: clamp(0.75rem, 2vw, 0.9rem); }
+
+        .selectors-row {
+            display: flex; justify-content: center; align-items: stretch;
+            gap: 10px; flex-wrap: wrap; width: 100%; max-width: 600px;
+        }
+        .selector-item {
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            background: rgba(20, 10, 40, 0.8); padding: 10px 12px;
+            border-radius: 20px; border: 1px solid rgba(255,215,0,0.25);
+            flex: 1; min-width: 130px; max-width: 250px;
+        }
+        .selector-label {
+            color: var(--gold); font-size: 0.75rem; font-weight: 700;
+            letter-spacing: 1px; text-transform: uppercase; text-align: center;
+        }
+        .gender-btns { 
+            display: flex; gap: 0; width: 100%; 
+            border-radius: 15px; overflow: hidden;
+            border: 2px solid rgba(255,215,0,0.3);
+        }
+        .gender-btn {
+            padding: 10px 16px; font-size: 0.85rem; font-weight: 700;
+            border: none; background: rgba(20, 10, 40, 0.6); color: #b9a6d4;
+            cursor: pointer; transition: all 0.3s; flex: 1; text-align: center;
+        }
+        .gender-btn.active {
+            background: linear-gradient(145deg, #FFD700, #B8860B);
+            color: #1a0033; box-shadow: inset 0 0 15px rgba(0,0,0,0.2);
+        }
+        .selector-item input {
+            padding: 10px 12px; border-radius: 15px;
+            border: 2px solid rgba(255,215,0,0.3); background: #1a0a2e;
+            color: #FFD700; font-size: 0.85rem; width: 100%;
+            text-align: center; font-weight: 500;
+        }
+        .topic-row {
+            display: flex; flex-wrap: wrap; justify-content: center;
+            gap: 8px; width: 100%; max-width: 650px;
+        }
+        .topic-btn {
+            padding: 12px 10px; font-size: clamp(0.7rem, 1.8vw, 0.8rem);
+            font-weight: 600; border: 2px solid rgba(255,215,0,0.25);
+            background: rgba(20, 10, 40, 0.6); color: #c9a0dc;
+            border-radius: 20px; cursor: pointer; transition: all 0.3s;
+            flex: 1; min-width: 95px; max-width: 160px;
+            text-align: center; line-height: 1.4; position: relative; overflow: hidden;
+        }
+        .topic-btn::after {
+            content: ''; position: absolute; top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+            transition: left 0.5s;
+        }
+        .topic-btn:hover::after { left: 100%; }
+        .topic-btn.active {
+            background: linear-gradient(145deg, #9b59b6, #6a0dad);
+            color: #fff; border-color: var(--purple-light);
+            box-shadow: 0 0 20px rgba(155, 89, 182, 0.4); transform: scale(1.03);
+        }
+
+        #camera-wrapper {
+            position: relative; width: 100%; max-width: 400px;
+            margin: 8px auto; border-radius: 25px; overflow: hidden;
+            border: 3px solid var(--gold); box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
+            background: #0a0015; aspect-ratio: 1;
+        }
+        #webcam { width: 100%; height: 100%; display: block; object-fit: cover; transform: scaleX(-1); }
+        #overlay-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: scaleX(-1); pointer-events: none; }
+
+        .scan-frame {
+            position: absolute; top: 12%; left: 12%; width: 76%; height: 76%;
+            border: 2px solid rgba(255, 215, 0, 0.5); border-radius: 30px;
+            pointer-events: none; animation: framePulse 2s infinite ease-in-out;
+        }
+        .scan-frame::before {
+            content: ''; position: absolute; top: -2px; left: -2px;
+            width: 30px; height: 30px;
+            border-top: 4px solid var(--gold); border-left: 4px solid var(--gold);
+            border-radius: 5px 0 0 0;
+        }
+        .scan-frame::after {
+            content: ''; position: absolute; bottom: -2px; right: -2px;
+            width: 30px; height: 30px;
+            border-bottom: 4px solid var(--gold); border-right: 4px solid var(--gold);
+            border-radius: 0 0 5px 0;
+        }
+        @keyframes framePulse {
+            0%, 100% { border-color: rgba(255, 215, 0, 0.5); }
+            50% { border-color: rgba(255, 215, 0, 0.9); }
+        }
+        .scan-line {
+            position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            animation: scanMove 3s infinite ease-in-out; pointer-events: none;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+        }
+        @keyframes scanMove {
+            0% { top: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; }
+        }
+
+        .controls-row { display: flex; justify-content: center; gap: 10px; width: 100%; max-width: 450px; flex-wrap: wrap; }
+        .btn {
+            padding: 12px 20px; border: none; border-radius: 50px;
+            font-weight: 700; font-size: clamp(0.8rem, 2vw, 0.9rem);
+            cursor: pointer; transition: all 0.4s; display: flex;
+            align-items: center; justify-content: center; gap: 6px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4); flex: 1; min-width: 100px; max-width: 180px;
+        }
+        .btn:active { transform: scale(0.95); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-gold { background: linear-gradient(145deg, #FFD700, #B8860B); color: #1a0033; }
+        .btn-purple { background: linear-gradient(145deg, #9b59b6, #6a0dad); color: #fff; }
+        .btn-green { 
+            background: linear-gradient(145deg, #2ecc71, #1e8449); color: #fff; 
+            width: 100%; max-width: 450px; display: none; margin: 5px auto;
+            font-size: 1rem; padding: 15px 20px;
+        }
+
+        #upload-preview-area { display: none; text-align: center; margin: 8px 0; }
+        #upload-preview-img { max-width: 180px; width: 100%; border-radius: 20px; border: 2px solid var(--gold); }
+
+        #loading-box {
+            display: none; text-align: center; background: rgba(20, 10, 40, 0.95);
+            border-radius: 30px; padding: 25px 20px; margin: 15px auto;
+            border: 2px solid rgba(255, 215, 0, 0.3); box-shadow: 0 0 60px rgba(255, 215, 0, 0.2);
+            width: 100%; max-width: 400px;
+        }
+        .loading-spinner {
+            width: 45px; height: 45px; border: 3px solid rgba(255, 215, 0, 0.2);
+            border-top: 3px solid var(--gold); border-radius: 50%;
+            animation: spin 1s linear infinite; margin: 15px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-text { font-size: 1rem; color: #c9a0dc; letter-spacing: 2px; animation: mysticPulse 2s infinite ease-in-out; }
+        @keyframes mysticPulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+        #ad-modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); z-index: 9998;
+            justify-content: center; align-items: center; padding: 20px;
+        }
+        #ad-modal-overlay.active { display: flex; }
+        #ad-modal {
+            background: linear-gradient(145deg, #1a0e2a, #2a1a3a);
+            border: 3px solid var(--gold); border-radius: 20px; padding: 30px 25px;
+            max-width: 500px; width: 90%; text-align: center;
+            box-shadow: 0 0 60px rgba(255, 215, 0, 0.4), 0 0 100px rgba(106, 13, 173, 0.3);
+            animation: modalPopIn 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1); position: relative; overflow: hidden;
+        }
+        @keyframes modalPopIn {
+            0% { opacity: 0; transform: scale(0.8) translateY(20px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        #ad-modal::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,215,0,0.1) 0%, transparent 60%);
+            animation: rotateGlow 6s linear infinite;
+        }
+        #ad-modal .modal-icon { font-size: 3rem; margin-bottom: 10px; animation: floatIcon 2s infinite ease-in-out; position: relative; z-index: 1; }
+        #ad-modal h3 { color: var(--gold); font-size: 1.2rem; margin-bottom: 10px; letter-spacing: 1px; position: relative; z-index: 1; }
+        #ad-modal p { color: #d5c8e8; font-size: 0.9rem; line-height: 1.6; margin-bottom: 20px; position: relative; z-index: 1; }
+        #ad-modal .btn-ad-now {
+            background: linear-gradient(145deg, #FFD700, #B8860B); color: #1a0033;
+            padding: 14px 35px; border: none; border-radius: 50px; font-size: 1.1rem;
+            font-weight: 700; cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+            position: relative; z-index: 1; box-shadow: 0 0 25px rgba(255, 215, 0, 0.4); animation: pulseBtn 2s infinite;
+        }
+        @keyframes pulseBtn {
+            0%, 100% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.4); }
+            50% { box-shadow: 0 0 50px rgba(255, 215, 0, 0.7); }
+        }
+        #ad-modal .btn-ad-now:hover { transform: scale(1.05); box-shadow: 0 0 60px rgba(255, 215, 0, 0.8); }
+        #ad-modal .btn-continue {
+            background: linear-gradient(145deg, #2ecc71, #1e8449); color: #fff;
+            padding: 14px 30px; border: none; border-radius: 50px; font-size: 1rem;
+            font-weight: 700; cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+            position: relative; z-index: 1; display: none; box-shadow: 0 0 25px rgba(46, 204, 113, 0.4);
+        }
+        #ad-modal .btn-continue:hover { transform: scale(1.05); box-shadow: 0 0 40px rgba(46, 204, 113, 0.6); }
+
+        #result-area {
+            display: none; background: var(--card); backdrop-filter: blur(10px);
+            border-radius: 25px; padding: 25px 20px; margin-top: 15px;
+            border: 1px solid rgba(255,215,0,0.2); width: 100%;
+            position: relative; overflow: hidden; animation: fadeInUp 0.6s ease;
+        }
+        #result-area h2 { color: var(--gold); text-align: center; font-size: 1.3rem; margin-bottom: 12px; position: relative; z-index: 2; }
+        #result-text { color: #e6d5f5; font-size: 0.9rem; line-height: 1.8; white-space: pre-wrap; word-wrap: break-word; position: relative; z-index: 2; }
+        #result-text h2 { font-size: 1.2rem; margin: 15px 0 10px; color: var(--gold); }
+        #result-text h3 { font-size: 1rem; margin: 10px 0 8px; color: #FFD700; }
+
+        .result-star {
+            position: absolute; color: #FFD700; opacity: 0.6;
+            animation: floatStar 3s infinite ease-in-out; pointer-events: none; font-size: 1.2rem; z-index: 1;
+        }
+        @keyframes floatStar {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0.3; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 0.8; }
+            100% { transform: translateY(0) rotate(360deg); opacity: 0.3; }
+        }
+
+        .btn-back {
+            background: transparent; border: 1px solid rgba(255,215,0,0.3);
+            color: #c9a0dc; padding: 8px 20px; border-radius: 50px;
+            font-size: 0.85rem; cursor: pointer; transition: all 0.3s;
+        }
+        .btn-back:hover { background: rgba(255,215,0,0.1); border-color: var(--gold); color: var(--gold); }
+
+        #site-footer {
+            position: relative; z-index: 2; text-align: center; padding: 20px;
+            margin-top: 30px; border-top: 1px solid rgba(255,215,0,0.1); width: 100%;
+        }
+        #site-footer .footer-links { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+        #site-footer .footer-link {
+            color: #b9a6d4; cursor: pointer; font-size: 0.8rem;
+            text-decoration: underline; transition: all 0.3s;
+            background: none; border: none; font-family: inherit; letter-spacing: 1px;
+        }
+        #site-footer .footer-link:hover { color: #FFD700; text-shadow: 0 0 10px rgba(255,215,0,0.3); }
+
+        @media (max-width: 420px) {
+            .selectors-row { gap: 8px; }
+            .selector-item { padding: 8px 10px; min-width: 100px; max-width: 200px; }
+            .selector-label { font-size: 0.7rem; }
+            .selector-item input { font-size: 0.8rem; padding: 8px 10px; }
+            .gender-btn { padding: 8px 12px; font-size: 0.8rem; }
+            .topic-btn { padding: 10px 8px; font-size: 0.7rem; min-width: 75px; max-width: 130px; }
+            .controls-row { gap: 8px; }
+            .btn { padding: 10px 14px; font-size: 0.8rem; }
+            #camera-wrapper { max-width: 300px; }
             #ad-modal { padding: 20px 15px; }
             #ad-modal h3 { font-size: 1rem; }
+            #consent-modal { padding: 25px 18px; }
+            #consent-modal h2 { font-size: 1.2rem; }
+            #consent-modal p { font-size: 0.85rem; }
+            .kafemanteia-comet { padding: 10px 16px; }
+            .kafemanteia-comet .comet-text { font-size: 0.85rem; }
+            .kafemanteia-comet .comet-icon { font-size: 1.3rem; }
+            #splash-page { padding-bottom: 100px; }
+            #google-translate-container { bottom: 10px; right: 10px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- ===== CONSENT OVERLAY ===== -->
+    <canvas id="starfield"></canvas>
+
     <div id="consent-overlay">
         <div id="consent-modal">
-            <div class="consent-icon">🔮</div>
-            <h2>Καλώς ορίσατε στο Omen!</h2>
+            <div class="consent-icon">🖐️</div>
+            <h2>Καλώς ήρθατε στο LiFe LiNe!</h2>
             <p>
                 Για να συνεχίσετε, πρέπει να επιβεβαιώσετε ότι είστε <strong>άνω των 18 ετών</strong> 
                 και ότι αποδέχεστε πως η εφαρμογή χρησιμοποιεί Τεχνητή Νοημοσύνη για να παράγει 
-                αποτελέσματα με καθαρά <strong>χιουμοριστικό, ψυχαγωγικό και μη κατευθυντικό χαρακτήρα</strong>.
+                αποτελέσματα με καθαρά <strong>ψυχαγωγικό και μη κατευθυντικό χαρακτήρα</strong>.
             </p>
             <div class="consent-links">
-                <button class="consent-link" onclick="showLegal('terms')">📜 Όροι Χρήσης</button>
-                <button class="consent-link" onclick="showLegal('privacy')">🔒 Πολιτική Απορρήτου</button>
+                <a href="terms.html" class="consent-link" target="_blank">📜 Όροι Χρήσης</a>
+                <a href="privacy.html" class="consent-link" target="_blank">🔒 Πολιτική Απορρήτου</a>
             </div>
-            <button id="consent-btn" onclick="acceptConsent()">Συμφωνώ & Είμαι άνω των 18 ετών</button>
+            <button id="consent-btn" onclick="acceptConsent()">Αποδέχομαι & Είμαι άνω των 18 ετών</button>
         </div>
     </div>
 
-    <!-- ===== AD MODAL ===== -->
     <div id="ad-modal-overlay">
         <div id="ad-modal">
             <div class="modal-icon">📺</div>
             <h3>Δείτε αυτή τη διαφήμιση</h3>
-            <p>Παρακαλούμε δείτε τη διαφήμιση και μετά πατήστε <strong>Continue</strong> για να επιστρέψετε στη σελίδα και να ολοκληρώσετε την καφεμαντεία σας.</p>
+            <p>Παρακαλούμε δείτε τη διαφήμιση και μετά πατήστε <strong>Continue</strong> για να επιστρέψετε στη σελίδα και να ολοκληρώσετε τη χειρομαντεία σας.</p>
             <button class="btn-ad-now" id="btn-ad-now" onclick="showAd()">▶ Διαφήμιση Τώρα</button>
             <button class="btn-continue" id="btn-continue-ad" onclick="closeAdModal()">✓ Continue</button>
         </div>
     </div>
 
-    <!-- ===== ΟΡΟΙ ΧΡΗΣΗΣ ===== -->
-    <div id="terms-overlay" class="legal-overlay">
-        <div class="legal-modal">
-            <button class="legal-close-btn" onclick="closeLegal('terms')">✕</button>
-            <h2>📜 Όροι και Προϋποθέσεις Χρήσης</h2>
-            <p><strong>Τελευταία ενημέρωση: Μάιος 2026</strong></p>
-            <h3>1. Όριο Ηλικίας (Αυστηρά 18+)</h3>
-            <p>Η χρήση της εφαρμογής Omen επιτρέπεται <strong>αποκλειστικά και μόνο</strong> σε άτομα που έχουν συμπληρώσει το 18ο έτος της ηλικίας τους (ενήλικες).</p>
-            <p>Με την αποδοχή των όρων, ο χρήστης δηλώνει υπεύθυνα ότι είναι ενήλικος.</p>
-            <h3>2. Ψυχαγωγικός, Μη Κατευθυντικός και Χιουμοριστικός Χαρακτήρας</h3>
-            <p>Το Omen είναι μια ψηφιακή εφαρμογή που χρησιμοποιεί αλγόριθμους τεχνητής νοημοσύνης (AI).</p>
-            <p>Η υπηρεσία παρέχεται <strong>αποκλειστικά και μόνο για σκοπούς χιούμορ, διασκέδασης και ψυχαγωγίας</strong>.</p>
-            <h3>3. Περιορισμός Ευθύνης (Disclaimer)</h3>
-            <p>Ο χρήστης συμφωνεί ότι χρησιμοποιεί την εφαρμογή με δική του αποκλειστική ευθύνη.</p>
-            <h3>4. Πνευματική Ιδιοκτησία</h3>
-            <p>Όλο το περιεχόμενο του ιστοτόπου αποτελεί πνευματική ιδιοκτησία του Omen.</p>
+    <div id="splash-page" class="page active">
+        <div class="logo-container" onclick="goToScan()">
+            <div class="logo-circle">
+                <span class="logo-hand">🖐️</span>
+            </div>
+        </div>
+        <div class="splash-title">LiFe LiNe</div>
+        <div class="splash-subtitle">✦ Χειρομαντεία & Αστρολογία ✦</div>
+        <div class="splash-desc">
+            Τοποθέτησε την παλάμη σου μπροστά στην κάμερα. Η Aziram, η προσωπική σου Χειρομάντισσα και Αστρολόγος, θα αποκαλύψει τα μυστικά των γραμμών σου.
+        </div>
+        <button class="btn-mystic" onclick="handleDiscoverDestiny()">
+            <span class="btn-icon">🔮</span>
+            Ανακάλυψε το Πεπρωμένο σου
+        </button>
+        
+        <div id="site-footer">
+            <div class="footer-links">
+                <a href="terms.html" class="footer-link">📜 Όροι Χρήσης</a>
+                <a href="privacy.html" class="footer-link">🔒 Πολιτική Απορρήτου</a>
+            </div>
         </div>
     </div>
 
-    <!-- ===== ΠΟΛΙΤΙΚΗ ΑΠΟΡΡΗΤΟΥ ===== -->
-    <div id="privacy-overlay" class="legal-overlay">
-        <div class="legal-modal">
-            <button class="legal-close-btn" onclick="closeLegal('privacy')">✕</button>
-            <h2>🔒 Πολιτική Απορρήτου & Εμπιστευτικότητα</h2>
-            <p><strong>Τελευταία ενημέρωση: Μάιος 2026</strong></p>
-            <h3>1. Πώς Διαχειριζόμαστε τις Φωτογραφίες σας</h3>
-            <p><strong>Δεν Αποθηκεύουμε τις Φωτογραφίες.</strong></p>
-            <h3>2. Δεδομένα που Συλλέγουμε Αυτόματα</h3>
-            <p>Συνεργαζόμαστε με τρίτες διαφημιστικές εταιρείες (Monetag).</p>
-            <h3>3. Δικαιώματα των Χρηστών (GDPR)</h3>
-            <p>Έχετε δικαίωμα να διαγράψετε τα cookies σας.</p>
-            <h3>4. Αλλαγές στους Όρους</h3>
-            <p>Το Omen διατηρεί το δικαίωμα να αλλάξει αυτούς τους όρους.</p>
-        </div>
+    <div id="kafemanteia-container">
+        <a href="https://omen.franklymadear.com/index.html" target="_blank" class="kafemanteia-comet animating" id="kafemanteia-comet">
+            <span class="comet-star">✨</span>
+            <span class="comet-star">⭐</span>
+            <span class="comet-star">💫</span>
+            <span class="comet-star">✨</span>
+            <span class="comet-star">🌟</span>
+            <span class="comet-star">💫</span>
+            <span class="comet-icon">🔮</span>
+            <span class="comet-text">Καφεμαντεία</span>
+        </a>
     </div>
 
-    <!-- ===== BACKGROUND CANVAS ===== -->
-    <canvas id="bg-canvas"></canvas>
-
-    <!-- ===== SPLASH PAGE ===== -->
-    <div id="splash" class="page active">
-        <div class="splash-icon" id="splashIcon" onclick="goToScan()">🔮</div>
-        <div class="splash-title">Omen</div>
-        <div class="splash-sub">✦ Καφεμαντεία με AI ✦</div>
-        <div class="splash-desc">Η Μαντάμ Ζαΐρα σε περιμένει. Άφησε τις σκιές του καφέ να αποκαλύψουν το πεπρωμένο σου.</div>
-        <button class="btn-mystic" onclick="goToScan()">🔮 Ξεκίνησε το ταξίδι</button>
+    <!-- ===== GOOGLE TRANSLATE WIDGET ===== -->
+    <div id="google-translate-container">
+        <div id="google_translate_element"></div>
     </div>
 
-    <!-- ===== SCAN PAGE ===== -->
-    <div id="scan" class="page">
-        <button class="btn-back" onclick="goToSplash()">☽ Πίσω στην αρχή</button>
+    <div id="scan-page" class="page">
+        <button class="btn-back" onclick="goToSplash()">☽ Επιστροφή</button>
+        
         <div class="scan-header">
-            <h2>Ανάλυση Φλιτζανιού</h2>
-            <p>Διάλεξε μια εικόνα ή τράβηξε φωτογραφία</p>
+            <h2>LiFe LiNe</h2>
+            <p>Η Aziram διαβάζει την παλάμη σου</p>
         </div>
 
-        <div class="controls" id="inputControls">
-            <button class="btn btn-gold" onclick="openCamera('environment')">📷 Κάμερα</button>
-            <button class="btn btn-gold" onclick="openCamera('user')">🤳 Selfie</button>
-            <button class="btn btn-purple" onclick="document.getElementById('fileInput').click()">📁 Ανέβασμα</button>
-            <input type="file" id="fileInput" style="display:none" accept="image/*" onchange="handleUpload(event)">
+        <div class="selectors-row">
+            <div class="selector-item">
+                <span class="selector-label">Φύλο</span>
+                <div class="gender-btns">
+                    <button class="gender-btn active" id="maleBtn" onclick="setGender('male')">Άντρας</button>
+                    <button class="gender-btn" id="femaleBtn" onclick="setGender('female')">Γυναίκα</button>
+                </div>
+            </div>
+            <div class="selector-item">
+                <span class="selector-label">Ημερομηνία Γέννησης</span>
+                <input type="date" id="birthdate-input" onchange="setBirthdate(this.value)">
+            </div>
         </div>
 
-        <div id="gender-select" style="display: flex; gap: 15px; justify-content: center; margin: 5px 0 15px;">
-            <button class="btn gender-btn active" onclick="selectGender('f', this)">👩 Γυναίκα</button>
-            <button class="btn gender-btn" onclick="selectGender('m', this)">👨 Άντρας</button>
+        <div class="topic-row" id="topic-row">
+            <button class="topic-btn active" onclick="selectTopic('Έρωτας & Σχέσεις', this)">❤️<br>Έρωτας & Σχέσεις</button>
+            <button class="topic-btn" onclick="selectTopic('Καριέρα & Οικονομικά', this)">💼<br>Καριέρα & Οικονομικά</button>
+            <button class="topic-btn" onclick="selectTopic('Υγεία & Ζωτικότητα', this)">🌱<br>Υγεία & Ζωτικότητα</button>
+            <button class="topic-btn" onclick="selectTopic('Κρυφά Ταλέντα & Προσωπικότητα', this)">🧠<br>Κρυφά Ταλέντα</button>
+            <button class="topic-btn" onclick="selectTopic('Κάρμα & Μελλοντικές Προκλήσεις', this)">🌀<br>Κάρμα & Προκλήσεις</button>
         </div>
 
         <div id="camera-wrapper">
             <video id="webcam" playsinline autoplay></video>
-        </div>
-        <button class="btn btn-red" id="captureBtn" onclick="takePhoto()" style="display:none; margin: 10px auto;">📸 Λήψη</button>
-
-        <div id="preview-wrapper">
-            <div class="preview-label">✧ Η εικόνα είναι έτοιμη ✧</div>
-            <img id="preview-img" src="" alt="Φλιτζάνι">
+            <canvas id="overlay-canvas"></canvas>
+            <div class="scan-frame"></div>
+            <div class="scan-line"></div>
         </div>
 
-        <button class="btn btn-green" id="scanBtn" onclick="startAnalysis()" disabled>🔮 Ανάλυση Φλιτζανιού</button>
+        <div id="upload-preview-area">
+            <p style="color:var(--gold);">✧ Η φωτογραφία είναι έτοιμη ✧</p>
+            <img id="upload-preview-img" src="" alt="Preview">
+        </div>
+
+        <div class="controls-row" id="controls-row">
+            <button class="btn btn-gold" id="camera-btn" onclick="startCamera()">📷 Camera</button>
+            <button class="btn btn-purple" onclick="document.getElementById('file-input').click()">📁 Upload</button>
+            <input type="file" id="file-input" style="display:none" accept="image/*" onchange="handleUpload(event)">
+        </div>
+
+        <button class="btn btn-green" id="analyze-btn" onclick="performAnalysis()">🔮 Αποκάλυψε το Πεπρωμένο μου</button>
 
         <div id="loading-box">
-            <div class="mantra">✨ Η Μαντάμ Ζαΐρα διαβάζει τις σκιές... ✨</div>
+            <div class="loading-text">🔮 Η Aziram διαβάζει τις γραμμές σου...</div>
             <div class="loading-spinner"></div>
-            <div class="waiting-text">Παρακαλώ Περιμένετε</div>
         </div>
 
         <div id="result-area">
-            <h2>☽ Η Ετυμηγορία του Καφέ ☾</h2>
+            <h2>☽ Η Αποκάλυψη της Aziram ☾</h2>
             <div id="result-text"></div>
-            <div style="text-align: center; margin-top: 20px;">
-                <button class="btn-reset" onclick="resetScan()">🔄 Διάβασε άλλο φλιτζάνι</button>
+            <div style="text-align:center; margin-top:20px; position:relative; z-index:2;">
+                <button class="btn btn-purple" onclick="resetScan()">🔄 Σκανάρισε άλλο χέρι</button>
             </div>
         </div>
 
         <div id="site-footer">
             <div class="footer-links">
-                <button class="footer-link" onclick="showLegal('terms')">📜 Όροι Χρήσης</button>
-                <button class="footer-link" onclick="showLegal('privacy')">🔒 Πολιτική Απορρήτου</button>
+                <a href="terms.html" class="footer-link">📜 Όροι Χρήσης</a>
+                <a href="privacy.html" class="footer-link">🔒 Πολιτική Απορρήτου</a>
             </div>
         </div>
     </div>
 
+    <!-- Google Translate Script -->
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'el',
+                includedLanguages: 'en,de,fr,es,it,ar,zh-CN,ja,ru,tr,nl,pt,sv,no,da,fi,pl,cs,ro,bg,uk,ko,hi,vi,th,id,iw',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: true,
+                multilanguagePage: true
+            }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
     <script>
-        // ===== CONSENT =====
         function checkConsent() {
-            const consent = localStorage.getItem('omen_consent');
+            const consent = localStorage.getItem('lifeline_consent');
             if (consent === 'true') {
                 document.getElementById('consent-overlay').classList.add('hidden');
             } else {
@@ -884,35 +989,117 @@
         }
 
         function acceptConsent() {
-            localStorage.setItem('omen_consent', 'true');
+            localStorage.setItem('lifeline_consent', 'true');
             document.getElementById('consent-overlay').classList.add('hidden');
         }
 
-        function showLegal(type) {
-            if (type === 'terms') {
-                document.getElementById('terms-overlay').classList.add('active');
-            } else if (type === 'privacy') {
-                document.getElementById('privacy-overlay').classList.add('active');
-            }
-        }
-
-        function closeLegal(type) {
-            if (type === 'terms') {
-                document.getElementById('terms-overlay').classList.remove('active');
-            } else if (type === 'privacy') {
-                document.getElementById('privacy-overlay').classList.remove('active');
-            }
-        }
-
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('legal-overlay')) {
-                e.target.classList.remove('active');
-            }
-        });
-
         checkConsent();
 
-        // ===== AD MODAL =====
+        const starCanvas = document.getElementById('starfield');
+        const starCtx = starCanvas.getContext('2d');
+        let stars = [];
+        function resizeStarfield() { starCanvas.width = window.innerWidth; starCanvas.height = window.innerHeight; }
+        window.addEventListener('resize', resizeStarfield);
+        resizeStarfield();
+        function createStars(count = 200) {
+            stars = [];
+            for (let i = 0; i < count; i++) {
+                stars.push({
+                    x: Math.random() * starCanvas.width, y: Math.random() * starCanvas.height,
+                    r: Math.random() * 2 + 0.5,
+                    dx: (Math.random() - 0.5) * 0.3, dy: (Math.random() - 0.5) * 0.3,
+                    alpha: Math.random() * 0.8 + 0.2,
+                    color: Math.random() > 0.7 ? '#FFD700' : '#c9a0dc'
+                });
+            }
+        }
+        createStars();
+        function drawStars() {
+            starCtx.clearRect(0, 0, starCanvas.width, starCanvas.height);
+            stars.forEach(s => {
+                s.x += s.dx; s.y += s.dy;
+                if (s.x < 0 || s.x > starCanvas.width) s.dx *= -1;
+                if (s.y < 0 || s.y > starCanvas.height) s.dy *= -1;
+                starCtx.beginPath();
+                starCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                starCtx.fillStyle = `rgba(${s.color === '#FFD700' ? '255,215,0' : '201,160,220'}, ${s.alpha * 0.6})`;
+                starCtx.fill();
+            });
+            requestAnimationFrame(drawStars);
+        }
+        drawStars();
+
+        function goToScan() {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('scan-page').classList.add('active');
+            document.getElementById('kafemanteia-container').style.display = 'none';
+        }
+        
+        function goToSplash() {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('splash-page').classList.add('active');
+            document.getElementById('kafemanteia-container').style.display = 'block';
+            restartCometAnimation();
+            stopCamera(); 
+            resetScan();
+        }
+
+        function restartCometAnimation() {
+            const comet = document.getElementById('kafemanteia-comet');
+            comet.classList.remove('animating');
+            void comet.offsetWidth;
+            comet.classList.add('animating');
+        }
+
+        function handleDiscoverDestiny() {
+            setTimeout(() => {
+                showAdModal();
+            }, 5000);
+            goToScan();
+        }
+
+        let userGender = 'male';
+        let userZodiac = 'Κριός';
+        let userBirthdate = '';
+        let userTopic = 'Έρωτας & Σχέσεις';
+
+        function setGender(gender) {
+            userGender = gender;
+            document.getElementById('maleBtn').classList.toggle('active', gender === 'male');
+            document.getElementById('femaleBtn').classList.toggle('active', gender === 'female');
+        }
+
+        function setBirthdate(date) {
+            userBirthdate = date;
+            userZodiac = getZodiacFromDate(date);
+        }
+
+        function selectTopic(topic, btn) {
+            userTopic = topic;
+            document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function getZodiacFromDate(dateString) {
+            if (!dateString) return 'Κριός';
+            const date = new Date(dateString);
+            const day = date.getDate();
+            const month = date.getMonth() + 1;
+            if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) return 'Κριός';
+            if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) return 'Ταύρος';
+            if ((month === 5 && day >= 21) || (month === 6 && day <= 20)) return 'Δίδυμοι';
+            if ((month === 6 && day >= 21) || (month === 7 && day <= 22)) return 'Καρκίνος';
+            if ((month === 7 && day >= 23) || (month === 8 && day <= 22)) return 'Λέων';
+            if ((month === 8 && day >= 23) || (month === 9 && day <= 22)) return 'Παρθένος';
+            if ((month === 9 && day >= 23) || (month === 10 && day <= 22)) return 'Ζυγός';
+            if ((month === 10 && day >= 23) || (month === 11 && day <= 21)) return 'Σκορπιός';
+            if ((month === 11 && day >= 22) || (month === 12 && day <= 21)) return 'Τοξότης';
+            if ((month === 12 && day >= 22) || (month === 1 && day <= 19)) return 'Αιγόκερως';
+            if ((month === 1 && day >= 20) || (month === 2 && day <= 18)) return 'Υδροχόος';
+            if ((month === 2 && day >= 19) || (month === 3 && day <= 20)) return 'Ιχθείς';
+            return 'Κριός';
+        }
+
         function showAdModal() {
             document.getElementById('ad-modal-overlay').classList.add('active');
             document.getElementById('btn-ad-now').style.display = 'inline-block';
@@ -921,9 +1108,8 @@
 
         function showAd() {
             document.getElementById('btn-ad-now').style.display = 'none';
-            
-            if (typeof show_10985740 === 'function') {
-                show_10985740().then(() => {
+            if (typeof show_11042671 === 'function') {
+                show_11042671().then(() => {
                     document.getElementById('btn-continue-ad').style.display = 'inline-block';
                 }).catch(() => {
                     document.getElementById('btn-continue-ad').style.display = 'inline-block';
@@ -937,189 +1123,11 @@
             document.getElementById('ad-modal-overlay').classList.remove('active');
         }
 
-        // ===== BACKGROUND STARS =====
-        const canvas = document.getElementById('bg-canvas');
-        const ctx = canvas.getContext('2d');
-        let stars = [];
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        function createStars(count = 150) {
-            stars = [];
-            for (let i = 0; i < count; i++) {
-                stars.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    r: Math.random() * 1.5 + 0.5,
-                    dx: (Math.random() - 0.5) * 0.4,
-                    dy: (Math.random() - 0.5) * 0.4,
-                    alpha: Math.random() * 0.8 + 0.2
-                });
-            }
-        }
-        createStars();
-
-        function drawStars() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            stars.forEach(s => {
-                s.x += s.dx;
-                s.y += s.dy;
-                if (s.x < 0 || s.x > canvas.width) s.dx *= -1;
-                if (s.y < 0 || s.y > canvas.height) s.dy *= -1;
-                ctx.beginPath();
-                ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(255, 215, 150, ${s.alpha * 0.7})`;
-                ctx.fill();
-            });
-            requestAnimationFrame(drawStars);
-        }
-        drawStars();
-
-        // ===== PAGE NAVIGATION =====
-        function goToScan() {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById('scan').classList.add('active');
-            resetScanUI();
-            
-            // Εμφάνιση ad modal μετά από 5 δευτερόλεπτα
-            setTimeout(() => {
-                showAdModal();
-            }, 5000);
-        }
-
-        function goToSplash() {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById('splash').classList.add('active');
-        }
-
-        // ===== GENDER SELECTION =====
-        let selectedGender = 'f';
-
-        function selectGender(gender, btn) {
-            selectedGender = gender;
-            document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        }
-
-        // ===== API URL =====
-        const API_URL = 'https://franklymadear-omenread.hf.space/analyze';
-
-        const video = document.getElementById('webcam');
-        let currentStream = null;
-        let currentImageBase64 = null;
-        let isAnalyzing = false;
-
-        function resetScanUI() {
-            document.getElementById('result-area').style.display = 'none';
-            document.getElementById('camera-wrapper').style.display = 'none';
-            document.getElementById('captureBtn').style.display = 'none';
-            document.getElementById('preview-wrapper').style.display = 'none';
-            document.getElementById('scanBtn').disabled = true;
-            document.getElementById('loading-box').style.display = 'none';
-            document.querySelectorAll('.result-star').forEach(s => s.remove());
-            if (currentStream) {
-                currentStream.getTracks().forEach(track => track.stop());
-                currentStream = null;
-            }
-        }
-
-        function resetScan() {
-            resetScanUI();
-            currentImageBase64 = null;
-            isAnalyzing = false;
-            document.getElementById('inputControls').style.display = 'flex';
-            document.getElementById('gender-select').style.display = 'flex';
-            document.getElementById('scanBtn').style.display = 'block';
-            document.getElementById('fileInput').value = "";
-        }
-
-        async function openCamera(facingMode) {
-            resetScanUI();
-            try {
-                if (currentStream) {
-                    currentStream.getTracks().forEach(track => track.stop());
-                }
-                currentStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: { ideal: facingMode } }
-                });
-                video.srcObject = currentStream;
-                document.getElementById('camera-wrapper').style.display = 'block';
-                document.getElementById('captureBtn').style.display = 'flex';
-            } catch (err) {
-                alert("Δεν μπόρεσα να ανοίξω την κάμερα. Δοκίμασε το 'Ανέβασμα'.");
-            }
-        }
-
-        function takePhoto() {
-            if (!currentStream) return;
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth || 640;
-            canvas.height = video.videoHeight || 480;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            currentImageBase64 = canvas.toDataURL('image/jpeg', 0.7);
-            
-            currentStream.getTracks().forEach(track => track.stop());
-            document.getElementById('camera-wrapper').style.display = 'none';
-            document.getElementById('captureBtn').style.display = 'none';
-            showPreview(currentImageBase64);
-        }
-
-        function handleUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            resetScanUI();
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const compressed = compressImage(img, 800, 0.7);
-                    currentImageBase64 = compressed;
-                    showPreview(currentImageBase64);
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function compressImage(image, maxWidth, quality) {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            let width = image.width;
-            let height = image.height;
-            
-            if (width > maxWidth) {
-                const ratio = maxWidth / width;
-                width = maxWidth;
-                height = height * ratio;
-            }
-            
-            canvas.width = width;
-            canvas.height = height;
-            ctx.drawImage(image, 0, 0, width, height);
-            return canvas.toDataURL('image/jpeg', quality);
-        }
-
-        function showPreview(imageSrc) {
-            document.getElementById('preview-img').src = imageSrc;
-            document.getElementById('preview-wrapper').style.display = 'block';
-            document.getElementById('scanBtn').disabled = false;
-            document.getElementById('scanBtn').scrollIntoView({ behavior: 'smooth' });
-        }
-
         function addStarsToResult() {
             const resultArea = document.getElementById('result-area');
             document.querySelectorAll('.result-star').forEach(s => s.remove());
-            
             const emojis = ['✨', '⭐', '💫', '🌟', '✨', '🔮', '💖', '🌙', '☽', '✧'];
-            
-            for (let i = 0; i < 15; i++) {
+            for (let i = 0; i < 18; i++) {
                 const star = document.createElement('span');
                 star.className = 'result-star';
                 star.textContent = emojis[Math.floor(Math.random() * emojis.length)];
@@ -1131,52 +1139,136 @@
             }
         }
 
-        async function startAnalysis() {
-            if (!currentImageBase64 || isAnalyzing) return;
+        const video = document.getElementById('webcam');
+        const overlayCanvas = document.getElementById('overlay-canvas');
+        const overlayCtx = overlayCanvas.getContext('2d');
+        let currentStream = null;
+        let capturedImage = null;
+        let isAnalyzing = false;
 
-            const scanBtn = document.getElementById('scanBtn');
+        function resizeOverlay() {
+            const wrapper = document.getElementById('camera-wrapper');
+            overlayCanvas.width = wrapper.clientWidth;
+            overlayCanvas.height = wrapper.clientHeight;
+        }
+        window.addEventListener('resize', resizeOverlay);
+
+        async function startCamera() {
+            try {
+                if (currentStream) { currentStream.getTracks().forEach(t => t.stop()); }
+                currentStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user', width: { ideal: 500 }, height: { ideal: 500 } }
+                });
+                video.srcObject = currentStream;
+                resizeOverlay();
+                document.getElementById('analyze-btn').style.display = 'block';
+                document.getElementById('camera-btn').disabled = true;
+                document.getElementById('camera-btn').innerText = '✅ Ready';
+            } catch (err) {
+                alert('Δεν μπόρεσα να ανοίξω την κάμερα. Δοκίμασε το Upload.');
+            }
+        }
+        function stopCamera() {
+            if (currentStream) { currentStream.getTracks().forEach(t => t.stop()); currentStream = null; }
+        }
+        function capturePhoto() {
+            if (!currentStream) return null;
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth || 500;
+            canvas.height = video.videoHeight || 500;
+            const ctx = canvas.getContext('2d');
+            ctx.save(); ctx.scale(-1, 1);
+            ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+            ctx.restore();
+            return canvas.toDataURL('image/jpeg', 0.8);
+        }
+
+        function handleUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                capturedImage = e.target.result;
+                document.getElementById('upload-preview-img').src = capturedImage;
+                document.getElementById('upload-preview-area').style.display = 'block';
+                document.getElementById('analyze-btn').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        const API_URL = 'https://franklymadear-lifeline.hf.space/analyze';
+
+        async function performAnalysis() {
+            if (isAnalyzing) return;
+            if (currentStream && !capturedImage) { capturedImage = capturePhoto(); }
+            if (!capturedImage) {
+                alert('Παρακαλώ πρώτα άνοιξε την κάμερα ή ανέβασε φωτογραφία.');
+                return;
+            }
+
             isAnalyzing = true;
-            scanBtn.disabled = true;
-            scanBtn.style.display = 'none';
-            
-            document.getElementById('inputControls').style.display = 'none';
-            document.getElementById('gender-select').style.display = 'none';
-            document.getElementById('preview-wrapper').style.display = 'none';
-            
-            const loadingBox = document.getElementById('loading-box');
-            loadingBox.style.display = 'block';
-            loadingBox.scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('loading-box').style.display = 'block';
+            document.getElementById('result-area').style.display = 'none';
+            document.getElementById('analyze-btn').style.display = 'none';
+            document.getElementById('controls-row').style.display = 'none';
+            document.getElementById('topic-row').style.display = 'none';
+            document.querySelector('.selectors-row').style.display = 'none';
 
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        image: currentImageBase64,
-                        gender: selectedGender
+                    body: JSON.stringify({
+                        image: capturedImage,
+                        gender: userGender,
+                        zodiac: userZodiac,
+                        birthdate: userBirthdate,
+                        topic: userTopic
                     })
                 });
 
-                if (!response.ok) throw new Error(`Server error: ${response.status}`);
-
                 const data = await response.json();
-                
-                if (data.success && data.symbols) {
-                    document.getElementById('result-text').textContent = data.symbols;
+
+                if (data.success && data.reading) {
+                    document.getElementById('result-text').innerHTML = data.reading
+                        .replace(/## (.*?)\n/g, '<h2>$1</h2>')
+                        .replace(/### (.*?)\n/g, '<h3>$1</h3>')
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\n/g, '<br>');
                     document.getElementById('result-area').style.display = 'block';
                     addStarsToResult();
                     document.getElementById('result-area').scrollIntoView({ behavior: 'smooth' });
                 } else {
-                    throw new Error(data.error || "Άγνωστο σφάλμα");
+                    alert('Η Aziram συνάντησε ένα εμπόδιο. Δοκίμασε ξανά.');
                 }
             } catch (error) {
-                alert("🔮 Η Μαντάμ Ζαΐρα συνάντησε ένα πνευματικό εμπόδιο. Δοκίμασε ξανά.");
-                resetScan();
+                alert('Σφάλμα σύνδεσης. Έλεγξε τη σύνδεσή σου.');
             } finally {
                 document.getElementById('loading-box').style.display = 'none';
+                document.getElementById('controls-row').style.display = 'flex';
+                document.getElementById('topic-row').style.display = 'flex';
+                document.querySelector('.selectors-row').style.display = 'flex';
                 isAnalyzing = false;
             }
         }
+
+        function resetScan() {
+            document.getElementById('result-area').style.display = 'none';
+            document.querySelectorAll('.result-star').forEach(s => s.remove());
+            document.getElementById('loading-box').style.display = 'none';
+            document.getElementById('analyze-btn').style.display = 'none';
+            document.getElementById('controls-row').style.display = 'flex';
+            document.getElementById('topic-row').style.display = 'flex';
+            document.querySelector('.selectors-row').style.display = 'flex';
+            document.getElementById('upload-preview-area').style.display = 'none';
+            document.getElementById('camera-btn').disabled = false;
+            document.getElementById('camera-btn').innerText = '📷 Camera';
+            capturedImage = null;
+            isAnalyzing = false;
+        }
+
+        document.getElementById('kafemanteia-container').style.display = 'block';
+        document.getElementById('kafemanteia-comet').classList.add('animating');
     </script>
 </body>
 </html>
