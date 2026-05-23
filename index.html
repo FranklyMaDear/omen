@@ -82,6 +82,7 @@
             text-align: center;
             gap: 20px;
             animation: fadeIn 1.2s ease;
+            padding-bottom: 140px;
         }
         @keyframes fadeIn { 0% { opacity: 0; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1); } }
 
@@ -151,6 +152,119 @@
             transform: scale(1.06) translateY(-4px);
             box-shadow: 0 0 70px rgba(241, 196, 15, 0.5);
         }
+
+        /* ===== LANGUAGE BAR ===== */
+        #language-bar {
+            display: flex; align-items: center; gap: 8px;
+            background: rgba(20, 10, 40, 0.8); backdrop-filter: blur(8px);
+            border: 2px solid rgba(241, 196, 15, 0.4); border-radius: 30px;
+            padding: 8px 12px; position: relative; z-index: 10;
+            width: 90%; max-width: 380px; margin: 0 auto;
+            box-shadow: 0 0 20px rgba(241, 196, 15, 0.1);
+            flex-wrap: wrap; justify-content: center;
+        }
+        #language-bar .lang-label {
+            color: #f7dc6f; font-size: 0.8rem; font-weight: 700;
+            letter-spacing: 1px; white-space: nowrap; min-width: 60px; text-align: center;
+        }
+        #language-bar select {
+            flex: 1; min-width: 100px;
+            background: rgba(10, 5, 25, 0.9); color: #f7dc6f;
+            border: 1px solid rgba(241, 196, 15, 0.3); border-radius: 20px;
+            padding: 8px 30px 8px 12px; font-size: 0.8rem; font-weight: 600;
+            cursor: pointer;
+            appearance: none; -webkit-appearance: none; -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23f7dc6f' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 10px center;
+            outline: none; font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
+        }
+        #language-bar select:focus { border-color: #f7dc6f; box-shadow: 0 0 15px rgba(241, 196, 15, 0.2); }
+        #language-bar select option { background: #1a0a2e; color: #e0c5f0; }
+        #translate-btn {
+            background: linear-gradient(145deg, #f7dc6f, #d4ac0d);
+            color: #1a0e1f; border: none; border-radius: 50%;
+            width: 36px; height: 36px; min-width: 36px;
+            font-size: 1rem; cursor: pointer; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 15px rgba(241, 196, 15, 0.3);
+            transition: all 0.3s;
+        }
+        #translate-btn:hover { transform: scale(1.1); box-shadow: 0 0 25px rgba(241, 196, 15, 0.6); }
+        #translate-btn:active { transform: scale(0.9); }
+        #translate-btn.translating { animation: spin 0.8s linear infinite; pointer-events: none; opacity: 0.7; }
+
+        /* ===== ΑΣΤΕΡΟΕΙΔΗΣ LIFELINE ===== */
+        #kafemanteia-container {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 150px;
+            z-index: 5; pointer-events: none; overflow: visible;
+        }
+        .kafemanteia-comet {
+            position: absolute; cursor: pointer; pointer-events: auto;
+            text-decoration: none; display: flex; align-items: center; gap: 8px;
+            background: rgba(20, 10, 40, 0.85); backdrop-filter: blur(8px);
+            border: 2px solid rgba(241, 196, 15, 0.5); border-radius: 50px;
+            padding: 12px 22px;
+            box-shadow: 0 0 30px rgba(241, 196, 15, 0.2), 0 0 60px rgba(155, 89, 182, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            white-space: nowrap; will-change: transform, opacity, left, right, bottom;
+            transform: scale(1);
+        }
+        .kafemanteia-comet:hover {
+            transform: scale(1.1) !important;
+            box-shadow: 0 0 50px rgba(241, 196, 15, 0.5), 0 0 80px rgba(155, 89, 182, 0.4);
+            border-color: #f7dc6f; background: rgba(30, 15, 50, 0.95);
+        }
+        .kafemanteia-comet .comet-icon {
+            font-size: 1.6rem;
+            animation: crystalGlow 2s infinite ease-in-out;
+        }
+        .kafemanteia-comet .comet-text {
+            color: #f7dc6f; font-weight: 700; font-size: 1rem;
+            letter-spacing: 2px; text-shadow: 0 0 10px rgba(241, 196, 15, 0.3);
+        }
+        .comet-star {
+            position: absolute; color: #f7dc6f; pointer-events: none;
+            animation: starOrbit 3s infinite ease-in-out; font-size: 0.9rem;
+        }
+        .comet-star:nth-child(2) { animation-delay: 0s; top: -15px; left: -10px; }
+        .comet-star:nth-child(3) { animation-delay: 0.5s; top: -10px; right: -15px; }
+        .comet-star:nth-child(4) { animation-delay: 1s; bottom: -15px; left: 20px; }
+        .comet-star:nth-child(5) { animation-delay: 1.5s; bottom: -10px; right: 10px; }
+        .comet-star:nth-child(6) { animation-delay: 2s; top: 5px; left: -20px; }
+        .comet-star:nth-child(7) { animation-delay: 2.5s; top: 5px; right: -20px; }
+
+        @keyframes crystalGlow {
+            0%, 100% { filter: drop-shadow(0 0 5px rgba(241, 196, 15, 0.5)); transform: scale(1); }
+            50% { filter: drop-shadow(0 0 15px rgba(241, 196, 15, 1)); transform: scale(1.2); }
+        }
+        @keyframes starOrbit {
+            0%, 100% { opacity: 0.2; transform: translate(0, 0) scale(0.8); }
+            50% { opacity: 1; transform: translate(5px, -8px) scale(1.3); }
+        }
+
+        @keyframes cometFullCycle {
+            0% { left: auto; right: -300px; bottom: 30px; opacity: 0; transform: scale(1); }
+            4% { opacity: 1; }
+            21% { left: auto; right: 50%; bottom: 30px; opacity: 1; transform: scale(1); }
+            24.5% { opacity: 0; }
+            25% { left: auto; right: calc(100% + 300px); bottom: 30px; opacity: 0; transform: scale(1); }
+            25.1% { left: 50%; right: auto; bottom: 10px; opacity: 0; transform: scale(0.3) translateX(-50%); }
+            32% { opacity: 1; transform: scale(1.05) translateX(-50%); }
+            42% { opacity: 1; transform: scale(1) translateX(-50%); }
+            49% { opacity: 0; transform: scale(0.3) translateX(-50%); }
+            50% { opacity: 0; transform: scale(0.3) translateX(-50%); }
+            50.1% { left: -300px; right: auto; bottom: 50px; opacity: 0; transform: scale(1); }
+            54% { opacity: 1; }
+            71% { left: 50%; right: auto; bottom: 50px; opacity: 1; transform: scale(1); }
+            74.5% { opacity: 0; }
+            75% { left: calc(100% + 300px); right: auto; bottom: 50px; opacity: 0; transform: scale(1); }
+            75.1% { left: 50%; right: auto; bottom: -80px; opacity: 0; transform: scale(0.8) translateX(-50%); }
+            82% { opacity: 1; bottom: 10px; transform: scale(1) translateX(-50%); }
+            94% { opacity: 1; bottom: 60px; transform: scale(1) translateX(-50%); }
+            99% { opacity: 0; bottom: 60px; transform: scale(1) translateX(-50%); }
+            100% { opacity: 0; bottom: 60px; transform: scale(1) translateX(-50%); }
+        }
+        .kafemanteia-comet.animating { animation: cometFullCycle 24s linear infinite; }
 
         #scan { gap: 20px; padding-top: 30px; padding-bottom: 40px; }
         #scan .scan-header { text-align: center; width: 100%; }
@@ -736,6 +850,14 @@
             #consent-modal p { font-size: 0.85rem; }
             #ad-modal { padding: 20px 15px; }
             #ad-modal h3 { font-size: 1rem; }
+            #splash { padding-bottom: 120px; }
+            .kafemanteia-comet { padding: 10px 16px; }
+            .kafemanteia-comet .comet-text { font-size: 0.85rem; }
+            .kafemanteia-comet .comet-icon { font-size: 1.3rem; }
+            #language-bar { padding: 6px 10px; gap: 5px; }
+            #language-bar .lang-label { font-size: 0.7rem; min-width: 50px; }
+            #language-bar select { font-size: 0.7rem; padding: 6px 25px 6px 8px; min-width: 80px; }
+            #translate-btn { width: 30px; height: 30px; min-width: 30px; font-size: 0.8rem; }
         }
     </style>
 </head>
@@ -745,17 +867,17 @@
     <div id="consent-overlay">
         <div id="consent-modal">
             <div class="consent-icon">🔮</div>
-            <h2>Καλώς ορίσατε στο Omen!</h2>
-            <p>
+            <h2 data-translate="true">Καλώς ορίσατε στο Omen!</h2>
+            <p data-translate="true">
                 Για να συνεχίσετε, πρέπει να επιβεβαιώσετε ότι είστε <strong>άνω των 18 ετών</strong> 
                 και ότι αποδέχεστε πως η εφαρμογή χρησιμοποιεί Τεχνητή Νοημοσύνη για να παράγει 
                 αποτελέσματα με καθαρά <strong>χιουμοριστικό, ψυχαγωγικό και μη κατευθυντικό χαρακτήρα</strong>.
             </p>
             <div class="consent-links">
-                <button class="consent-link" onclick="showLegal('terms')">📜 Όροι Χρήσης</button>
-                <button class="consent-link" onclick="showLegal('privacy')">🔒 Πολιτική Απορρήτου</button>
+                <button class="consent-link" onclick="showLegal('terms')" data-translate="true">📜 Όροι Χρήσης</button>
+                <button class="consent-link" onclick="showLegal('privacy')" data-translate="true">🔒 Πολιτική Απορρήτου</button>
             </div>
-            <button id="consent-btn" onclick="acceptConsent()">Συμφωνώ & Είμαι άνω των 18 ετών</button>
+            <button id="consent-btn" onclick="acceptConsent()" data-translate="true">Συμφωνώ & Είμαι άνω των 18 ετών</button>
         </div>
     </div>
 
@@ -763,9 +885,9 @@
     <div id="ad-modal-overlay">
         <div id="ad-modal">
             <div class="modal-icon">📺</div>
-            <h3>Δείτε αυτή τη διαφήμιση</h3>
-            <p>Παρακαλούμε δείτε τη διαφήμιση και μετά πατήστε <strong>Continue</strong> για να επιστρέψετε στη σελίδα και να ολοκληρώσετε την καφεμαντεία σας.</p>
-            <button class="btn-ad-now" id="btn-ad-now" onclick="showAd()">▶ Διαφήμιση Τώρα</button>
+            <h3 data-translate="true">Δείτε αυτή τη διαφήμιση</h3>
+            <p data-translate="true">Παρακαλούμε δείτε τη διαφήμιση και μετά πατήστε <strong>Continue</strong> για να επιστρέψετε στη σελίδα και να ολοκληρώσετε την καφεμαντεία σας.</p>
+            <button class="btn-ad-now" id="btn-ad-now" onclick="showAd()">▶ <span data-translate="true">Διαφήμιση Τώρα</span></button>
             <button class="btn-continue" id="btn-continue-ad" onclick="closeAdModal()">✓ Continue</button>
         </div>
     </div>
@@ -813,61 +935,111 @@
     <div id="splash" class="page active">
         <div class="splash-icon" id="splashIcon" onclick="goToScan()">🔮</div>
         <div class="splash-title">Omen</div>
-        <div class="splash-sub">✦ Καφεμαντεία με AI ✦</div>
-        <div class="splash-desc">Η Μαντάμ Ζαΐρα σε περιμένει. Άφησε τις σκιές του καφέ να αποκαλύψουν το πεπρωμένο σου.</div>
-        <button class="btn-mystic" onclick="goToScan()">🔮 Ξεκίνησε το ταξίδι</button>
+        <div class="splash-sub" data-translate="true">✦ Καφεμαντεία με AI ✦</div>
+        <div class="splash-desc" data-translate="true">Η Μαντάμ Ζαΐρα σε περιμένει. Άφησε τις σκιές του καφέ να αποκαλύψουν το πεπρωμένο σου.</div>
+        <button class="btn-mystic" onclick="goToScan()" data-translate="true">🔮 Ξεκίνησε το ταξίδι</button>
+        
+        <!-- ===== LANGUAGE BAR ===== -->
+        <div id="language-bar">
+            <span class="lang-label" id="lang-label">🌐 Γλώσσα</span>
+            <select id="language-select">
+                <option value="el">🇬🇷 Ελληνικά</option>
+                <option value="en">🇬🇧 English</option>
+                <option value="de">🇩🇪 Deutsch</option>
+                <option value="fr">🇫🇷 Français</option>
+                <option value="es">🇪🇸 Español</option>
+                <option value="it">🇮🇹 Italiano</option>
+                <option value="ar">🇸🇦 العربية</option>
+                <option value="zh-CN">🇨🇳 中文</option>
+                <option value="ja">🇯🇵 日本語</option>
+                <option value="ru">🇷🇺 Русский</option>
+                <option value="tr">🇹🇷 Türkçe</option>
+                <option value="nl">🇳🇱 Nederlands</option>
+                <option value="pt">🇵🇹 Português</option>
+                <option value="sv">🇸🇪 Svenska</option>
+                <option value="no">🇳🇴 Norsk</option>
+                <option value="da">🇩🇰 Dansk</option>
+                <option value="fi">🇫🇮 Suomi</option>
+                <option value="pl">🇵🇱 Polski</option>
+                <option value="cs">🇨🇿 Čeština</option>
+                <option value="ro">🇷🇴 Română</option>
+                <option value="bg">🇧🇬 Български</option>
+                <option value="uk">🇺🇦 Українська</option>
+                <option value="ko">🇰🇷 한국어</option>
+                <option value="hi">🇮🇳 हिन्दी</option>
+                <option value="vi">🇻🇳 Tiếng Việt</option>
+                <option value="th">🇹🇭 ไทย</option>
+                <option value="id">🇮🇩 Indonesia</option>
+                <option value="iw">🇮🇱 עברית</option>
+            </select>
+            <button id="translate-btn" onclick="startTranslation()" title="Μετάφραση">▶</button>
+        </div>
+    </div>
+
+    <!-- ===== ΑΣΤΕΡΟΕΙΔΗΣ LIFELINE ===== -->
+    <div id="kafemanteia-container">
+        <a href="https://lifeline.franklymadear.com" target="_blank" class="kafemanteia-comet animating" id="kafemanteia-comet">
+            <span class="comet-star">✨</span>
+            <span class="comet-star">⭐</span>
+            <span class="comet-star">💫</span>
+            <span class="comet-star">✨</span>
+            <span class="comet-star">🌟</span>
+            <span class="comet-star">💫</span>
+            <span class="comet-icon">🔮</span>
+            <span class="comet-text">LiFe LiNe - Χειρομαντεία</span>
+        </a>
     </div>
 
     <!-- ===== SCAN PAGE ===== -->
     <div id="scan" class="page">
-        <button class="btn-back" onclick="goToSplash()">☽ Πίσω στην αρχή</button>
+        <button class="btn-back" onclick="goToSplash()">☽ <span data-translate="true">Πίσω στην αρχή</span></button>
         <div class="scan-header">
-            <h2>Ανάλυση Φλιτζανιού</h2>
-            <p>Διάλεξε μια εικόνα ή τράβηξε φωτογραφία</p>
+            <h2 data-translate="true">Ανάλυση Φλιτζανιού</h2>
+            <p data-translate="true">Διάλεξε μια εικόνα ή τράβηξε φωτογραφία</p>
         </div>
 
         <div class="controls" id="inputControls">
-            <button class="btn btn-gold" onclick="openCamera('environment')">📷 Κάμερα</button>
-            <button class="btn btn-gold" onclick="openCamera('user')">🤳 Selfie</button>
-            <button class="btn btn-purple" onclick="document.getElementById('fileInput').click()">📁 Ανέβασμα</button>
+            <button class="btn btn-gold" onclick="openCamera('environment')" data-translate="true">📷 Κάμερα</button>
+            <button class="btn btn-gold" onclick="openCamera('user')" data-translate="true">🤳 Selfie</button>
+            <button class="btn btn-purple" onclick="document.getElementById('fileInput').click()" data-translate="true">📁 Ανέβασμα</button>
             <input type="file" id="fileInput" style="display:none" accept="image/*" onchange="handleUpload(event)">
         </div>
 
         <div id="gender-select" style="display: flex; gap: 15px; justify-content: center; margin: 5px 0 15px;">
-            <button class="btn gender-btn active" onclick="selectGender('f', this)">👩 Γυναίκα</button>
-            <button class="btn gender-btn" onclick="selectGender('m', this)">👨 Άντρας</button>
+            <button class="btn gender-btn active" onclick="selectGender('f', this)" data-translate="true">👩 Γυναίκα</button>
+            <button class="btn gender-btn" onclick="selectGender('m', this)" data-translate="true">👨 Άντρας</button>
         </div>
 
         <div id="camera-wrapper">
             <video id="webcam" playsinline autoplay></video>
         </div>
-        <button class="btn btn-red" id="captureBtn" onclick="takePhoto()" style="display:none; margin: 10px auto;">📸 Λήψη</button>
+        <button class="btn btn-red" id="captureBtn" onclick="takePhoto()" style="display:none; margin: 10px auto;" data-translate="true">📸 Λήψη</button>
 
         <div id="preview-wrapper">
-            <div class="preview-label">✧ Η εικόνα είναι έτοιμη ✧</div>
+            <div class="preview-label" data-translate="true">✧ Η εικόνα είναι έτοιμη ✧</div>
             <img id="preview-img" src="" alt="Φλιτζάνι">
         </div>
 
-        <button class="btn btn-green" id="scanBtn" onclick="startAnalysis()" disabled>🔮 Ανάλυση Φλιτζανιού</button>
+        <button class="btn btn-green" id="scanBtn" onclick="startAnalysis()" disabled data-translate="true">🔮 Ανάλυση Φλιτζανιού</button>
 
         <div id="loading-box">
-            <div class="mantra">✨ Η Μαντάμ Ζαΐρα διαβάζει τις σκιές... ✨</div>
+            <div class="mantra" data-translate="true">✨ Η Μαντάμ Ζαΐρα διαβάζει τις σκιές... ✨</div>
             <div class="loading-spinner"></div>
-            <div class="waiting-text">Παρακαλώ Περιμένετε</div>
+            <div class="waiting-text" data-translate="true">Παρακαλώ Περιμένετε</div>
         </div>
 
         <div id="result-area">
-            <h2>☽ Η Ετυμηγορία του Καφέ ☾</h2>
+            <h2 data-translate="true">☽ Η Ετυμηγορία του Καφέ ☾</h2>
             <div id="result-text"></div>
             <div style="text-align: center; margin-top: 20px;">
-                <button class="btn-reset" onclick="resetScan()">🔄 Διάβασε άλλο φλιτζάνι</button>
+                <button class="btn-reset" onclick="resetScan()" data-translate="true">🔄 Διάβασε άλλο φλιτζάνι</button>
             </div>
         </div>
 
         <div id="site-footer">
             <div class="footer-links">
-                <button class="footer-link" onclick="showLegal('terms')">📜 Όροι Χρήσης</button>
-                <button class="footer-link" onclick="showLegal('privacy')">🔒 Πολιτική Απορρήτου</button>
+                <button class="footer-link" onclick="showLegal('terms')" data-translate="true">📜 Όροι Χρήσης</button>
+                <button class="footer-link" onclick="showLegal('privacy')" data-translate="true">🔒 Πολιτική Απορρήτου</button>
             </div>
         </div>
     </div>
@@ -937,6 +1109,141 @@
             document.getElementById('ad-modal-overlay').classList.remove('active');
         }
 
+        // ===== ΜΕΤΑΦΡΑΣΗ =====
+        var originalTexts = {};
+        var currentLang = 'el';
+
+        function saveOriginalTexts() {
+            document.querySelectorAll('[data-translate="true"]').forEach(function(el) {
+                var key = el.outerHTML;
+                if (!originalTexts[key]) {
+                    originalTexts[key] = el.textContent.trim();
+                }
+            });
+        }
+        saveOriginalTexts();
+
+        function startTranslation() {
+            var lang = document.getElementById('language-select').value;
+            if (lang === 'el') {
+                restoreOriginalTexts();
+                currentLang = 'el';
+                return;
+            }
+            
+            var btn = document.getElementById('translate-btn');
+            btn.classList.add('translating');
+            btn.textContent = '⟳';
+            
+            translatePage(lang);
+        }
+
+        async function translatePage(targetLang) {
+            var elements = document.querySelectorAll('[data-translate="true"]');
+            var textsToTranslate = [];
+            var elementsToUpdate = [];
+            
+            elements.forEach(function(el) {
+                var text = el.textContent.trim();
+                if (text.length > 0 && text.length < 500) {
+                    textsToTranslate.push(text);
+                    elementsToUpdate.push(el);
+                }
+            });
+            
+            if (textsToTranslate.length === 0) {
+                document.getElementById('translate-btn').classList.remove('translating');
+                document.getElementById('translate-btn').textContent = '▶';
+                return;
+            }
+
+            var batchSize = 10;
+            for (var i = 0; i < textsToTranslate.length; i += batchSize) {
+                var batch = textsToTranslate.slice(i, i + batchSize);
+                var batchElements = elementsToUpdate.slice(i, i + batchSize);
+                
+                try {
+                    var translatedTexts = await translateBatch(batch, targetLang);
+                    for (var j = 0; j < batchElements.length; j++) {
+                        if (translatedTexts[j]) {
+                            batchElements[j].textContent = translatedTexts[j];
+                        }
+                    }
+                } catch (e) {
+                    console.log('Σφάλμα μετάφρασης:', e);
+                }
+            }
+            
+            currentLang = targetLang;
+            document.getElementById('translate-btn').classList.remove('translating');
+            document.getElementById('translate-btn').textContent = '▶';
+        }
+
+        async function translateBatch(texts, targetLang) {
+            var url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=el&tl=' + targetLang + '&dt=t&q=' + encodeURIComponent(texts.join('|||'));
+            
+            var response = await fetch(url);
+            var data = await response.json();
+            
+            var translations = [];
+            if (data && data[0]) {
+                var translatedText = '';
+                for (var i = 0; i < data[0].length; i++) {
+                    if (data[0][i][0]) {
+                        translatedText += data[0][i][0];
+                    }
+                }
+                translations = translatedText.split('|||');
+            }
+            return translations;
+        }
+
+        function restoreOriginalTexts() {
+            document.querySelectorAll('[data-translate="true"]').forEach(function(el) {
+                var key = el.outerHTML;
+                if (originalTexts[key]) {
+                    el.textContent = originalTexts[key];
+                }
+            });
+        }
+
+        function detectLanguage() {
+            var userLang = navigator.language || navigator.userLanguage;
+            var langCode = userLang.split('-')[0];
+            var langMap = {
+                'el': 'el', 'en': 'en', 'de': 'de', 'fr': 'fr', 'es': 'es',
+                'it': 'it', 'ar': 'ar', 'zh': 'zh-CN', 'ja': 'ja', 'ru': 'ru',
+                'tr': 'tr', 'nl': 'nl', 'pt': 'pt', 'sv': 'sv', 'no': 'no',
+                'da': 'da', 'fi': 'fi', 'pl': 'pl', 'cs': 'cs', 'ro': 'ro',
+                'bg': 'bg', 'uk': 'uk', 'ko': 'ko', 'hi': 'hi', 'vi': 'vi',
+                'th': 'th', 'id': 'id', 'he': 'iw', 'iw': 'iw'
+            };
+            var mappedLang = langMap[langCode] || 'el';
+            
+            var langSelect = document.getElementById('language-select');
+            if (langSelect) { langSelect.value = mappedLang; }
+            
+            var labelMap = {
+                'el': '🌐 Γλώσσα', 'en': '🌐 Language', 'de': '🌐 Sprache',
+                'fr': '🌐 Langue', 'es': '🌐 Idioma', 'it': '🌐 Lingua',
+                'ar': '🌐 اللغة', 'zh-CN': '🌐 语言', 'ja': '🌐 言語',
+                'ru': '🌐 Язык', 'tr': '🌐 Dil', 'nl': '🌐 Taal',
+                'pt': '🌐 Idioma', 'sv': '🌐 Språk', 'no': '🌐 Språk',
+                'da': '🌐 Sprog', 'fi': '🌐 Kieli', 'pl': '🌐 Język',
+                'cs': '🌐 Jazyk', 'ro': '🌐 Limbă', 'bg': '🌐 Език',
+                'uk': '🌐 Мова', 'ko': '🌐 언어', 'hi': '🌐 भाषा',
+                'vi': '🌐 Ngôn ngữ', 'th': '🌐 ภาษา', 'id': '🌐 Bahasa',
+                'iw': '🌐 שפה'
+            };
+            var label = document.getElementById('lang-label');
+            if (label) { label.textContent = labelMap[mappedLang] || '🌐 Language'; }
+            
+            if (mappedLang !== 'el') {
+                setTimeout(function() { startTranslation(); }, 1000);
+            }
+        }
+        detectLanguage();
+
         // ===== BACKGROUND STARS =====
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
@@ -986,7 +1293,6 @@
             document.getElementById('scan').classList.add('active');
             resetScanUI();
             
-            // Εμφάνιση ad modal μετά από 5 δευτερόλεπτα
             setTimeout(() => {
                 showAdModal();
             }, 5000);
@@ -995,6 +1301,13 @@
         function goToSplash() {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById('splash').classList.add('active');
+            // Επανεκκίνηση του αστεροειδή
+            var comet = document.getElementById('kafemanteia-comet');
+            if (comet) {
+                comet.classList.remove('animating');
+                void comet.offsetWidth;
+                comet.classList.add('animating');
+            }
         }
 
         // ===== GENDER SELECTION =====
