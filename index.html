@@ -2,7 +2,10 @@
 <html lang="el">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>Omen - Καφεμαντεία με AI</title>
     
     <!-- Meta για Social Sharing -->
@@ -28,10 +31,7 @@
     <meta name="twitter:image:alt" content="Omen - Καφεμαντεία">
     
     <!-- PWA / Add to Home Screen -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Omen">
-    <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#0a0a12">
     <link rel="apple-touch-icon" sizes="180x180" href="omen.png">
     <link rel="icon" type="image/png" sizes="32x32" href="omen.png">
@@ -42,17 +42,25 @@
     <!-- Web App Manifest -->
     <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Omen%20-%20%CE%9A%CE%B1%CF%86%CE%B5%CE%BC%CE%B1%CE%BD%CF%84%CE%B5%CE%AF%CE%B1%22%2C%22short_name%22%3A%22Omen%22%2C%22description%22%3A%22%CE%9A%CE%B1%CF%86%CE%B5%CE%BC%CE%B1%CE%BD%CF%84%CE%B5%CE%AF%CE%B1%20%CE%BC%CE%B5%20AI%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230a0a12%22%2C%22theme_color%22%3A%22%230a0a12%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22omen.png%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%7D%2C%7B%22src%22%3A%22omen.png%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
     
-    <!-- Monetag SDK -->
-    <script src='//libtl.com/sdk.js' data-zone='10985740' data-sdk='show_10985740'></script>
-    
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            touch-action: manipulation;
+            -webkit-overflow-scrolling: touch;
+        }
         body {
             font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
             background: #0a0a12;
-            min-height: 100vh;
+            height: 100%;
             color: #f0e6ff;
-            overflow-x: hidden;
+            overflow-y: auto;
+            -webkit-font-smoothing: antialiased;
         }
 
         #bg-canvas {
@@ -71,6 +79,7 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
+            min-height: 100dvh;
             padding: 20px;
             width: 100%;
             max-width: 600px;
@@ -82,7 +91,7 @@
             text-align: center;
             gap: 20px;
             animation: fadeIn 1.2s ease;
-            padding-bottom: 140px;
+            padding-bottom: 20px;
         }
         @keyframes fadeIn { 0% { opacity: 0; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1); } }
 
@@ -132,6 +141,41 @@
             font-size: 0.95rem;
             line-height: 1.6;
             opacity: 0.8;
+        }
+
+        /* Πρόταση για εγκατάσταση στην αρχική οθόνη */
+        .install-prompt {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(20, 10, 40, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(241, 196, 15, 0.3);
+            border-radius: 20px;
+            padding: 12px 20px;
+            margin-top: 5px;
+            max-width: 360px;
+            text-align: center;
+            animation: gentleGlow 3s infinite ease-in-out;
+            cursor: default;
+        }
+        .install-prompt .install-icon {
+            font-size: 1.8rem;
+            flex-shrink: 0;
+        }
+        .install-prompt .install-text {
+            color: #d5c8e8;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            line-height: 1.5;
+        }
+        .install-prompt .install-text strong {
+            color: #f7dc6f;
+            font-weight: 600;
+        }
+        @keyframes gentleGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(241, 196, 15, 0.1); }
+            50% { box-shadow: 0 0 25px rgba(241, 196, 15, 0.2); }
         }
 
         .btn-mystic {
@@ -203,108 +247,78 @@
         }
         #reset-lang-btn:hover { transform: scale(1.1); box-shadow: 0 0 25px rgba(155, 89, 182, 0.6); }
 
-        /* ===== ΑΣΤΕΡΟΕΙΔΗΣ LIFELINE ===== */
-        #kafemanteia-container {
-            position: fixed; bottom: 0; left: 0; width: 100%; height: 150px;
-            z-index: 5; pointer-events: none; overflow: visible;
+        /* ===== ROLL-UP BANNER ΓΙΑ LIFELINE (ΜΟΝΟ SPLASH) ===== */
+        #lifeline-rollup {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            z-index: 20;
+            display: flex;
+            justify-content: center;
+            pointer-events: none;
+            transform: translateY(100%);
+            transition: transform 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1);
         }
-        .kafemanteia-comet {
-            position: absolute; cursor: pointer; pointer-events: auto;
-            text-decoration: none; display: flex; align-items: center; gap: 8px;
-            background: rgba(20, 10, 40, 0.85); backdrop-filter: blur(8px);
-            border: 2px solid rgba(241, 196, 15, 0.5); border-radius: 50px;
-            padding: 12px 22px;
-            box-shadow: 0 0 30px rgba(241, 196, 15, 0.2), 0 0 60px rgba(155, 89, 182, 0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            white-space: nowrap; will-change: transform, opacity, left, right, bottom;
-            transform: scale(1);
+        #lifeline-rollup.visible {
+            transform: translateY(0);
         }
-        .kafemanteia-comet:hover {
-            transform: scale(1.1) !important;
-            box-shadow: 0 0 50px rgba(241, 196, 15, 0.5), 0 0 80px rgba(155, 89, 182, 0.4);
-            border-color: #f7dc6f; background: rgba(30, 15, 50, 0.95);
+        #lifeline-rollup .rollup-inner {
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(20, 10, 40, 0.9);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(241, 196, 15, 0.4);
+            border-bottom: none;
+            border-radius: 20px 20px 0 0;
+            padding: 14px 28px;
+            box-shadow: 0 -5px 30px rgba(241, 196, 15, 0.15);
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            animation: gentlePulse 2.5s infinite ease-in-out;
         }
-        .kafemanteia-comet .comet-icon {
-            font-size: 1.6rem;
+        #lifeline-rollup .rollup-inner:hover {
+            border-color: #f7dc6f;
+            box-shadow: 0 -5px 40px rgba(241, 196, 15, 0.3);
+            background: rgba(30, 15, 50, 0.95);
+        }
+        #lifeline-rollup .rollup-icon {
+            font-size: 1.4rem;
             animation: crystalGlow 2s infinite ease-in-out;
         }
-        .kafemanteia-comet .comet-text {
-            color: #f7dc6f; font-weight: 700; font-size: 1rem;
-            letter-spacing: 2px; text-shadow: 0 0 10px rgba(241, 196, 15, 0.3);
+        #lifeline-rollup .rollup-text {
+            color: #f7dc6f;
+            font-weight: 600;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
         }
-        .comet-star {
-            position: absolute; color: #f7dc6f; pointer-events: none;
-            animation: starOrbit 3s infinite ease-in-out; font-size: 0.9rem;
+        #lifeline-rollup .rollup-stars {
+            position: absolute;
+            pointer-events: none;
+            font-size: 0.8rem;
+            color: #f7dc6f;
+            opacity: 0.7;
         }
-        .comet-star:nth-child(2) { animation-delay: 0s; top: -15px; left: -10px; }
-        .comet-star:nth-child(3) { animation-delay: 0.5s; top: -10px; right: -15px; }
-        .comet-star:nth-child(4) { animation-delay: 1s; bottom: -15px; left: 20px; }
-        .comet-star:nth-child(5) { animation-delay: 1.5s; bottom: -10px; right: 10px; }
-        .comet-star:nth-child(6) { animation-delay: 2s; top: 5px; left: -20px; }
-        .comet-star:nth-child(7) { animation-delay: 2.5s; top: 5px; right: -20px; }
+        #lifeline-rollup .rollup-star-1 { top: -12px; left: 15px; animation: starFloat 2s infinite ease-in-out; }
+        #lifeline-rollup .rollup-star-2 { top: -8px; right: 20px; animation: starFloat 2.5s infinite ease-in-out 0.3s; }
+        #lifeline-rollup .rollup-star-3 { bottom: -5px; left: 30px; animation: starFloat 3s infinite ease-in-out 0.6s; }
+        #lifeline-rollup .rollup-star-4 { bottom: -8px; right: 35px; animation: starFloat 2.2s infinite ease-in-out 0.9s; }
 
         @keyframes crystalGlow {
             0%, 100% { filter: drop-shadow(0 0 5px rgba(241, 196, 15, 0.5)); transform: scale(1); }
-            50% { filter: drop-shadow(0 0 15px rgba(241, 196, 15, 1)); transform: scale(1.2); }
+            50% { filter: drop-shadow(0 0 15px rgba(241, 196, 15, 1)); transform: scale(1.15); }
         }
-        @keyframes starOrbit {
-            0%, 100% { opacity: 0.2; transform: translate(0, 0) scale(0.8); }
-            50% { opacity: 1; transform: translate(5px, -8px) scale(1.3); }
+        @keyframes starFloat {
+            0%, 100% { transform: translateY(0) scale(1); opacity: 0.5; }
+            50% { transform: translateY(-6px) scale(1.2); opacity: 1; }
         }
-
-        /* Κίνηση 1: Από δεξιά προς αριστερά */
-        @keyframes cometRightToLeft {
-            0% { left: auto; right: -300px; bottom: 30px; opacity: 0; transform: scale(1); }
-            5% { opacity: 1; }
-            40% { left: auto; right: calc(100% + 300px); bottom: 30px; opacity: 1; transform: scale(1); }
-            45% { opacity: 0; }
-            50% { left: auto; right: calc(100% + 300px); bottom: 30px; opacity: 0; transform: scale(1); }
-            100% { left: auto; right: calc(100% + 300px); bottom: 30px; opacity: 0; transform: scale(1); }
+        @keyframes gentlePulse {
+            0%, 100% { box-shadow: 0 -5px 30px rgba(241, 196, 15, 0.1); }
+            50% { box-shadow: 0 -5px 45px rgba(241, 196, 15, 0.25); }
         }
-
-        /* Κίνηση 2: Από αριστερά προς δεξιά */
-        @keyframes cometLeftToRight {
-            0% { left: -300px; right: auto; bottom: 50px; opacity: 0; transform: scale(1); }
-            5% { opacity: 1; }
-            40% { left: calc(100% + 300px); right: auto; bottom: 50px; opacity: 1; transform: scale(1); }
-            45% { opacity: 0; }
-            50% { left: calc(100% + 300px); right: auto; bottom: 50px; opacity: 0; transform: scale(1); }
-            100% { left: calc(100% + 300px); right: auto; bottom: 50px; opacity: 0; transform: scale(1); }
-        }
-
-        /* Κίνηση 3: Από το βάθος μπροστά στην οθόνη και εξαφάνιση */
-        @keyframes cometDepthForward {
-            0% { left: 50%; right: auto; bottom: -80px; opacity: 0; transform: scale(0.3) translateX(-50%); }
-            15% { opacity: 1; bottom: 10px; transform: scale(1.1) translateX(-50%); }
-            35% { opacity: 1; bottom: 40px; transform: scale(1) translateX(-50%); }
-            45% { opacity: 0; bottom: 60px; transform: scale(1.2) translateX(-50%); }
-            50% { opacity: 0; bottom: 60px; transform: scale(1.2) translateX(-50%); }
-            100% { opacity: 0; bottom: 60px; transform: scale(1.2) translateX(-50%); }
-        }
-
-        /* Συνδυασμένο animation με τις 3 κινήσεις διαδοχικά */
-        @keyframes cometTripleMotion {
-            0% { left: auto; right: -300px; bottom: 30px; opacity: 0; transform: scale(1); }
-            3% { opacity: 1; }
-            20% { left: auto; right: calc(100% + 300px); bottom: 30px; opacity: 1; transform: scale(1); }
-            24% { opacity: 0; }
-            25% { left: auto; right: calc(100% + 300px); bottom: 30px; opacity: 0; transform: scale(1); }
-            /* Παύση πριν την επόμενη κίνηση */
-            28% { left: -300px; right: auto; bottom: 50px; opacity: 0; transform: scale(1); }
-            31% { opacity: 1; }
-            48% { left: calc(100% + 300px); right: auto; bottom: 50px; opacity: 1; transform: scale(1); }
-            52% { opacity: 0; }
-            55% { left: calc(100% + 300px); right: auto; bottom: 50px; opacity: 0; transform: scale(1); }
-            /* Παύση πριν την τρίτη κίνηση */
-            58% { left: 50%; right: auto; bottom: -80px; opacity: 0; transform: scale(0.3) translateX(-50%); }
-            63% { opacity: 1; bottom: 10px; transform: scale(1.1) translateX(-50%); }
-            83% { opacity: 1; bottom: 40px; transform: scale(1) translateX(-50%); }
-            93% { opacity: 0; bottom: 60px; transform: scale(1.2) translateX(-50%); }
-            100% { opacity: 0; bottom: 60px; transform: scale(1.2) translateX(-50%); }
-        }
-        
-        /* ΕΔΩ ΕΙΝΑΙ Η ΜΟΝΗ ΑΛΛΑΓΗ: 18s -> 30s για πιο αργή κίνηση */
-        .kafemanteia-comet.animating { animation: cometTripleMotion 30s ease-in-out infinite; }
 
         #scan { gap: 20px; padding-top: 30px; padding-bottom: 40px; }
         #scan .scan-header { text-align: center; width: 100%; }
@@ -655,131 +669,6 @@
             box-shadow: 0 0 70px rgba(241, 196, 15, 0.5);
         }
 
-        /* ===== AD MODAL ===== */
-        #ad-modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            z-index: 9998;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        #ad-modal-overlay.active { display: flex; }
-
-        #ad-modal {
-            background: linear-gradient(145deg, #1a0e2a, #2a1a3a);
-            border: 3px solid #f7dc6f;
-            border-radius: 20px;
-            padding: 30px 25px;
-            max-width: 500px;
-            width: 90%;
-            text-align: center;
-            box-shadow: 
-                0 0 60px rgba(241, 196, 15, 0.4),
-                0 0 100px rgba(155, 89, 182, 0.3);
-            animation: modalPopIn 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        @keyframes modalPopIn {
-            0% { opacity: 0; transform: scale(0.8) translateY(20px); }
-            100% { opacity: 1; transform: scale(1) translateY(0); }
-        }
-
-        #ad-modal::before {
-            content: '';
-            position: absolute;
-            top: -50%; left: -50%;
-            width: 200%; height: 200%;
-            background: radial-gradient(circle, rgba(241,196,15,0.1) 0%, transparent 60%);
-            animation: rotateGlow 6s linear infinite;
-        }
-
-        @keyframes rotateGlow {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        #ad-modal .modal-icon {
-            font-size: 3rem;
-            margin-bottom: 10px;
-            animation: floatIcon 2s infinite ease-in-out;
-            position: relative;
-            z-index: 1;
-        }
-
-        #ad-modal h3 {
-            color: #f7dc6f;
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-            letter-spacing: 1px;
-            position: relative;
-            z-index: 1;
-        }
-
-        #ad-modal p {
-            color: #d5c8e8;
-            font-size: 0.9rem;
-            line-height: 1.6;
-            margin-bottom: 20px;
-            position: relative;
-            z-index: 1;
-        }
-
-        #ad-modal .btn-ad-now {
-            background: linear-gradient(145deg, #f7dc6f, #d4ac0d);
-            color: #1a0e1f;
-            padding: 14px 35px;
-            border: none;
-            border-radius: 50px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-            letter-spacing: 1px;
-            position: relative;
-            z-index: 1;
-            box-shadow: 0 0 25px rgba(241, 196, 15, 0.4);
-            animation: pulseBtn 2s infinite;
-        }
-
-        @keyframes pulseBtn {
-            0%, 100% { box-shadow: 0 0 25px rgba(241, 196, 15, 0.4); }
-            50% { box-shadow: 0 0 50px rgba(241, 196, 15, 0.7); }
-        }
-
-        #ad-modal .btn-ad-now:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 60px rgba(241, 196, 15, 0.8);
-        }
-
-        #ad-modal .btn-continue {
-            background: linear-gradient(145deg, #2ecc71, #1e8449);
-            color: #fff;
-            padding: 14px 30px;
-            border: none;
-            border-radius: 50px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-            letter-spacing: 1px;
-            position: relative;
-            z-index: 1;
-            display: none;
-            box-shadow: 0 0 25px rgba(46, 204, 113, 0.4);
-        }
-
-        #ad-modal .btn-continue:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 40px rgba(46, 204, 113, 0.6);
-        }
-
         /* ===== FOOTER ===== */
         #site-footer {
             position: relative;
@@ -888,17 +777,16 @@
             #consent-modal { padding: 25px 18px; }
             #consent-modal h2 { font-size: 1.3rem; }
             #consent-modal p { font-size: 0.85rem; }
-            #ad-modal { padding: 20px 15px; }
-            #ad-modal h3 { font-size: 1rem; }
-            #splash { padding-bottom: 120px; }
-            .kafemanteia-comet { padding: 10px 16px; }
-            .kafemanteia-comet .comet-text { font-size: 0.85rem; }
-            .kafemanteia-comet .comet-icon { font-size: 1.3rem; }
+            #lifeline-rollup .rollup-inner { padding: 10px 20px; }
+            #lifeline-rollup .rollup-text { font-size: 0.8rem; }
+            #lifeline-rollup .rollup-icon { font-size: 1.2rem; }
             #language-bar { padding: 6px 10px; gap: 5px; }
             #language-bar .lang-label { font-size: 0.7rem; min-width: 50px; }
             #language-bar select { font-size: 0.7rem; padding: 6px 25px 6px 8px; min-width: 80px; }
             #translate-btn { width: 30px; height: 30px; min-width: 30px; font-size: 0.8rem; }
             #reset-lang-btn { width: 30px; height: 30px; min-width: 30px; font-size: 0.8rem; }
+            .install-prompt .install-text { font-size: 0.7rem; }
+            .install-prompt .install-icon { font-size: 1.4rem; }
         }
     </style>
 </head>
@@ -919,17 +807,6 @@
                 <button class="consent-link" onclick="showLegal('privacy')" data-translate="true">🔒 Πολιτική Απορρήτου</button>
             </div>
             <button id="consent-btn" onclick="acceptConsent()" data-translate="true">Συμφωνώ & Είμαι άνω των 18 ετών</button>
-        </div>
-    </div>
-
-    <!-- ===== AD MODAL ===== -->
-    <div id="ad-modal-overlay">
-        <div id="ad-modal">
-            <div class="modal-icon">📺</div>
-            <h3 data-translate="true">Δείτε αυτή τη διαφήμιση</h3>
-            <p data-translate="true">Παρακαλούμε δείτε τη διαφήμιση και μετά πατήστε <strong>Continue</strong> για να επιστρέψετε στη σελίδα και να ολοκληρώσετε την καφεμαντεία σας.</p>
-            <button class="btn-ad-now" id="btn-ad-now" onclick="showAd()">▶ <span data-translate="true">Διαφήμιση Τώρα</span></button>
-            <button class="btn-continue" id="btn-continue-ad" onclick="closeAdModal()">✓ Continue</button>
         </div>
     </div>
 
@@ -961,7 +838,7 @@
             <h3>1. Πώς Διαχειριζόμαστε τις Φωτογραφίες σας</h3>
             <p><strong>Δεν Αποθηκεύουμε τις Φωτογραφίες.</strong></p>
             <h3>2. Δεδομένα που Συλλέγουμε Αυτόματα</h3>
-            <p>Συνεργαζόμαστε με τρίτες διαφημιστικές εταιρείες (Monetag).</p>
+            <p>Χρησιμοποιούμε cookies και τεχνολογίες για τη βελτίωση της εμπειρίας σας.</p>
             <h3>3. Δικαιώματα των Χρηστών (GDPR)</h3>
             <p>Έχετε δικαίωμα να διαγράψετε τα cookies σας.</p>
             <h3>4. Αλλαγές στους Όρους</h3>
@@ -978,6 +855,15 @@
         <div class="splash-title">Omen</div>
         <div class="splash-sub" data-translate="true">✦ Καφεμαντεία με AI ✦</div>
         <div class="splash-desc" data-translate="true">Η Μαντάμ Ζαΐρα σε περιμένει. Άφησε τις σκιές του καφέ να αποκαλύψουν το πεπρωμένο σου.</div>
+        
+        <!-- Πρόταση εγκατάστασης στην αρχική οθόνη -->
+        <div class="install-prompt">
+            <span class="install-icon">📲</span>
+            <span class="install-text" data-translate="true">
+                <strong>Συμβουλή:</strong> Προσθέστε αυτήν την εφαρμογή στην αρχική οθόνη του κινητού σας για άμεση πρόσβαση, σαν κανονική εφαρμογή!
+            </span>
+        </div>
+        
         <button class="btn-mystic" onclick="goToScan()" data-translate="true">🔮 Ξεκίνησε το ταξίδι</button>
         
         <!-- ===== LANGUAGE BAR ===== -->
@@ -1018,17 +904,15 @@
         </div>
     </div>
 
-    <!-- ===== ΑΣΤΕΡΟΕΙΔΗΣ LIFELINE ===== -->
-    <div id="kafemanteia-container">
-        <a href="https://lifeline.franklymadear.com" target="_blank" class="kafemanteia-comet animating" id="kafemanteia-comet">
-            <span class="comet-star">✨</span>
-            <span class="comet-star">⭐</span>
-            <span class="comet-star">💫</span>
-            <span class="comet-star">✨</span>
-            <span class="comet-star">🌟</span>
-            <span class="comet-star">💫</span>
-            <span class="comet-icon">🔮</span>
-            <span class="comet-text">LiFe LiNe - Χειρομαντεία</span>
+    <!-- ===== ROLL-UP BANNER ΓΙΑ LIFELINE (ΜΟΝΟ SPLASH) ===== -->
+    <div id="lifeline-rollup">
+        <a href="https://lifeline.franklymadear.com" target="_blank" class="rollup-inner">
+            <span class="rollup-stars rollup-star-1">✨</span>
+            <span class="rollup-stars rollup-star-2">💫</span>
+            <span class="rollup-stars rollup-star-3">⭐</span>
+            <span class="rollup-stars rollup-star-4">✨</span>
+            <span class="rollup-icon">🔮</span>
+            <span class="rollup-text">LiFeLiNe – Χειρομαντεία</span>
         </a>
     </div>
 
@@ -1092,6 +976,8 @@
             const consent = localStorage.getItem('omen_consent');
             if (consent === 'true') {
                 document.getElementById('consent-overlay').classList.add('hidden');
+                // Εμφάνιση του roll-up banner μετά από 1 δευτερόλεπτο
+                setTimeout(showLifelineRollup, 1000);
             } else {
                 document.getElementById('consent-overlay').classList.remove('hidden');
             }
@@ -1100,6 +986,35 @@
         function acceptConsent() {
             localStorage.setItem('omen_consent', 'true');
             document.getElementById('consent-overlay').classList.add('hidden');
+            // Εμφάνιση του roll-up banner
+            setTimeout(showLifelineRollup, 500);
+        }
+
+        // ===== LIFELINE ROLL-UP BANNER (MONO SPLASH) =====
+        let lifelineTimer = null;
+
+        function showLifelineRollup() {
+            // Εμφάνιση μόνο αν είμαστε στην splash οθόνη
+            const splashPage = document.getElementById('splash');
+            if (!splashPage.classList.contains('active')) return;
+            
+            const rollup = document.getElementById('lifeline-rollup');
+            rollup.classList.add('visible');
+            
+            // Εξαφάνιση μετά από 5 δευτερόλεπτα
+            if (lifelineTimer) clearTimeout(lifelineTimer);
+            lifelineTimer = setTimeout(() => {
+                rollup.classList.remove('visible');
+            }, 5000);
+        }
+
+        function hideLifelineRollup() {
+            const rollup = document.getElementById('lifeline-rollup');
+            rollup.classList.remove('visible');
+            if (lifelineTimer) {
+                clearTimeout(lifelineTimer);
+                lifelineTimer = null;
+            }
         }
 
         function showLegal(type) {
@@ -1126,31 +1041,6 @@
 
         checkConsent();
 
-        // ===== AD MODAL =====
-        function showAdModal() {
-            document.getElementById('ad-modal-overlay').classList.add('active');
-            document.getElementById('btn-ad-now').style.display = 'inline-block';
-            document.getElementById('btn-continue-ad').style.display = 'none';
-        }
-
-        function showAd() {
-            document.getElementById('btn-ad-now').style.display = 'none';
-            
-            if (typeof show_10985740 === 'function') {
-                show_10985740().then(() => {
-                    document.getElementById('btn-continue-ad').style.display = 'inline-block';
-                }).catch(() => {
-                    document.getElementById('btn-continue-ad').style.display = 'inline-block';
-                });
-            } else {
-                document.getElementById('btn-continue-ad').style.display = 'inline-block';
-            }
-        }
-
-        function closeAdModal() {
-            document.getElementById('ad-modal-overlay').classList.remove('active');
-        }
-
         // ===== ΜΕΤΑΦΡΑΣΗ =====
         var originalTexts = {};
         var currentLang = 'el';
@@ -1165,7 +1055,6 @@
         }
         saveOriginalTexts();
 
-        // Διόρθωση: Αντικατάσταση λάθος μεταφράσεων
         var correctionMap = {
             'en': {
                 'Coffee schop': 'Coffee Reading',
@@ -1318,7 +1207,6 @@
                     var translatedTexts = await translateBatch(batch, targetLang);
                     for (var j = 0; j < batchElements.length; j++) {
                         if (translatedTexts[j]) {
-                            // Εφαρμογή διορθώσεων στη μετάφραση
                             var correctedText = applyCorrections(translatedTexts[j], targetLang);
                             batchElements[j].textContent = correctedText;
                         }
@@ -1331,7 +1219,6 @@
             currentLang = targetLang;
             document.getElementById('translate-btn').classList.remove('translating');
             document.getElementById('translate-btn').textContent = '▶';
-            // Εμφάνιση του κουμπιού επαναφοράς στα Ελληνικά
             document.getElementById('reset-lang-btn').style.display = 'flex';
         }
 
@@ -1363,7 +1250,6 @@
             });
         }
 
-        // Νέα συνάρτηση: Επαναφορά στα Ελληνικά
         function resetToGreek() {
             restoreOriginalTexts();
             currentLang = 'el';
@@ -1451,32 +1337,19 @@
         }
         drawStars();
 
-        // ===== ΕΠΑΝΕΚΚΙΝΗΣΗ ΑΣΤΕΡΟΕΙΔΗ =====
-        function restartComet() {
-            var comet = document.getElementById('kafemanteia-comet');
-            if (comet) {
-                comet.classList.remove('animating');
-                void comet.offsetWidth;
-                comet.classList.add('animating');
-            }
-        }
-
         // ===== PAGE NAVIGATION =====
         function goToScan() {
+            hideLifelineRollup(); // Κρύβουμε το banner όταν φεύγουμε από το splash
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById('scan').classList.add('active');
             resetScanUI();
-            restartComet();
-            
-            setTimeout(() => {
-                showAdModal();
-            }, 5000);
         }
 
         function goToSplash() {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById('splash').classList.add('active');
-            restartComet();
+            // Επανεμφάνιση του roll-up banner όταν επιστρέφουμε στο splash
+            setTimeout(showLifelineRollup, 300);
         }
 
         // ===== GENDER SELECTION =====
