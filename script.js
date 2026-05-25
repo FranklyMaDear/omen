@@ -21,7 +21,7 @@ const ANALYSIS_COST = 15;
 const DAILY_LIMIT = 5;
 const AD_POINTS = 10; // Πόντοι που δίνονται για 1 διαφήμιση
 
-let isWatchingAds = false; // Για αποφυγή double click
+let isWatchingAds = false;
 
 function getPoints() {
     return parseInt(localStorage.getItem('omen_points') || '0');
@@ -36,7 +36,6 @@ function addPoints(amount) {
     const current = getPoints();
     setPoints(current + amount);
     showFloatingPoints(amount);
-    // Κάνε pop animation
     const badge = document.getElementById('points-badge');
     badge.classList.add('pop');
     setTimeout(() => badge.classList.remove('pop'), 600);
@@ -59,7 +58,6 @@ function showFloatingPoints(amount) {
     const el = document.createElement('div');
     el.className = 'floating-points';
     el.textContent = '+' + amount;
-    // Τοποθέτηση κοντά στο badge
     const badge = document.getElementById('points-badge');
     const rect = badge.getBoundingClientRect();
     el.style.left = rect.left + 'px';
@@ -112,7 +110,7 @@ function updateScanButton() {
     }
 }
 
-// ===== EARN POINTS (1 ad, 10 points) =====
+// ===== EARN POINTS =====
 async function earnPoints() {
     if (isWatchingAds) return;
     isWatchingAds = true;
@@ -123,9 +121,8 @@ async function earnPoints() {
     earnBtn.textContent = '⏳ Φόρτωση διαφήμισης...';
 
     try {
-        // Έλεγχος διαθεσιμότητας SAD
         if (typeof SAD === 'undefined') {
-            throw new Error('Το SDK δεν φορτώθηκε. Είναι το script σωστό;');
+            throw new Error('Το SDK δεν φορτώθηκε.');
         }
         await showAd();
         addPoints(AD_POINTS);
@@ -144,22 +141,18 @@ async function earnPoints() {
 function showAd() {
     return new Promise((resolve, reject) => {
         try {
-            // Χρήση SAD.Reward αφού ο τύπος block είναι Reward
-            const controller = new SAD.Reward({ blockId: BLOCK_ID });
+            const controller = new SAD.Adsgram({ blockId: BLOCK_ID });
+            // Απλή κλήση show – ο τύπος Rewards αναγνωρίζεται αυτόματα από το block
             controller.show()
-                .then(() => {
-                    resolve();
-                })
-                .catch((err) => {
-                    reject(err);
-                });
+                .then(() => resolve())
+                .catch((err) => reject(err));
         } catch (e) {
             reject(e);
         }
     });
 }
 
-// ===== LIFELINE ROLL-UP BANNER =====
+// ===== LIFELINE ROLL-UP =====
 let lifelineShowTimer = null;
 let lifelineHideTimer = null;
 
@@ -172,10 +165,8 @@ function startLifelineCycle() {
             lifelineShowTimer = setTimeout(showBanner, 1000);
             return;
         }
-
         const rollup = document.getElementById('lifeline-rollup');
         rollup.classList.add('visible');
-
         lifelineHideTimer = setTimeout(() => {
             rollup.classList.remove('visible');
             lifelineShowTimer = setTimeout(showBanner, 5000);
@@ -220,6 +211,7 @@ document.addEventListener('click', function(e) {
 });
 
 // ===== TRANSLATION =====
+// (υπόλοιπος κώδικας μετάφρασης παραμένει ο ίδιος)
 var originalTexts = {};
 var currentLang = 'el';
 
@@ -292,11 +284,9 @@ function startTranslation() {
         document.getElementById('reset-lang-btn').style.display = 'none';
         return;
     }
-
     var btn = document.getElementById('translate-btn');
     btn.classList.add('translating');
     btn.textContent = '⟳';
-
     translatePage(lang);
 }
 
@@ -304,7 +294,6 @@ async function translatePage(targetLang) {
     var elements = document.querySelectorAll('[data-translate="true"]');
     var textsToTranslate = [];
     var elementsToUpdate = [];
-
     elements.forEach(function(el) {
         var text = el.textContent.trim();
         if (text.length > 0 && text.length < 1500) {
@@ -312,18 +301,15 @@ async function translatePage(targetLang) {
             elementsToUpdate.push(el);
         }
     });
-
     if (textsToTranslate.length === 0) {
         document.getElementById('translate-btn').classList.remove('translating');
         document.getElementById('translate-btn').textContent = '▶';
         return;
     }
-
     var batchSize = 10;
     for (var i = 0; i < textsToTranslate.length; i += batchSize) {
         var batch = textsToTranslate.slice(i, i + batchSize);
         var batchElements = elementsToUpdate.slice(i, i + batchSize);
-
         try {
             var translatedTexts = await translateBatch(batch, targetLang);
             for (var j = 0; j < batchElements.length; j++) {
@@ -336,7 +322,6 @@ async function translatePage(targetLang) {
             console.log('Translation error:', e);
         }
     }
-
     currentLang = targetLang;
     document.getElementById('translate-btn').classList.remove('translating');
     document.getElementById('translate-btn').textContent = '▶';
@@ -345,10 +330,8 @@ async function translatePage(targetLang) {
 
 async function translateBatch(texts, targetLang) {
     var url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=el&tl=' + targetLang + '&dt=t&q=' + encodeURIComponent(texts.join('|||'));
-
     var response = await fetch(url);
     var data = await response.json();
-
     var translations = [];
     if (data && data[0]) {
         var translatedText = '';
@@ -390,10 +373,8 @@ function detectLanguage() {
         'th': 'th', 'id': 'id', 'he': 'iw', 'iw': 'iw'
     };
     var mappedLang = langMap[langCode] || 'el';
-
     var langSelect = document.getElementById('language-select');
     if (langSelect) { langSelect.value = mappedLang; }
-
     var labelMap = {
         'el': '🌐 Γλώσσα', 'en': '🌐 Language', 'de': '🌐 Sprache',
         'fr': '🌐 Langue', 'es': '🌐 Idioma', 'it': '🌐 Lingua',
@@ -408,7 +389,6 @@ function detectLanguage() {
     };
     var label = document.getElementById('lang-label');
     if (label) { label.textContent = labelMap[mappedLang] || '🌐 Language'; }
-
     if (mappedLang !== 'el') {
         setTimeout(function() { startTranslation(); }, 1000);
     }
@@ -527,7 +507,6 @@ async function openCamera(facingMode) {
         video.srcObject = currentStream;
         document.getElementById('camera-wrapper').style.display = 'block';
         document.getElementById('captureBtn').style.display = 'flex';
-        // Scroll προς τα κάτω για να φανεί το capture button αν χρειαστεί
         setTimeout(() => {
             document.getElementById('captureBtn').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }, 300);
@@ -544,7 +523,6 @@ function takePhoto() {
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     currentImageBase64 = canvas.toDataURL('image/jpeg', 0.7);
-
     currentStream.getTracks().forEach(track => track.stop());
     document.getElementById('camera-wrapper').style.display = 'none';
     document.getElementById('captureBtn').style.display = 'none';
@@ -555,7 +533,6 @@ function handleUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
     resetScanUI();
-
     const reader = new FileReader();
     reader.onload = function(e) {
         const img = new Image();
@@ -574,13 +551,11 @@ function compressImage(image, maxWidth, quality) {
     const ctx = canvas.getContext('2d');
     let width = image.width;
     let height = image.height;
-
     if (width > maxWidth) {
         const ratio = maxWidth / width;
         width = maxWidth;
         height = height * ratio;
     }
-
     canvas.width = width;
     canvas.height = height;
     ctx.drawImage(image, 0, 0, width, height);
@@ -591,7 +566,6 @@ function showPreview(imageSrc) {
     document.getElementById('preview-img').src = imageSrc;
     document.getElementById('preview-wrapper').style.display = 'block';
     updateScanButton();
-    // Scroll για να φανεί το scan button
     setTimeout(() => {
         document.getElementById('scanBtn').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, 200);
@@ -600,9 +574,7 @@ function showPreview(imageSrc) {
 function addStarsToResult() {
     const resultArea = document.getElementById('result-area');
     document.querySelectorAll('.result-star').forEach(s => s.remove());
-
     const emojis = ['✨', '⭐', '💫', '🌟', '✨', '🔮', '💖', '🌙', '☽', '✧'];
-
     for (let i = 0; i < 15; i++) {
         const star = document.createElement('span');
         star.className = 'result-star';
@@ -621,20 +593,16 @@ async function startAnalysis() {
         alert('Δεν έχετε αρκετούς πόντους ή έχετε φτάσει το ημερήσιο όριο.');
         return;
     }
-
     const scanBtn = document.getElementById('scanBtn');
     isAnalyzing = true;
     scanBtn.disabled = true;
     scanBtn.style.display = 'none';
-
     document.getElementById('inputControls').style.display = 'none';
     document.getElementById('gender-select').style.display = 'none';
     document.getElementById('preview-wrapper').style.display = 'none';
-
     const loadingBox = document.getElementById('loading-box');
     loadingBox.style.display = 'block';
     loadingBox.scrollIntoView({ behavior: 'smooth' });
-
     try {
         const response = await fetch(API_URL, {
             method: 'POST',
@@ -644,16 +612,11 @@ async function startAnalysis() {
                 gender: selectedGender
             })
         });
-
         if (!response.ok) throw new Error(`Server error: ${response.status}`);
-
         const data = await response.json();
-
         if (data.success && data.symbols) {
-            // Αφαίρεση πόντων και αύξηση ημερήσιου μετρητή
             deductPoints(ANALYSIS_COST);
             incrementDailyAnalyses();
-
             document.getElementById('result-text').textContent = data.symbols;
             document.getElementById('result-area').style.display = 'block';
             addStarsToResult();
