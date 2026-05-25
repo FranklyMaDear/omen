@@ -17,9 +17,9 @@ function acceptConsent() {
 
 // ===== POINTS SYSTEM =====
 const BLOCK_ID = '32708'; // Adsgram block ID
-const ANALYSIS_COST = 10;
+const ANALYSIS_COST = 15;
 const DAILY_LIMIT = 5;
-const AD_POINTS = 30; // Πόντοι που δίνονται αν δει και τις 2 διαφημίσεις
+const AD_POINTS = 10; // Πόντοι που δίνονται για 1 διαφήμιση
 
 let isWatchingAds = false; // Για αποφυγή double click
 
@@ -103,34 +103,37 @@ function updateScanButton() {
     btn.disabled = !canDo;
     if (!canDo) {
         if (points < ANALYSIS_COST) {
-            btn.textContent = '🔒 Χρειάζεσαι 10 πόντους (Κέρδισε με διαφήμιση)';
+            btn.textContent = '🔒 Χρειάζεσαι 15 πόντους (Κέρδισε με διαφήμιση)';
         } else {
             btn.textContent = '🔒 Ημερήσιο όριο (5/5 αναλύσεις)';
         }
     } else {
-        btn.textContent = '🔮 Ανάλυση Φλιτζανιού (10 πόντοι)';
+        btn.textContent = '🔮 Ανάλυση Φλιτζανιού (15 πόντοι)';
     }
 }
 
-// ===== EARN POINTS (2 ads, 30 points total) =====
+// ===== EARN POINTS (1 ad, 10 points) =====
 async function earnPoints() {
     if (isWatchingAds) return;
     isWatchingAds = true;
 
-    try {
-        // Πρώτη διαφήμιση
-        await showAd();
-        // Δεύτερη διαφήμιση
-        await showAd();
+    const earnBtn = document.getElementById('earnBtn');
+    const originalText = earnBtn.textContent;
+    earnBtn.disabled = true;
+    earnBtn.textContent = '⏳ Φόρτωση διαφήμισης...';
 
-        // Αν φτάσουμε εδώ, είδε και τις δύο
+    try {
+        await showAd();
+        // Επιτυχής προβολή
         addPoints(AD_POINTS);
-        alert('Συγχαρητήρια! Κέρδισες 30 πόντους!');
+        alert('Συγχαρητήρια! Κέρδισες 10 πόντους!');
     } catch (error) {
-        // Αν αποτύχει ή κλείσει κάποια διαφήμιση, δεν παίρνει τίποτα
-        alert('Πρέπει να παρακολουθήσεις και τις δύο διαφημίσεις για να κερδίσεις πόντους.');
+        // Αποτυχία ή κλείσιμο
+        alert('Η διαφήμιση δεν ολοκληρώθηκε. Δοκίμασε ξανά.');
     } finally {
         isWatchingAds = false;
+        earnBtn.disabled = false;
+        earnBtn.textContent = originalText;
         updateScanButton();
     }
 }
