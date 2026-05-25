@@ -417,6 +417,20 @@
         }
         .btn-green:hover:not(:disabled) { transform: translateY(-5px) scale(1.02); box-shadow: 0 12px 45px rgba(46,204,113,0.45); }
         .btn-green:disabled { background: #3a3a4a; color: #777; cursor: not-allowed; box-shadow: none; }
+        
+        .btn-ad {
+            background: linear-gradient(145deg, #3498db, #1a5276);
+            color: #fff;
+            width: 100%;
+            padding: 16px;
+            font-size: 1.05rem;
+            margin-top: 8px;
+            border-radius: 50px;
+            box-shadow: 0 6px 25px rgba(52,152,219,0.25);
+        }
+        .btn-ad:hover:not(:disabled) { transform: translateY(-5px) scale(1.02); box-shadow: 0 12px 45px rgba(52,152,219,0.45); }
+        .btn-ad:disabled { background: #3a3a4a; color: #777; cursor: not-allowed; box-shadow: none; }
+        
         .btn-red { background: linear-gradient(145deg, #e74c3c, #a93226); color: #fff; width: 100%; max-width: 300px; }
         .btn-red:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(231,76,60,0.4); }
 
@@ -804,6 +818,7 @@
             video { max-height: 45vh; }
             .btn-earn { padding: 12px 22px; font-size: 0.9rem; }
             .btn-green { padding: 16px; font-size: 1rem; }
+            .btn-ad { padding: 14px; font-size: 0.95rem; }
         }
     </style>
 </head>
@@ -971,7 +986,9 @@
             <img id="preview-img" src="" alt="Φλιτζάνι">
         </div>
 
-        <button class="btn btn-green" id="scanBtn" onclick="startAnalysis()" disabled data-translate="true">🔮 Ανάλυση Φλιτζανιού (15 πόντοι)</button>
+        <!-- Κουμπιά ανάλυσης -->
+        <button class="btn btn-green" id="scanBtn" onclick="performAnalysis(true)" disabled data-translate="true">🔮 Ανάλυση Φλιτζανιού (15 πόντοι)</button>
+        <button class="btn btn-ad" id="scanBtnAd" onclick="startAnalysisWithAd()" style="display:none;" data-translate="true">📺 Δωρεάν Ανάλυση με Διαφήμιση</button>
 
         <div id="loading-box">
             <div class="mantra" data-translate="true">✨ Η Μαντάμ Ζαΐρα διαβάζει τις σκιές... ✨</div>
