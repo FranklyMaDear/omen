@@ -127,21 +127,37 @@ function canAnalyze() {
     return points >= ANALYSIS_COST && analyses < DAILY_LIMIT;
 }
 
-function updateScanButton() {
-    const btn = document.getElementById('scanBtn');
+function updateScanButtons() {
+    const pointsBtn = document.getElementById('scanBtn');
+    const adBtn = document.getElementById('scanBtnAd');
     const points = getPoints();
     const analyses = getDailyAnalyses();
-    const canDo = points >= ANALYSIS_COST && analyses < DAILY_LIMIT;
-    btn.disabled = !canDo;
-    if (!canDo) {
-        if (points < ANALYSIS_COST) {
-            btn.textContent = '🔒 Χρειάζεσαι 15 πόντους (Κέρδισε με διαφήμιση)';
-        } else {
-            btn.textContent = '🔒 Ημερήσιο όριο (5/5 αναλύσεις)';
-        }
-    } else {
-        btn.textContent = '🔮 Ανάλυση Φλιτζανιού (15 πόντοι)';
+    const hasDailySlots = analyses < DAILY_LIMIT;
+    const hasPoints = points >= ANALYSIS_COST;
+
+    // Αν έχει φτάσει το ημερήσιο όριο
+    if (!hasDailySlots) {
+        pointsBtn.disabled = true;
+        pointsBtn.textContent = '🔒 Ημερήσιο όριο (5/5 αναλύσεις)';
+        pointsBtn.style.display = 'block';
+        adBtn.style.display = 'none';
+        return;
     }
+
+    // Αν δεν έχει πόντους
+    if (!hasPoints) {
+        pointsBtn.disabled = true;
+        pointsBtn.textContent = '🔒 Χρειάζεσαι 15 πόντους';
+        pointsBtn.style.display = 'block';
+        adBtn.style.display = 'block';  // Προσφέρουμε δωρεάν ανάλυση με διαφήμιση
+        return;
+    }
+
+    // Έχει και πόντους και daily slots
+    pointsBtn.disabled = false;
+    pointsBtn.textContent = '🔮 Ανάλυση Φλιτζανιού (15 πόντοι)';
+    pointsBtn.style.display = 'block';
+    adBtn.style.display = 'block';  // Προσφέρουμε και τις δύο επιλογές
 }
 
 // ===== EARN POINTS =====
@@ -169,7 +185,7 @@ async function earnPoints() {
         isWatchingAds = false;
         earnBtn.disabled = false;
         earnBtn.textContent = originalText;
-        updateScanButton();
+        updateScanButtons();
     }
 }
 
@@ -464,13 +480,13 @@ function goToScan() {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('scan').classList.add('active');
     resetScanUI();
-    updateScanButton();
+    updateScanButtons();
 }
 
 function goToSplash() {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('splash').classList.add('active');
-    updateScanButton();
+    updateScanButtons();
 }
 
 // ===== GENDER SELECTION =====
@@ -496,6 +512,7 @@ function resetScanUI() {
     document.getElementById('captureBtn').style.display = 'none';
     document.getElementById('preview-wrapper').style.display = 'none';
     document.getElementById('scanBtn').disabled = true;
+    document.getElementById('scanBtnAd').style.display = 'none';
     document.getElementById('loading-box').style.display = 'none';
     document.querySelectorAll('.result-star').forEach(s => s.remove());
     if (currentStream) {
@@ -511,8 +528,9 @@ function resetScan() {
     document.getElementById('inputControls').style.display = 'flex';
     document.getElementById('gender-select').style.display = 'flex';
     document.getElementById('scanBtn').style.display = 'block';
+    document.getElementById('scanBtnAd').style.display = 'none';
     document.getElementById('fileInput').value = "";
-    updateScanButton();
+    updateScanButtons();
 }
 
 async function openCamera(facingMode) {
@@ -585,7 +603,7 @@ function compressImage(image, maxWidth, quality) {
 function showPreview(imageSrc) {
     document.getElementById('preview-img').src = imageSrc;
     document.getElementById('preview-wrapper').style.display = 'block';
-    updateScanButton();
+    updateScanButtons();
     setTimeout(() => {
         document.getElementById('scanBtn').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, 200);
@@ -607,22 +625,39 @@ function addStarsToResult() {
     }
 }
 
-async function startAnalysis() {
+// ===== ΚΥΡΙΑ ΛΟΓΙΚΗ ΑΝΑΛΥΣΗΣ (REFACTORED) =====
+async function performAnalysis(usePoints = true) {
     if (!currentImageBase64 || isAnalyzing) return;
-    if (!canAnalyze()) {
-        alert('Δεν έχετε αρκετούς πόντους ή έχετε φτάσει το ημερήσιο όριο.');
+
+    // Έλεγχος ημερήσιου ορίου
+    const analyses = getDailyAnalyses();
+    if (analyses >= DAILY_LIMIT) {
+        alert('Έχετε φτάσει το ημερήσιο όριο αναλύσεων (5/5). Επιστρέψτε αύριο.');
         return;
     }
+
+    // Αν χρησιμοποιούμε πόντους, έλεγχος επάρκειας
+    if (usePoints && !canAnalyze()) {
+        alert('Δεν έχετε αρκετούς πόντους. Κερδίστε πόντους ή χρησιμοποιήστε τη δωρεάν ανάλυση με διαφήμιση.');
+        return;
+    }
+
+    // Απόκρυψη των κουμπιών ανάλυσης
     const scanBtn = document.getElementById('scanBtn');
+    const scanBtnAd = document.getElementById('scanBtnAd');
     isAnalyzing = true;
     scanBtn.disabled = true;
     scanBtn.style.display = 'none';
+    scanBtnAd.style.display = 'none';
     document.getElementById('inputControls').style.display = 'none';
     document.getElementById('gender-select').style.display = 'none';
     document.getElementById('preview-wrapper').style.display = 'none';
+
+    // Εμφάνιση loading
     const loadingBox = document.getElementById('loading-box');
     loadingBox.style.display = 'block';
     loadingBox.scrollIntoView({ behavior: 'smooth' });
+
     try {
         const response = await fetch(API_URL, {
             method: 'POST',
@@ -632,10 +667,15 @@ async function startAnalysis() {
                 gender: selectedGender
             })
         });
+
         if (!response.ok) throw new Error(`Server error: ${response.status}`);
+
         const data = await response.json();
         if (data.success && data.symbols) {
-            deductPoints(ANALYSIS_COST);
+            // Χρέωση πόντων μόνο αν usePoints = true
+            if (usePoints) {
+                deductPoints(ANALYSIS_COST);
+            }
             incrementDailyAnalyses();
             document.getElementById('result-text').textContent = data.symbols;
             document.getElementById('result-area').style.display = 'block';
@@ -646,15 +686,56 @@ async function startAnalysis() {
         }
     } catch (error) {
         alert("🔮 Η Μαντάμ Ζαΐρα συνάντησε ένα πνευματικό εμπόδιο. Δοκίμασε ξανά.");
+        // Επαναφορά σε περίπτωση σφάλματος
+        currentImageBase64 = null;
         resetScan();
+        return;
     } finally {
         document.getElementById('loading-box').style.display = 'none';
         isAnalyzing = false;
-        updateScanButton();
+        updateScanButtons();
+    }
+}
+
+// ===== ΝΕΑ ΣΥΝΑΡΤΗΣΗ: ΔΩΡΕΑΝ ΑΝΑΛΥΣΗ ΜΕ ΔΙΑΦΗΜΙΣΗ =====
+async function startAnalysisWithAd() {
+    if (!currentImageBase64 || isAnalyzing) return;
+
+    // Έλεγχος ημερήσιου ορίου
+    const analyses = getDailyAnalyses();
+    if (analyses >= DAILY_LIMIT) {
+        alert('Έχετε φτάσει το ημερήσιο όριο αναλύσεων (5/5). Επιστρέψτε αύριο.');
+        return;
+    }
+
+    if (isWatchingAds) return;
+    isWatchingAds = true;
+
+    const adBtn = document.getElementById('scanBtnAd');
+    const originalText = adBtn.textContent;
+    adBtn.disabled = true;
+    adBtn.textContent = '⏳ Φόρτωση διαφήμισης...';
+
+    try {
+        const result = await showAd();
+        if (result && result.done) {
+            // Επιτυχής προβολή διαφήμισης -> δωρεάν ανάλυση
+            await performAnalysis(false);
+        } else {
+            alert('Η διαφήμιση δεν ολοκληρώθηκε. Μπορείτε να χρησιμοποιήσετε πόντους.');
+        }
+    } catch (error) {
+        alert('Σφάλμα διαφήμισης. Μπορείτε να χρησιμοποιήσετε πόντους αντί για διαφήμιση.');
+        console.error('Adsgram error:', error);
+    } finally {
+        isWatchingAds = false;
+        adBtn.disabled = false;
+        adBtn.textContent = originalText;
+        updateScanButtons();
     }
 }
 
 // ===== INIT =====
 updatePointsBadge();
 checkConsent();
-updateScanButton();
+updateScanButtons();
