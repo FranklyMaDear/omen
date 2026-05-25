@@ -16,7 +16,7 @@ function acceptConsent() {
 }
 
 // ===== POINTS SYSTEM =====
-const BLOCK_ID = '32708'; // Adsgram block ID
+const BLOCK_ID = '32708'; // Adsgram block ID (Reward type)
 const ANALYSIS_COST = 15;
 const DAILY_LIMIT = 5;
 const AD_POINTS = 10; // Πόντοι που δίνονται για 1 διαφήμιση
@@ -123,13 +123,16 @@ async function earnPoints() {
     earnBtn.textContent = '⏳ Φόρτωση διαφήμισης...';
 
     try {
+        // Έλεγχος διαθεσιμότητας SAD
+        if (typeof SAD === 'undefined') {
+            throw new Error('Το SDK δεν φορτώθηκε. Είναι το script σωστό;');
+        }
         await showAd();
-        // Επιτυχής προβολή
         addPoints(AD_POINTS);
         alert('Συγχαρητήρια! Κέρδισες 10 πόντους!');
     } catch (error) {
-        // Αποτυχία ή κλείσιμο
-        alert('Η διαφήμιση δεν ολοκληρώθηκε. Δοκίμασε ξανά.');
+        alert('Σφάλμα διαφήμισης: ' + (error.message || error));
+        console.error('Adsgram error:', error);
     } finally {
         isWatchingAds = false;
         earnBtn.disabled = false;
@@ -141,14 +144,15 @@ async function earnPoints() {
 function showAd() {
     return new Promise((resolve, reject) => {
         try {
-            const controller = new SAD.Adsgram({ blockId: BLOCK_ID });
-            controller.show().then(() => {
-                // Επιτυχής προβολή
-                resolve();
-            }).catch((err) => {
-                // Αποτυχία ή κλείσιμο
-                reject(err);
-            });
+            // Χρήση SAD.Reward αφού ο τύπος block είναι Reward
+            const controller = new SAD.Reward({ blockId: BLOCK_ID });
+            controller.show()
+                .then(() => {
+                    resolve();
+                })
+                .catch((err) => {
+                    reject(err);
+                });
         } catch (e) {
             reject(e);
         }
@@ -523,6 +527,10 @@ async function openCamera(facingMode) {
         video.srcObject = currentStream;
         document.getElementById('camera-wrapper').style.display = 'block';
         document.getElementById('captureBtn').style.display = 'flex';
+        // Scroll προς τα κάτω για να φανεί το capture button αν χρειαστεί
+        setTimeout(() => {
+            document.getElementById('captureBtn').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 300);
     } catch (err) {
         alert("Δεν μπόρεσα να ανοίξω την κάμερα. Δοκίμασε το 'Ανέβασμα'.");
     }
@@ -583,6 +591,10 @@ function showPreview(imageSrc) {
     document.getElementById('preview-img').src = imageSrc;
     document.getElementById('preview-wrapper').style.display = 'block';
     updateScanButton();
+    // Scroll για να φανεί το scan button
+    setTimeout(() => {
+        document.getElementById('scanBtn').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 200);
 }
 
 function addStarsToResult() {
