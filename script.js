@@ -15,11 +15,45 @@ function acceptConsent() {
     startLifelineCycle();
 }
 
+// ===== ADSGRAM ΡΥΘΜΙΣΕΙΣ =====
+const ADSGRAM_BLOCK_ID = '32708';
+let AdController = null;
+
+function initAdsgram() {
+    if (typeof window.Adsgram !== 'undefined') {
+        AdController = window.Adsgram.init({ blockId: ADSGRAM_BLOCK_ID });
+        console.log('✅ Adsgram SDK initialized');
+    } else {
+        console.warn('⏳ Adsgram SDK not loaded, retrying...');
+        setTimeout(initAdsgram, 1000);
+    }
+}
+
+window.addEventListener('load', initAdsgram);
+
+function showAd() {
+    return new Promise((resolve, reject) => {
+        if (!AdController) {
+            alert('Οι διαφημίσεις δεν είναι ακόμα διαθέσιμες. Δοκίμασε ξανά σε λίγο.');
+            reject('not_ready');
+            return;
+        }
+        AdController.show()
+            .then((result) => {
+                console.log('✅ Ad finished:', result);
+                resolve(result);
+            })
+            .catch((result) => {
+                console.warn('⚠️ Ad error or skipped:', result);
+                reject(result);
+            });
+    });
+}
+
 // ===== POINTS SYSTEM =====
-const BLOCK_ID = '32708'; // Adsgram block ID (Reward type)
 const ANALYSIS_COST = 15;
 const DAILY_LIMIT = 5;
-const AD_POINTS = 10; // Πόντοι που δίνονται για 1 διαφήμιση
+const AD_POINTS = 10;
 
 let isWatchingAds = false;
 
@@ -121,14 +155,15 @@ async function earnPoints() {
     earnBtn.textContent = '⏳ Φόρτωση διαφήμισης...';
 
     try {
-        if (typeof SAD === 'undefined') {
-            throw new Error('Το SDK δεν φορτώθηκε.');
+        const result = await showAd();
+        if (result && result.done) {
+            addPoints(AD_POINTS);
+            alert('Συγχαρητήρια! Κέρδισες 10 πόντους!');
+        } else {
+            alert('Η διαφήμιση δεν ολοκληρώθηκε. Δοκίμασε ξανά.');
         }
-        await showAd();
-        addPoints(AD_POINTS);
-        alert('Συγχαρητήρια! Κέρδισες 10 πόντους!');
     } catch (error) {
-        alert('Σφάλμα διαφήμισης: ' + (error.message || error));
+        alert('Σφάλμα διαφήμισης: ' + (error?.message || error));
         console.error('Adsgram error:', error);
     } finally {
         isWatchingAds = false;
@@ -136,20 +171,6 @@ async function earnPoints() {
         earnBtn.textContent = originalText;
         updateScanButton();
     }
-}
-
-function showAd() {
-    return new Promise((resolve, reject) => {
-        try {
-            const controller = new SAD.Adsgram({ blockId: BLOCK_ID });
-            // Απλή κλήση show – ο τύπος Rewards αναγνωρίζεται αυτόματα από το block
-            controller.show()
-                .then(() => resolve())
-                .catch((err) => reject(err));
-        } catch (e) {
-            reject(e);
-        }
-    });
 }
 
 // ===== LIFELINE ROLL-UP =====
@@ -211,7 +232,6 @@ document.addEventListener('click', function(e) {
 });
 
 // ===== TRANSLATION =====
-// (υπόλοιπος κώδικας μετάφρασης παραμένει ο ίδιος)
 var originalTexts = {};
 var currentLang = 'el';
 
