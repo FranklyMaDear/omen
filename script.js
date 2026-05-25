@@ -127,7 +127,6 @@ function canAnalyze() {
     return points >= ANALYSIS_COST && analyses < DAILY_LIMIT;
 }
 
-// ===== BUTTON TEXT UPDATE (με μετάφραση) =====
 function getScanButtonText() {
     const points = getPoints();
     const analyses = getDailyAnalyses();
@@ -148,9 +147,7 @@ function updateScanButton() {
     const btn = document.getElementById('scanBtn');
     const canDo = canAnalyze();
     btn.disabled = !canDo;
-    // Χρησιμοποιούμε τη συνάρτηση κειμένου ώστε να μπορεί να μεταφραστεί
     btn.textContent = getScanButtonText();
-    // Αν έχει ήδη γίνει μετάφραση, ξαναμεταφράζουμε το κουμπί
     if (currentLang !== 'el') {
         translateSingleElement(btn, btn.textContent, currentLang);
     }
@@ -248,6 +245,15 @@ var originalTexts = {};
 var currentLang = 'el';
 var originalResultText = '';
 
+function setLanguage(lang) {
+    localStorage.setItem('omen_lang', lang);
+    currentLang = lang;
+}
+
+function getStoredLanguage() {
+    return localStorage.getItem('omen_lang') || 'el';
+}
+
 function saveOriginalTexts() {
     document.querySelectorAll('[data-translate="true"]').forEach(function(el) {
         var key = el.outerHTML;
@@ -321,7 +327,7 @@ function startTranslation() {
     var lang = document.getElementById('language-select').value;
     if (lang === 'el') {
         restoreOriginalTexts();
-        currentLang = 'el';
+        setLanguage('el');
         document.getElementById('reset-lang-btn').style.display = 'none';
         updateScanButton();
         if (originalResultText && document.getElementById('result-area').style.display !== 'none') {
@@ -333,6 +339,7 @@ function startTranslation() {
     btn.classList.add('translating');
     btn.textContent = '⟳';
     btn.disabled = true;
+    setLanguage(lang);
     translatePage(lang).then(() => {
         updateScanButton();
         if (originalResultText && document.getElementById('result-area').style.display !== 'none') {
@@ -378,7 +385,6 @@ async function translatePage(targetLang) {
             }
         } catch (e) { console.log('Translation error:', e); }
     }
-    currentLang = targetLang;
     finishTranslation();
 }
 
@@ -442,7 +448,7 @@ function restoreOriginalTexts() {
 
 function resetToGreek() {
     restoreOriginalTexts();
-    currentLang = 'el';
+    setLanguage('el');
     document.getElementById('language-select').value = 'el';
     document.getElementById('reset-lang-btn').style.display = 'none';
     updateScanButton();
@@ -480,7 +486,10 @@ function detectLanguage() {
     var label = document.getElementById('lang-label');
     if (label) { label.textContent = labelMap[mappedLang] || '🌐 Language'; }
     if (mappedLang !== 'el') {
+        setLanguage(mappedLang);
         setTimeout(function() { startTranslation(); }, 1000);
+    } else {
+        setLanguage('el');
     }
 }
 detectLanguage();
@@ -678,7 +687,7 @@ function addStarsToResult() {
     }
 }
 
-// ===== ΚΥΡΙΑ ΛΟΓΙΚΗ ΑΝΑΛΥΣΗΣ =====
+// ===== ΚΥΡΙΑ ΛΟΓΙΚΗ ΑΝΑΛΥΣΗΣ (με μετάφραση βάσει stored language) =====
 async function performAnalysis() {
     if (!currentImageBase64 || isAnalyzing) return;
     if (!canAnalyze()) {
@@ -711,12 +720,19 @@ async function performAnalysis() {
         if (data.success && data.symbols) {
             deductPoints(ANALYSIS_COST);
             incrementDailyAnalyses();
-            originalResultText = data.symbols;
+            originalResultText = data.symbols; // ελληνικό πρωτότυπο
             document.getElementById('result-text').textContent = data.symbols;
             document.getElementById('result-area').style.display = 'block';
             addStarsToResult();
-            if (currentLang !== 'el') {
-                await translateResult(data.symbols, currentLang);
+
+            // Μετάφραση αν η αποθηκευμένη γλώσσα δεν είναι ελληνικά
+            const lang = getStoredLanguage();
+            if (lang !== 'el') {
+                try {
+                    await translateResult(originalResultText, lang);
+                } catch (e) {
+                    console.warn('Η μετάφραση του αποτελέσματος απέτυχε, εμφανίζεται στα ελληνικά.');
+                }
             }
             document.getElementById('result-area').scrollIntoView({ behavior: 'smooth' });
         } else {
