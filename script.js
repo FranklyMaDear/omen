@@ -127,37 +127,21 @@ function canAnalyze() {
     return points >= ANALYSIS_COST && analyses < DAILY_LIMIT;
 }
 
-function updateScanButtons() {
-    const pointsBtn = document.getElementById('scanBtn');
-    const adBtn = document.getElementById('scanBtnAd');
+function updateScanButton() {
+    const btn = document.getElementById('scanBtn');
     const points = getPoints();
     const analyses = getDailyAnalyses();
-    const hasDailySlots = analyses < DAILY_LIMIT;
-    const hasPoints = points >= ANALYSIS_COST;
-
-    // Αν έχει φτάσει το ημερήσιο όριο
-    if (!hasDailySlots) {
-        pointsBtn.disabled = true;
-        pointsBtn.textContent = '🔒 Ημερήσιο όριο (5/5 αναλύσεις)';
-        pointsBtn.style.display = 'block';
-        adBtn.style.display = 'none';
-        return;
+    const canDo = points >= ANALYSIS_COST && analyses < DAILY_LIMIT;
+    btn.disabled = !canDo;
+    if (!canDo) {
+        if (points < ANALYSIS_COST) {
+            btn.textContent = '🔒 Χρειάζεσαι 15 πόντους (Κέρδισε με διαφήμιση)';
+        } else {
+            btn.textContent = '🔒 Ημερήσιο όριο (5/5 αναλύσεις)';
+        }
+    } else {
+        btn.textContent = '🔮 Ανάλυση Φλιτζανιού (15 πόντοι)';
     }
-
-    // Αν δεν έχει πόντους
-    if (!hasPoints) {
-        pointsBtn.disabled = true;
-        pointsBtn.textContent = '🔒 Χρειάζεσαι 15 πόντους';
-        pointsBtn.style.display = 'block';
-        adBtn.style.display = 'block';  // Προσφέρουμε δωρεάν ανάλυση με διαφήμιση
-        return;
-    }
-
-    // Έχει και πόντους και daily slots
-    pointsBtn.disabled = false;
-    pointsBtn.textContent = '🔮 Ανάλυση Φλιτζανιού (15 πόντοι)';
-    pointsBtn.style.display = 'block';
-    adBtn.style.display = 'block';  // Προσφέρουμε και τις δύο επιλογές
 }
 
 // ===== EARN POINTS =====
@@ -185,7 +169,7 @@ async function earnPoints() {
         isWatchingAds = false;
         earnBtn.disabled = false;
         earnBtn.textContent = originalText;
-        updateScanButtons();
+        updateScanButton();
     }
 }
 
@@ -250,6 +234,7 @@ document.addEventListener('click', function(e) {
 // ===== TRANSLATION =====
 var originalTexts = {};
 var currentLang = 'el';
+var originalResultText = '';
 
 function saveOriginalTexts() {
     document.querySelectorAll('[data-translate="true"]').forEach(function(el) {
@@ -268,31 +253,29 @@ var correctionMap = {
         'Καφεμαντεία': 'Coffee Reading', 'καφεμαντεία': 'Coffee Reading',
         'Καφεμαντεία με AI': 'Coffee Reading with AI', 'καφεμαντεία με AI': 'Coffee Reading with AI',
         'Ανάλυση Φλιτζανιού': 'Cup Analysis', 'ανάλυση φλιτζανιού': 'Cup Analysis',
-        'Η Ετυμηγορία του Καφέ': 'The Coffee Verdict', 'η ετυμηγορία του καφέ': 'The Coffee Verdict'
+        'Η Ετυμηγορία του Καφέ': 'The Coffee Verdict', 'η ετυμηγορία του καφέ': 'The Coffee Verdict',
+        'Μαντάμ Ζαΐρα': 'Madame Zaira', 'μαντάμ ζαΐρα': 'Madame Zaira'
     },
     'de': {
         'Coffee schop': 'Kaffee Lesen', 'coffee schop': 'Kaffee Lesen',
         'Coffee shop': 'Kaffee Lesen', 'coffee shop': 'Kaffee Lesen',
         'Καφεμαντεία': 'Kaffee Lesen', 'καφεμαντεία': 'Kaffee Lesen',
-        'Καφεμαντεία mit AI': 'Kaffee Lesen mit AI', 'καφεμαντεία mit AI': 'Kaffee Lesen mit AI'
+        'Μαντάμ Ζαΐρα': 'Madame Zaira'
     },
     'fr': {
         'Coffee schop': 'Lecture de Café', 'coffee schop': 'Lecture de Café',
         'Coffee shop': 'Lecture de Café', 'coffee shop': 'Lecture de Café',
-        'Καφεμαντεία': 'Lecture de Café', 'καφεμαντεία': 'Lecture de Café',
-        'Καφεμαντεία avec AI': 'Lecture de Café avec AI', 'καφεμαντεία avec AI': 'Lecture de Café avec AI'
+        'Καφεμαντεία': 'Lecture de Café', 'καφεμαντεία': 'Lecture de Café'
     },
     'es': {
         'Coffee schop': 'Lectura de Café', 'coffee schop': 'Lectura de Café',
         'Coffee shop': 'Lectura de Café', 'coffee shop': 'Lectura de Café',
-        'Καφεμαντεία': 'Lectura de Café', 'καφεμαντεία': 'Lectura de Café',
-        'Καφεμαντεία con AI': 'Lectura de Café con AI', 'καφεμαντεία con AI': 'Lectura de Café con AI'
+        'Καφεμαντεία': 'Lectura de Café', 'καφεμαντεία': 'Lectura de Café'
     },
     'it': {
         'Coffee schop': 'Lettura del Caffè', 'coffee schop': 'Lettura del Caffè',
         'Coffee shop': 'Lettura del Caffè', 'coffee shop': 'Lettura del Caffè',
-        'Καφεμαντεία': 'Lettura del Caffè', 'καφεμαντεία': 'Lettura del Caffè',
-        'Καφεμαντεία con AI': 'Lettura del Caffè con AI', 'καφεμαντεία con AI': 'Lettura del Caffè con AI'
+        'Καφεμαντεία': 'Lettura del Caffè', 'καφεμαντεία': 'Lettura del Caffè'
     },
     'ar': { 'Coffee schop': 'قراءة الفنجان', 'Coffee shop': 'قراءة الفنجان', 'Καφεμαντεία': 'قراءة الفنجان' },
     'zh-CN': { 'Coffee schop': '咖啡占卜', 'Coffee shop': '咖啡占卜', 'Καφεμαντεία': '咖啡占卜' },
@@ -318,12 +301,20 @@ function startTranslation() {
         restoreOriginalTexts();
         currentLang = 'el';
         document.getElementById('reset-lang-btn').style.display = 'none';
+        if (originalResultText && document.getElementById('result-area').style.display !== 'none') {
+            document.getElementById('result-text').textContent = originalResultText;
+        }
         return;
     }
     var btn = document.getElementById('translate-btn');
     btn.classList.add('translating');
     btn.textContent = '⟳';
-    translatePage(lang);
+    btn.disabled = true;
+    translatePage(lang).then(() => {
+        if (originalResultText && document.getElementById('result-area').style.display !== 'none') {
+            translateResult(originalResultText, lang);
+        }
+    });
 }
 
 async function translatePage(targetLang) {
@@ -338,8 +329,7 @@ async function translatePage(targetLang) {
         }
     });
     if (textsToTranslate.length === 0) {
-        document.getElementById('translate-btn').classList.remove('translating');
-        document.getElementById('translate-btn').textContent = '▶';
+        finishTranslation();
         return;
     }
     var batchSize = 10;
@@ -354,13 +344,17 @@ async function translatePage(targetLang) {
                     batchElements[j].textContent = correctedText;
                 }
             }
-        } catch (e) {
-            console.log('Translation error:', e);
-        }
+        } catch (e) { console.log('Translation error:', e); }
     }
     currentLang = targetLang;
-    document.getElementById('translate-btn').classList.remove('translating');
-    document.getElementById('translate-btn').textContent = '▶';
+    finishTranslation();
+}
+
+function finishTranslation() {
+    var btn = document.getElementById('translate-btn');
+    btn.classList.remove('translating');
+    btn.textContent = '▶';
+    btn.disabled = false;
     document.getElementById('reset-lang-btn').style.display = 'flex';
 }
 
@@ -372,13 +366,37 @@ async function translateBatch(texts, targetLang) {
     if (data && data[0]) {
         var translatedText = '';
         for (var i = 0; i < data[0].length; i++) {
-            if (data[0][i][0]) {
-                translatedText += data[0][i][0];
-            }
+            if (data[0][i][0]) translatedText += data[0][i][0];
         }
         translations = translatedText.split('|||');
     }
     return translations;
+}
+
+async function translateText(text, targetLang) {
+    var url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=' + targetLang + '&dt=t&q=' + encodeURIComponent(text);
+    try {
+        var response = await fetch(url);
+        var data = await response.json();
+        if (data && data[0]) {
+            var translated = '';
+            for (var i = 0; i < data[0].length; i++) {
+                if (data[0][i][0]) translated += data[0][i][0];
+            }
+            return translated;
+        }
+    } catch (e) { console.error('Translation failed', e); }
+    return text;
+}
+
+async function translateResult(original, targetLang) {
+    if (targetLang === 'el') {
+        document.getElementById('result-text').textContent = original;
+        return;
+    }
+    var translated = await translateText(original, targetLang);
+    var corrected = applyCorrections(translated, targetLang);
+    document.getElementById('result-text').textContent = corrected;
 }
 
 function restoreOriginalTexts() {
@@ -395,6 +413,9 @@ function resetToGreek() {
     currentLang = 'el';
     document.getElementById('language-select').value = 'el';
     document.getElementById('reset-lang-btn').style.display = 'none';
+    if (originalResultText && document.getElementById('result-area').style.display !== 'none') {
+        document.getElementById('result-text').textContent = originalResultText;
+    }
 }
 
 function detectLanguage() {
@@ -480,13 +501,13 @@ function goToScan() {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('scan').classList.add('active');
     resetScanUI();
-    updateScanButtons();
+    updateScanButton();
 }
 
 function goToSplash() {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('splash').classList.add('active');
-    updateScanButtons();
+    updateScanButton();
 }
 
 // ===== GENDER SELECTION =====
@@ -512,13 +533,13 @@ function resetScanUI() {
     document.getElementById('captureBtn').style.display = 'none';
     document.getElementById('preview-wrapper').style.display = 'none';
     document.getElementById('scanBtn').disabled = true;
-    document.getElementById('scanBtnAd').style.display = 'none';
     document.getElementById('loading-box').style.display = 'none';
     document.querySelectorAll('.result-star').forEach(s => s.remove());
     if (currentStream) {
         currentStream.getTracks().forEach(track => track.stop());
         currentStream = null;
     }
+    originalResultText = '';
 }
 
 function resetScan() {
@@ -528,9 +549,8 @@ function resetScan() {
     document.getElementById('inputControls').style.display = 'flex';
     document.getElementById('gender-select').style.display = 'flex';
     document.getElementById('scanBtn').style.display = 'block';
-    document.getElementById('scanBtnAd').style.display = 'none';
     document.getElementById('fileInput').value = "";
-    updateScanButtons();
+    updateScanButton();
 }
 
 async function openCamera(facingMode) {
@@ -603,7 +623,7 @@ function compressImage(image, maxWidth, quality) {
 function showPreview(imageSrc) {
     document.getElementById('preview-img').src = imageSrc;
     document.getElementById('preview-wrapper').style.display = 'block';
-    updateScanButtons();
+    updateScanButton();
     setTimeout(() => {
         document.getElementById('scanBtn').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, 200);
@@ -625,38 +645,23 @@ function addStarsToResult() {
     }
 }
 
-// ===== ΚΥΡΙΑ ΛΟΓΙΚΗ ΑΝΑΛΥΣΗΣ (REFACTORED) =====
-async function performAnalysis(usePoints = true) {
+// ===== ΚΥΡΙΑ ΛΟΓΙΚΗ ΑΝΑΛΥΣΗΣ (ΜΕ ΠΟΝΤΟΥΣ) =====
+async function performAnalysis() {
     if (!currentImageBase64 || isAnalyzing) return;
-
-    // Έλεγχος ημερήσιου ορίου
-    const analyses = getDailyAnalyses();
-    if (analyses >= DAILY_LIMIT) {
-        alert('Έχετε φτάσει το ημερήσιο όριο αναλύσεων (5/5). Επιστρέψτε αύριο.');
+    if (!canAnalyze()) {
+        alert('Δεν έχετε αρκετούς πόντους ή έχετε φτάσει το ημερήσιο όριο.');
         return;
     }
 
-    // Αν χρησιμοποιούμε πόντους, έλεγχος επάρκειας
-    if (usePoints && !canAnalyze()) {
-        alert('Δεν έχετε αρκετούς πόντους. Κερδίστε πόντους ή χρησιμοποιήστε τη δωρεάν ανάλυση με διαφήμιση.');
-        return;
-    }
-
-    // Απόκρυψη των κουμπιών ανάλυσης
     const scanBtn = document.getElementById('scanBtn');
-    const scanBtnAd = document.getElementById('scanBtnAd');
     isAnalyzing = true;
     scanBtn.disabled = true;
-    scanBtn.style.display = 'none';
-    scanBtnAd.style.display = 'none';
     document.getElementById('inputControls').style.display = 'none';
     document.getElementById('gender-select').style.display = 'none';
     document.getElementById('preview-wrapper').style.display = 'none';
 
-    // Εμφάνιση loading
-    const loadingBox = document.getElementById('loading-box');
-    loadingBox.style.display = 'block';
-    loadingBox.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('loading-box').style.display = 'block';
+    document.getElementById('loading-box').scrollIntoView({ behavior: 'smooth' });
 
     try {
         const response = await fetch(API_URL, {
@@ -669,73 +674,32 @@ async function performAnalysis(usePoints = true) {
         });
 
         if (!response.ok) throw new Error(`Server error: ${response.status}`);
-
         const data = await response.json();
         if (data.success && data.symbols) {
-            // Χρέωση πόντων μόνο αν usePoints = true
-            if (usePoints) {
-                deductPoints(ANALYSIS_COST);
-            }
+            deductPoints(ANALYSIS_COST);
             incrementDailyAnalyses();
+            originalResultText = data.symbols;
             document.getElementById('result-text').textContent = data.symbols;
             document.getElementById('result-area').style.display = 'block';
             addStarsToResult();
+            if (currentLang !== 'el') {
+                await translateResult(data.symbols, currentLang);
+            }
             document.getElementById('result-area').scrollIntoView({ behavior: 'smooth' });
         } else {
             throw new Error(data.error || "Άγνωστο σφάλμα");
         }
     } catch (error) {
         alert("🔮 Η Μαντάμ Ζαΐρα συνάντησε ένα πνευματικό εμπόδιο. Δοκίμασε ξανά.");
-        // Επαναφορά σε περίπτωση σφάλματος
-        currentImageBase64 = null;
         resetScan();
-        return;
     } finally {
         document.getElementById('loading-box').style.display = 'none';
         isAnalyzing = false;
-        updateScanButtons();
-    }
-}
-
-// ===== ΝΕΑ ΣΥΝΑΡΤΗΣΗ: ΔΩΡΕΑΝ ΑΝΑΛΥΣΗ ΜΕ ΔΙΑΦΗΜΙΣΗ =====
-async function startAnalysisWithAd() {
-    if (!currentImageBase64 || isAnalyzing) return;
-
-    // Έλεγχος ημερήσιου ορίου
-    const analyses = getDailyAnalyses();
-    if (analyses >= DAILY_LIMIT) {
-        alert('Έχετε φτάσει το ημερήσιο όριο αναλύσεων (5/5). Επιστρέψτε αύριο.');
-        return;
-    }
-
-    if (isWatchingAds) return;
-    isWatchingAds = true;
-
-    const adBtn = document.getElementById('scanBtnAd');
-    const originalText = adBtn.textContent;
-    adBtn.disabled = true;
-    adBtn.textContent = '⏳ Φόρτωση διαφήμισης...';
-
-    try {
-        const result = await showAd();
-        if (result && result.done) {
-            // Επιτυχής προβολή διαφήμισης -> δωρεάν ανάλυση
-            await performAnalysis(false);
-        } else {
-            alert('Η διαφήμιση δεν ολοκληρώθηκε. Μπορείτε να χρησιμοποιήσετε πόντους.');
-        }
-    } catch (error) {
-        alert('Σφάλμα διαφήμισης. Μπορείτε να χρησιμοποιήσετε πόντους αντί για διαφήμιση.');
-        console.error('Adsgram error:', error);
-    } finally {
-        isWatchingAds = false;
-        adBtn.disabled = false;
-        adBtn.textContent = originalText;
-        updateScanButtons();
+        updateScanButton();
     }
 }
 
 // ===== INIT =====
 updatePointsBadge();
 checkConsent();
-updateScanButtons();
+updateScanButton();
