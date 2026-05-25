@@ -119,21 +119,15 @@
         }
         .btn-mystic:hover { transform: scale(1.06) translateY(-4px); box-shadow: 0 0 70px rgba(241, 196, 15, 0.5); }
 
-        #points-badge {
-            position: fixed; bottom: 80px; right: 15px; z-index: 100;
-            background: rgba(20, 10, 40, 0.95); backdrop-filter: blur(12px);
-            border: 2px solid rgba(241, 196, 15, 0.5); border-radius: 30px;
-            padding: 10px 20px; display: flex; align-items: center; gap: 8px;
-            box-shadow: 0 0 30px rgba(241, 196, 15, 0.25); transition: all 0.3s;
-            font-weight: 700; color: #f7dc6f; font-size: 1rem; letter-spacing: 1px;
+        .points-inline {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(20, 10, 40, 0.9); border: 2px solid rgba(241, 196, 15, 0.5);
+            border-radius: 30px; padding: 8px 16px;
+            color: #f7dc6f; font-weight: 700; font-size: 0.95rem;
+            box-shadow: 0 0 15px rgba(241, 196, 15, 0.15);
+            white-space: nowrap;
         }
-        #points-badge .points-icon { font-size: 1.4rem; }
-        #points-badge.pop { animation: pointsPop 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1); }
-        @keyframes pointsPop {
-            0% { transform: scale(1); }
-            40% { transform: scale(1.25); }
-            100% { transform: scale(1); }
-        }
+        .points-inline .points-icon { font-size: 1.2rem; }
 
         .floating-points {
             position: fixed; pointer-events: none; z-index: 200;
@@ -519,17 +513,10 @@
             video { max-height: 45vh; }
             .btn-earn { padding: 12px 22px; font-size: 0.9rem; }
             .btn-green { padding: 16px; font-size: 1rem; }
-            #points-badge { bottom: 60px; right: 10px; padding: 8px 16px; font-size: 0.9rem; }
         }
     </style>
 </head>
 <body>
-
-    <!-- Points Badge -->
-    <div id="points-badge">
-        <span class="points-icon">💎</span>
-        <span id="points-value">0</span>
-    </div>
 
     <!-- CONSENT OVERLAY -->
     <div id="consent-overlay">
@@ -688,7 +675,14 @@
             <p data-translate="true">Διάλεξε μια εικόνα ή τράβηξε φωτογραφία</p>
         </div>
 
-        <button class="btn-earn" id="earnBtn" onclick="earnPoints()" data-translate="true">🎁 Κέρδισε 10 Πόντους</button>
+        <!-- Ενιαία γραμμή: κουμπί + διαμαντάκι πόντων -->
+        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; margin: 5px 0;">
+            <button class="btn-earn" id="earnBtn" onclick="earnPoints()" data-translate="true">🎁 Κέρδισε 10 Πόντους</button>
+            <span class="points-inline" id="points-inline">
+                <span class="points-icon">💎</span>
+                <span id="points-value">0</span>
+            </span>
+        </div>
 
         <div class="controls" id="inputControls">
             <button class="btn btn-gold" onclick="openCamera('environment')" data-translate="true">📷 Κάμερα</button>
@@ -712,6 +706,7 @@
             <img id="preview-img" src="" alt="Φλιτζάνι">
         </div>
 
+        <!-- Το κουμπί ανάλυσης έχει data-translate ώστε να μεταφράζεται και το δυναμικό κείμενο -->
         <button class="btn btn-green" id="scanBtn" onclick="performAnalysis()" disabled data-translate="true">🔮 Ανάλυση Φλιτζανιού (15 πόντοι)</button>
 
         <div id="loading-box">
