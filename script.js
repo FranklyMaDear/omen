@@ -63,16 +63,16 @@ function getPoints() {
 
 function setPoints(val) {
     localStorage.setItem('omen_points', val);
-    updatePointsBadge();
+    updatePointsDisplay();
 }
 
 function addPoints(amount) {
     const current = getPoints();
     setPoints(current + amount);
     showFloatingPoints(amount);
-    const badge = document.getElementById('points-badge');
-    badge.classList.add('pop');
-    setTimeout(() => badge.classList.remove('pop'), 600);
+    const inline = document.getElementById('points-inline');
+    inline.classList.add('pop');
+    setTimeout(() => inline.classList.remove('pop'), 600);
 }
 
 function deductPoints(amount) {
@@ -84,7 +84,7 @@ function deductPoints(amount) {
     return false;
 }
 
-function updatePointsBadge() {
+function updatePointsDisplay() {
     document.getElementById('points-value').textContent = getPoints();
 }
 
@@ -92,7 +92,7 @@ function showFloatingPoints(amount) {
     const el = document.createElement('div');
     el.className = 'floating-points';
     el.textContent = '+' + amount;
-    const badge = document.getElementById('points-badge');
+    const badge = document.getElementById('points-inline');
     const rect = badge.getBoundingClientRect();
     el.style.left = rect.left + 'px';
     el.style.top = rect.top + 'px';
@@ -127,20 +127,32 @@ function canAnalyze() {
     return points >= ANALYSIS_COST && analyses < DAILY_LIMIT;
 }
 
-function updateScanButton() {
-    const btn = document.getElementById('scanBtn');
+// ===== BUTTON TEXT UPDATE (με μετάφραση) =====
+function getScanButtonText() {
     const points = getPoints();
     const analyses = getDailyAnalyses();
     const canDo = points >= ANALYSIS_COST && analyses < DAILY_LIMIT;
-    btn.disabled = !canDo;
+
     if (!canDo) {
         if (points < ANALYSIS_COST) {
-            btn.textContent = '🔒 Χρειάζεσαι 15 πόντους (Κέρδισε με διαφήμιση)';
+            return '🔒 Χρειάζεσαι 15 πόντους (Κέρδισε με διαφήμιση)';
         } else {
-            btn.textContent = '🔒 Ημερήσιο όριο (5/5 αναλύσεις)';
+            return '🔒 Ημερήσιο όριο (5/5 αναλύσεις)';
         }
     } else {
-        btn.textContent = '🔮 Ανάλυση Φλιτζανιού (15 πόντοι)';
+        return '🔮 Ανάλυση Φλιτζανιού (15 πόντοι)';
+    }
+}
+
+function updateScanButton() {
+    const btn = document.getElementById('scanBtn');
+    const canDo = canAnalyze();
+    btn.disabled = !canDo;
+    // Χρησιμοποιούμε τη συνάρτηση κειμένου ώστε να μπορεί να μεταφραστεί
+    btn.textContent = getScanButtonText();
+    // Αν έχει ήδη γίνει μετάφραση, ξαναμεταφράζουμε το κουμπί
+    if (currentLang !== 'el') {
+        translateSingleElement(btn, btn.textContent, currentLang);
     }
 }
 
@@ -254,28 +266,38 @@ var correctionMap = {
         'Καφεμαντεία με AI': 'Coffee Reading with AI', 'καφεμαντεία με AI': 'Coffee Reading with AI',
         'Ανάλυση Φλιτζανιού': 'Cup Analysis', 'ανάλυση φλιτζανιού': 'Cup Analysis',
         'Η Ετυμηγορία του Καφέ': 'The Coffee Verdict', 'η ετυμηγορία του καφέ': 'The Coffee Verdict',
-        'Μαντάμ Ζαΐρα': 'Madame Zaira', 'μαντάμ ζαΐρα': 'Madame Zaira'
+        'Μαντάμ Ζαΐρα': 'Madame Zaira', 'μαντάμ ζαΐρα': 'Madame Zaira',
+        'Χρειάζεσαι': 'You need', 'χρειάζεσαι': 'You need',
+        'πόντους': 'points', 'πόντοι': 'points',
+        'Ημερήσιο όριο': 'Daily limit', 'ημερήσιο όριο': 'Daily limit',
+        'αναλύσεις': 'analyses',
+        'Κέρδισε με διαφήμιση': 'Earn with ad', 'κέρδισε με διαφήμιση': 'Earn with ad'
     },
     'de': {
         'Coffee schop': 'Kaffee Lesen', 'coffee schop': 'Kaffee Lesen',
         'Coffee shop': 'Kaffee Lesen', 'coffee shop': 'Kaffee Lesen',
-        'Καφεμαντεία': 'Kaffee Lesen', 'καφεμαντεία': 'Kaffee Lesen',
-        'Μαντάμ Ζαΐρα': 'Madame Zaira'
+        'Χρειάζεσαι': 'Du brauchst', 'χρειάζεσαι': 'Du brauchst',
+        'πόντους': 'Punkte', 'πόντοι': 'Punkte',
+        'Ημερήσιο όριο': 'Tageslimit', 'ημερήσιο όριο': 'Tageslimit',
+        'Κέρδισε με διαφήμιση': 'Mit Werbung verdienen'
     },
     'fr': {
         'Coffee schop': 'Lecture de Café', 'coffee schop': 'Lecture de Café',
-        'Coffee shop': 'Lecture de Café', 'coffee shop': 'Lecture de Café',
-        'Καφεμαντεία': 'Lecture de Café', 'καφεμαντεία': 'Lecture de Café'
+        'Χρειάζεσαι': 'Vous avez besoin de', 'χρειάζεσαι': 'Vous avez besoin de',
+        'πόντους': 'points', 'πόντοι': 'points',
+        'Ημερήσιο όριο': 'Limite quotidienne', 'ημερήσιο όριο': 'Limite quotidienne'
     },
     'es': {
         'Coffee schop': 'Lectura de Café', 'coffee schop': 'Lectura de Café',
-        'Coffee shop': 'Lectura de Café', 'coffee shop': 'Lectura de Café',
-        'Καφεμαντεία': 'Lectura de Café', 'καφεμαντεία': 'Lectura de Café'
+        'Χρειάζεσαι': 'Necesitas', 'χρειάζεσαι': 'Necesitas',
+        'πόντους': 'puntos', 'πόντοι': 'puntos',
+        'Ημερήσιο όριο': 'Límite diario', 'ημερήσιο όριο': 'Límite diario'
     },
     'it': {
         'Coffee schop': 'Lettura del Caffè', 'coffee schop': 'Lettura del Caffè',
-        'Coffee shop': 'Lettura del Caffè', 'coffee shop': 'Lettura del Caffè',
-        'Καφεμαντεία': 'Lettura del Caffè', 'καφεμαντεία': 'Lettura del Caffè'
+        'Χρειάζεσαι': 'Hai bisogno di', 'χρειάζεσαι': 'Hai bisogno di',
+        'πόντους': 'punti', 'πόντοι': 'punti',
+        'Ημερήσιο όριο': 'Limite giornaliero', 'ημερήσιο όριο': 'Limite giornaliero'
     },
     'ar': { 'Coffee schop': 'قراءة الفنجان', 'Coffee shop': 'قراءة الفنجان', 'Καφεμαντεία': 'قراءة الفنجان' },
     'zh-CN': { 'Coffee schop': '咖啡占卜', 'Coffee shop': '咖啡占卜', 'Καφεμαντεία': '咖啡占卜' },
@@ -301,6 +323,7 @@ function startTranslation() {
         restoreOriginalTexts();
         currentLang = 'el';
         document.getElementById('reset-lang-btn').style.display = 'none';
+        updateScanButton();
         if (originalResultText && document.getElementById('result-area').style.display !== 'none') {
             document.getElementById('result-text').textContent = originalResultText;
         }
@@ -311,10 +334,19 @@ function startTranslation() {
     btn.textContent = '⟳';
     btn.disabled = true;
     translatePage(lang).then(() => {
+        updateScanButton();
         if (originalResultText && document.getElementById('result-area').style.display !== 'none') {
             translateResult(originalResultText, lang);
         }
     });
+}
+
+async function translateSingleElement(el, text, targetLang) {
+    try {
+        var translated = await translateText(text, targetLang);
+        var corrected = applyCorrections(translated, targetLang);
+        el.textContent = corrected;
+    } catch (e) { console.log('Translation error for element:', e); }
 }
 
 async function translatePage(targetLang) {
@@ -413,6 +445,7 @@ function resetToGreek() {
     currentLang = 'el';
     document.getElementById('language-select').value = 'el';
     document.getElementById('reset-lang-btn').style.display = 'none';
+    updateScanButton();
     if (originalResultText && document.getElementById('result-area').style.display !== 'none') {
         document.getElementById('result-text').textContent = originalResultText;
     }
@@ -645,7 +678,7 @@ function addStarsToResult() {
     }
 }
 
-// ===== ΚΥΡΙΑ ΛΟΓΙΚΗ ΑΝΑΛΥΣΗΣ (ΜΕ ΠΟΝΤΟΥΣ) =====
+// ===== ΚΥΡΙΑ ΛΟΓΙΚΗ ΑΝΑΛΥΣΗΣ =====
 async function performAnalysis() {
     if (!currentImageBase64 || isAnalyzing) return;
     if (!canAnalyze()) {
@@ -700,6 +733,6 @@ async function performAnalysis() {
 }
 
 // ===== INIT =====
-updatePointsBadge();
+updatePointsDisplay();
 checkConsent();
 updateScanButton();
