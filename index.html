@@ -178,28 +178,28 @@
         }
         .btn-mystic:hover { transform: scale(1.06) translateY(-4px); box-shadow: 0 0 70px rgba(241, 196, 15, 0.5); }
 
-        /* Points Badge */
+        /* Points Badge - lowered position for Telegram */
         #points-badge {
             position: fixed;
-            top: 15px;
+            top: 80px;
             right: 15px;
             z-index: 100;
-            background: rgba(20, 10, 40, 0.9);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(241, 196, 15, 0.4);
+            background: rgba(20, 10, 40, 0.95);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(241, 196, 15, 0.5);
             border-radius: 30px;
-            padding: 8px 18px;
+            padding: 10px 20px;
             display: flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 0 25px rgba(241, 196, 15, 0.2);
+            box-shadow: 0 0 30px rgba(241, 196, 15, 0.25);
             transition: all 0.3s;
             font-weight: 700;
             color: #f7dc6f;
-            font-size: 0.95rem;
+            font-size: 1rem;
             letter-spacing: 1px;
         }
-        #points-badge .points-icon { font-size: 1.2rem; }
+        #points-badge .points-icon { font-size: 1.4rem; }
         #points-badge.pop { animation: pointsPop 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1); }
         @keyframes pointsPop {
             0% { transform: scale(1); }
@@ -225,10 +225,10 @@
         .btn-earn {
             background: linear-gradient(145deg, #f39c12, #e67e22);
             color: #1a0e1f;
-            padding: 14px 32px;
+            padding: 14px 28px;
             border-radius: 60px;
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 0.95rem;
             cursor: pointer;
             box-shadow: 0 6px 25px rgba(241,196,15,0.3);
             transition: all 0.4s;
@@ -237,6 +237,9 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            width: auto;
+            max-width: 280px;
+            margin: 5px auto;
         }
         .btn-earn:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 12px 40px rgba(241,196,15,0.5); }
         .btn-earn:disabled { background: #3a3a4a; color: #777; cursor: not-allowed; box-shadow: none; }
@@ -779,7 +782,7 @@
 </head>
 <body>
 
-    <!-- Points Badge (always visible) -->
+    <!-- Points Badge (lowered for Telegram visibility) -->
     <div id="points-badge">
         <span class="points-icon">💎</span>
         <span id="points-value">0</span>
@@ -850,7 +853,6 @@
             Άφησε τις σκιές του καφέ να αποκαλύψουν το πεπρωμένο σου.
         </div>
         
-        <button class="btn-earn" onclick="earnPoints()" data-translate="true">🎁 Κέρδισε 30 Πόντους</button>
         <button class="btn-mystic" onclick="goToScan()" data-translate="true">🔮 Ανάλυση Φλιτζανιού</button>
 
         <div class="install-prompt">
@@ -917,7 +919,8 @@
             <p data-translate="true">Διάλεξε μια εικόνα ή τράβηξε φωτογραφία</p>
         </div>
 
-        <button class="btn-earn" onclick="earnPoints()" data-translate="true">🎁 Κέρδισε 30 Πόντους</button>
+        <!-- Earn Points Button (only on scan page) -->
+        <button class="btn-earn" id="earnBtn" onclick="earnPoints()" data-translate="true">🎁 Κέρδισε 10 Πόντους</button>
 
         <div class="controls" id="inputControls">
             <button class="btn btn-gold" onclick="openCamera('environment')" data-translate="true">📷 Κάμερα</button>
@@ -941,7 +944,7 @@
             <img id="preview-img" src="" alt="Φλιτζάνι">
         </div>
 
-        <button class="btn btn-green" id="scanBtn" onclick="startAnalysis()" disabled data-translate="true">🔮 Ανάλυση Φλιτζανιού (10 πόντοι)</button>
+        <button class="btn btn-green" id="scanBtn" onclick="startAnalysis()" disabled data-translate="true">🔮 Ανάλυση Φλιτζανιού (15 πόντοι)</button>
 
         <div id="loading-box">
             <div class="mantra" data-translate="true">✨ Η Μαντάμ Ζαΐρα διαβάζει τις σκιές... ✨</div>
