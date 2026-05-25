@@ -15,6 +15,143 @@ function acceptConsent() {
     startLifelineCycle();
 }
 
+// ===== POINTS SYSTEM =====
+const BLOCK_ID = '32708'; // Adsgram block ID
+const ANALYSIS_COST = 10;
+const DAILY_LIMIT = 5;
+const AD_POINTS = 30; // Πόντοι που δίνονται αν δει και τις 2 διαφημίσεις
+
+let isWatchingAds = false; // Για αποφυγή double click
+
+function getPoints() {
+    return parseInt(localStorage.getItem('omen_points') || '0');
+}
+
+function setPoints(val) {
+    localStorage.setItem('omen_points', val);
+    updatePointsBadge();
+}
+
+function addPoints(amount) {
+    const current = getPoints();
+    setPoints(current + amount);
+    showFloatingPoints(amount);
+    // Κάνε pop animation
+    const badge = document.getElementById('points-badge');
+    badge.classList.add('pop');
+    setTimeout(() => badge.classList.remove('pop'), 600);
+}
+
+function deductPoints(amount) {
+    const current = getPoints();
+    if (current >= amount) {
+        setPoints(current - amount);
+        return true;
+    }
+    return false;
+}
+
+function updatePointsBadge() {
+    document.getElementById('points-value').textContent = getPoints();
+}
+
+function showFloatingPoints(amount) {
+    const el = document.createElement('div');
+    el.className = 'floating-points';
+    el.textContent = '+' + amount;
+    // Τοποθέτηση κοντά στο badge
+    const badge = document.getElementById('points-badge');
+    const rect = badge.getBoundingClientRect();
+    el.style.left = rect.left + 'px';
+    el.style.top = rect.top + 'px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1500);
+}
+
+// ===== DAILY LIMIT =====
+function getToday() {
+    return new Date().toISOString().split('T')[0];
+}
+
+function getDailyAnalyses() {
+    const today = getToday();
+    const saved = localStorage.getItem('omen_daily_date');
+    if (saved !== today) {
+        localStorage.setItem('omen_daily_date', today);
+        localStorage.setItem('omen_daily_count', '0');
+        return 0;
+    }
+    return parseInt(localStorage.getItem('omen_daily_count') || '0');
+}
+
+function incrementDailyAnalyses() {
+    const count = getDailyAnalyses() + 1;
+    localStorage.setItem('omen_daily_count', count);
+}
+
+function canAnalyze() {
+    const points = getPoints();
+    const analyses = getDailyAnalyses();
+    return points >= ANALYSIS_COST && analyses < DAILY_LIMIT;
+}
+
+function updateScanButton() {
+    const btn = document.getElementById('scanBtn');
+    const points = getPoints();
+    const analyses = getDailyAnalyses();
+    const canDo = points >= ANALYSIS_COST && analyses < DAILY_LIMIT;
+    btn.disabled = !canDo;
+    if (!canDo) {
+        if (points < ANALYSIS_COST) {
+            btn.textContent = '🔒 Χρειάζεσαι 10 πόντους (Κέρδισε με διαφήμιση)';
+        } else {
+            btn.textContent = '🔒 Ημερήσιο όριο (5/5 αναλύσεις)';
+        }
+    } else {
+        btn.textContent = '🔮 Ανάλυση Φλιτζανιού (10 πόντοι)';
+    }
+}
+
+// ===== EARN POINTS (2 ads, 30 points total) =====
+async function earnPoints() {
+    if (isWatchingAds) return;
+    isWatchingAds = true;
+
+    try {
+        // Πρώτη διαφήμιση
+        await showAd();
+        // Δεύτερη διαφήμιση
+        await showAd();
+
+        // Αν φτάσουμε εδώ, είδε και τις δύο
+        addPoints(AD_POINTS);
+        alert('Συγχαρητήρια! Κέρδισες 30 πόντους!');
+    } catch (error) {
+        // Αν αποτύχει ή κλείσει κάποια διαφήμιση, δεν παίρνει τίποτα
+        alert('Πρέπει να παρακολουθήσεις και τις δύο διαφημίσεις για να κερδίσεις πόντους.');
+    } finally {
+        isWatchingAds = false;
+        updateScanButton();
+    }
+}
+
+function showAd() {
+    return new Promise((resolve, reject) => {
+        try {
+            const controller = new SAD.Adsgram({ blockId: BLOCK_ID });
+            controller.show().then(() => {
+                // Επιτυχής προβολή
+                resolve();
+            }).catch((err) => {
+                // Αποτυχία ή κλείσιμο
+                reject(err);
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+}
+
 // ===== LIFELINE ROLL-UP BANNER =====
 let lifelineShowTimer = null;
 let lifelineHideTimer = null;
@@ -74,9 +211,6 @@ document.addEventListener('click', function(e) {
         e.target.classList.remove('active');
     }
 });
-
-// ===== RUN ON LOAD =====
-checkConsent();
 
 // ===== TRANSLATION =====
 var originalTexts = {};
@@ -323,11 +457,13 @@ function goToScan() {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('scan').classList.add('active');
     resetScanUI();
+    updateScanButton();
 }
 
 function goToSplash() {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('splash').classList.add('active');
+    updateScanButton();
 }
 
 // ===== GENDER SELECTION =====
@@ -369,6 +505,7 @@ function resetScan() {
     document.getElementById('gender-select').style.display = 'flex';
     document.getElementById('scanBtn').style.display = 'block';
     document.getElementById('fileInput').value = "";
+    updateScanButton();
 }
 
 async function openCamera(facingMode) {
@@ -442,8 +579,7 @@ function compressImage(image, maxWidth, quality) {
 function showPreview(imageSrc) {
     document.getElementById('preview-img').src = imageSrc;
     document.getElementById('preview-wrapper').style.display = 'block';
-    document.getElementById('scanBtn').disabled = false;
-    document.getElementById('scanBtn').scrollIntoView({ behavior: 'smooth' });
+    updateScanButton();
 }
 
 function addStarsToResult() {
@@ -466,6 +602,10 @@ function addStarsToResult() {
 
 async function startAnalysis() {
     if (!currentImageBase64 || isAnalyzing) return;
+    if (!canAnalyze()) {
+        alert('Δεν έχετε αρκετούς πόντους ή έχετε φτάσει το ημερήσιο όριο.');
+        return;
+    }
 
     const scanBtn = document.getElementById('scanBtn');
     isAnalyzing = true;
@@ -495,6 +635,10 @@ async function startAnalysis() {
         const data = await response.json();
 
         if (data.success && data.symbols) {
+            // Αφαίρεση πόντων και αύξηση ημερήσιου μετρητή
+            deductPoints(ANALYSIS_COST);
+            incrementDailyAnalyses();
+
             document.getElementById('result-text').textContent = data.symbols;
             document.getElementById('result-area').style.display = 'block';
             addStarsToResult();
@@ -508,5 +652,11 @@ async function startAnalysis() {
     } finally {
         document.getElementById('loading-box').style.display = 'none';
         isAnalyzing = false;
+        updateScanButton();
     }
 }
+
+// ===== INIT =====
+updatePointsBadge();
+checkConsent();
+updateScanButton();
