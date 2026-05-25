@@ -178,7 +178,7 @@
         }
         .btn-mystic:hover { transform: scale(1.06) translateY(-4px); box-shadow: 0 0 70px rgba(241, 196, 15, 0.5); }
 
-        /* Points Badge - lowered position for Telegram */
+        /* Points Badge - lowered for Telegram */
         #points-badge {
             position: fixed;
             top: 80px;
@@ -349,7 +349,12 @@
             50% { box-shadow: 0 -5px 45px rgba(241, 196, 15, 0.25); }
         }
 
-        #scan { gap: 20px; padding-top: 30px; padding-bottom: 40px; }
+        #scan { 
+            gap: 15px; 
+            padding-top: 20px; 
+            padding-bottom: 40px; 
+            justify-content: flex-start; /* for scrollable content */
+        }
         #scan .scan-header { text-align: center; width: 100%; }
         #scan .scan-header h2 {
             font-size: 2rem;
@@ -361,19 +366,19 @@
         }
         #scan .scan-header p { color: #b8a0d0; font-size: 0.9rem; letter-spacing: 1px; }
 
-        .controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin: 15px 0 20px; }
+        .controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin: 10px 0 15px; }
         .btn {
-            padding: 16px 28px;
+            padding: 14px 22px;
             border: none;
             border-radius: 60px;
             font-weight: 700;
-            font-size: 1.05rem;
+            font-size: 1rem;
             cursor: pointer;
             transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
             backdrop-filter: blur(4px);
             box-shadow: 0 6px 25px rgba(0,0,0,0.5);
             letter-spacing: 0.8px;
@@ -416,8 +421,8 @@
         .btn-red:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(231,76,60,0.4); }
 
         .gender-btn {
-            padding: 14px 32px;
-            font-size: 1.05rem;
+            padding: 12px 28px;
+            font-size: 1rem;
             font-weight: 600;
             border: 2px solid rgba(255,215,0,0.2);
             background: rgba(20,12,30,0.6);
@@ -433,11 +438,29 @@
         }
         .gender-btn:hover:not(.active) { border-color: rgba(255,215,0,0.5); color: #f7dc6f; transform: translateY(-2px); }
 
-        #camera-wrapper { display: none; width: 100%; max-width: 420px; margin: 10px auto; border-radius: 30px; border: 2px solid rgba(255,215,0,0.3); overflow: hidden; background: #0f0a18; }
-        video { width: 100%; display: block; border-radius: 28px; }
+        /* Camera wrapper fixed height to show buttons below */
+        #camera-wrapper {
+            display: none;
+            width: 100%;
+            max-width: 100%;
+            margin: 5px auto;
+            border-radius: 20px;
+            border: 2px solid rgba(255,215,0,0.3);
+            overflow: hidden;
+            background: #0f0a18;
+            max-height: 50vh;
+        }
+        video {
+            width: 100%;
+            height: auto;
+            max-height: 50vh;
+            display: block;
+            border-radius: 18px;
+            object-fit: contain;
+        }
 
-        #preview-wrapper { display: none; margin: 15px auto; text-align: center; }
-        #preview-img { max-width: 220px; width: 100%; border-radius: 30px; border: 2px solid #d4af37; box-shadow: 0 0 30px rgba(212,175,55,0.2); }
+        #preview-wrapper { display: none; margin: 10px auto; text-align: center; }
+        #preview-img { max-width: 200px; width: 100%; border-radius: 20px; border: 2px solid #d4af37; box-shadow: 0 0 30px rgba(212,175,55,0.2); }
         .preview-label { color: #d4af37; font-weight: 300; letter-spacing: 2px; margin-bottom: 6px; font-size: 0.9rem; }
 
         #loading-box {
@@ -446,19 +469,19 @@
             background: rgba(20, 12, 30, 0.95);
             backdrop-filter: blur(12px);
             border-radius: 40px;
-            padding: 40px 30px;
-            margin: 20px auto;
+            padding: 30px 20px;
+            margin: 15px auto;
             border: 2px solid rgba(255, 215, 0, 0.3);
             box-shadow: 0 0 80px rgba(241, 196, 15, 0.2);
             width: 100%;
-            max-width: 450px;
+            max-width: 400px;
         }
         #loading-box .mantra {
-            font-size: 1.6rem;
+            font-size: 1.4rem;
             color: #f5d76e;
             font-weight: 500;
             letter-spacing: 2px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             animation: mysticPulse 2s infinite ease-in-out;
         }
         @keyframes mysticPulse {
@@ -468,11 +491,11 @@
         }
 
         .waiting-text {
-            font-size: 1.1rem;
+            font-size: 1rem;
             color: #b9a6d4;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
             font-weight: 300;
-            padding: 10px 25px;
+            padding: 8px 20px;
             border-radius: 30px;
             background: rgba(255, 215, 0, 0.08);
         }
@@ -484,7 +507,7 @@
             border-top: 3px solid #f7dc6f;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 20px auto;
+            margin: 15px auto;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
@@ -492,9 +515,9 @@
             display: none;
             background: rgba(20, 12, 30, 0.8);
             backdrop-filter: blur(8px);
-            border-radius: 40px;
-            padding: 25px 20px;
-            margin-top: 20px;
+            border-radius: 30px;
+            padding: 20px 15px;
+            margin-top: 15px;
             border: 1px solid rgba(255,215,0,0.1);
             width: 100%;
             position: relative;
@@ -505,17 +528,17 @@
             font-weight: 300;
             text-align: center;
             border-bottom: 1px dashed rgba(255,215,0,0.2);
-            padding-bottom: 12px;
-            margin-bottom: 20px;
-            letter-spacing: 4px;
-            font-size: 1.8rem;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            letter-spacing: 3px;
+            font-size: 1.6rem;
             position: relative;
             z-index: 2;
         }
         #result-text {
             color: #e6d5f5;
-            font-size: 1rem;
-            line-height: 1.8;
+            font-size: 0.95rem;
+            line-height: 1.7;
             white-space: pre-wrap;
             word-wrap: break-word;
             position: relative;
@@ -661,7 +684,7 @@
             z-index: 2;
             text-align: center;
             padding: 20px;
-            margin-top: 30px;
+            margin-top: 20px;
             border-top: 1px solid rgba(255,215,0,0.1);
             width: 100%;
         }
@@ -761,8 +784,8 @@
         @media (max-width: 480px) {
             .splash-title { font-size: 2.4rem; }
             .splash-icon { width: 140px; height: 140px; }
-            .btn { padding: 14px 20px; font-size: 0.9rem; }
-            #loading-box .mantra { font-size: 1.3rem; }
+            .btn { padding: 12px 18px; font-size: 0.9rem; }
+            #loading-box .mantra { font-size: 1.2rem; }
             #consent-modal { padding: 25px 18px; }
             #consent-modal h2 { font-size: 1.3rem; }
             #consent-modal p { font-size: 0.85rem; }
@@ -777,6 +800,10 @@
             .install-prompt .install-text { font-size: 0.7rem; }
             .install-prompt .install-icon { font-size: 1.4rem; }
             .splash-desc { font-size: 0.7rem; }
+            #camera-wrapper { max-height: 45vh; }
+            video { max-height: 45vh; }
+            .btn-earn { padding: 12px 22px; font-size: 0.9rem; }
+            .btn-green { padding: 16px; font-size: 1rem; }
         }
     </style>
 </head>
@@ -929,7 +956,7 @@
             <input type="file" id="fileInput" style="display:none" accept="image/*" onchange="handleUpload(event)">
         </div>
 
-        <div id="gender-select" style="display: flex; gap: 15px; justify-content: center; margin: 5px 0 15px;">
+        <div id="gender-select" style="display: flex; gap: 15px; justify-content: center; margin: 5px 0 10px;">
             <button class="btn gender-btn active" onclick="selectGender('f', this)" data-translate="true">👩 Γυναίκα</button>
             <button class="btn gender-btn" onclick="selectGender('m', this)" data-translate="true">👨 Άντρας</button>
         </div>
