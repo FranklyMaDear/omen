@@ -34,6 +34,9 @@
     <link rel="shortcut icon" href="omen.png">
     <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Omen%20-%20%CE%9A%CE%B1%CF%86%CE%B5%CE%BC%CE%B1%CE%BD%CF%84%CE%B5%CE%AF%CE%B1%22%2C%22short_name%22%3A%22Omen%22%2C%22description%22%3A%22%CE%9A%CE%B1%CF%86%CE%B5%CE%BC%CE%B1%CE%BD%CF%84%CE%B5%CE%AF%CE%B1%20%CE%BC%CE%B5%20AI%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230a0a12%22%2C%22theme_color%22%3A%22%230a0a12%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22omen.png%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%7D%2C%7B%22src%22%3A%22omen.png%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
 
+    <!-- Adsgram SDK -->
+    <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html, body {
@@ -151,20 +154,9 @@
             animation: gentleGlow 3s infinite ease-in-out;
             cursor: default;
         }
-        .install-prompt .install-icon {
-            font-size: 1.8rem;
-            flex-shrink: 0;
-        }
-        .install-prompt .install-text {
-            color: #d5c8e8;
-            font-size: 0.8rem;
-            letter-spacing: 0.5px;
-            line-height: 1.5;
-        }
-        .install-prompt .install-text strong {
-            color: #f7dc6f;
-            font-weight: 600;
-        }
+        .install-prompt .install-icon { font-size: 1.8rem; flex-shrink: 0; }
+        .install-prompt .install-text { color: #d5c8e8; font-size: 0.8rem; letter-spacing: 0.5px; line-height: 1.5; }
+        .install-prompt .install-text strong { color: #f7dc6f; font-weight: 600; }
         @keyframes gentleGlow {
             0%, 100% { box-shadow: 0 0 15px rgba(241, 196, 15, 0.1); }
             50% { box-shadow: 0 0 25px rgba(241, 196, 15, 0.2); }
@@ -184,10 +176,70 @@
             letter-spacing: 3px;
             margin-top: 10px;
         }
-        .btn-mystic:hover {
-            transform: scale(1.06) translateY(-4px);
-            box-shadow: 0 0 70px rgba(241, 196, 15, 0.5);
+        .btn-mystic:hover { transform: scale(1.06) translateY(-4px); box-shadow: 0 0 70px rgba(241, 196, 15, 0.5); }
+
+        /* Points Badge */
+        #points-badge {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 100;
+            background: rgba(20, 10, 40, 0.9);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(241, 196, 15, 0.4);
+            border-radius: 30px;
+            padding: 8px 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 0 25px rgba(241, 196, 15, 0.2);
+            transition: all 0.3s;
+            font-weight: 700;
+            color: #f7dc6f;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
         }
+        #points-badge .points-icon { font-size: 1.2rem; }
+        #points-badge.pop { animation: pointsPop 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1); }
+        @keyframes pointsPop {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.25); }
+            100% { transform: scale(1); }
+        }
+
+        .floating-points {
+            position: fixed;
+            pointer-events: none;
+            z-index: 200;
+            font-weight: 900;
+            font-size: 1.4rem;
+            color: #f7dc6f;
+            text-shadow: 0 0 20px rgba(241, 196, 15, 0.8);
+            animation: floatUp 1.5s ease-out forwards;
+        }
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-80px) scale(1.5); }
+        }
+
+        .btn-earn {
+            background: linear-gradient(145deg, #f39c12, #e67e22);
+            color: #1a0e1f;
+            padding: 14px 32px;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 6px 25px rgba(241,196,15,0.3);
+            transition: all 0.4s;
+            letter-spacing: 1px;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-earn:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 12px 40px rgba(241,196,15,0.5); }
+        .btn-earn:disabled { background: #3a3a4a; color: #777; cursor: not-allowed; box-shadow: none; }
 
         #language-bar {
             display: flex; align-items: center; gap: 8px;
@@ -273,23 +325,9 @@
             box-shadow: 0 -5px 40px rgba(241, 196, 15, 0.3);
             background: rgba(30, 15, 50, 0.95);
         }
-        #lifeline-rollup .rollup-icon {
-            font-size: 1.4rem;
-            animation: crystalGlow 2s infinite ease-in-out;
-        }
-        #lifeline-rollup .rollup-text {
-            color: #f7dc6f;
-            font-weight: 600;
-            font-size: 0.9rem;
-            letter-spacing: 2px;
-        }
-        #lifeline-rollup .rollup-stars {
-            position: absolute;
-            pointer-events: none;
-            font-size: 0.8rem;
-            color: #f7dc6f;
-            opacity: 0.7;
-        }
+        #lifeline-rollup .rollup-icon { font-size: 1.4rem; animation: crystalGlow 2s infinite ease-in-out; }
+        #lifeline-rollup .rollup-text { color: #f7dc6f; font-weight: 600; font-size: 0.9rem; letter-spacing: 2px; }
+        #lifeline-rollup .rollup-stars { position: absolute; pointer-events: none; font-size: 0.8rem; color: #f7dc6f; opacity: 0.7; }
         #lifeline-rollup .rollup-star-1 { top: -12px; left: 15px; animation: starFloat 2s infinite ease-in-out; }
         #lifeline-rollup .rollup-star-2 { top: -8px; right: 20px; animation: starFloat 2.5s infinite ease-in-out 0.3s; }
         #lifeline-rollup .rollup-star-3 { bottom: -5px; left: 30px; animation: starFloat 3s infinite ease-in-out 0.6s; }
@@ -318,19 +356,9 @@
             background-clip: text;
             letter-spacing: 3px;
         }
-        #scan .scan-header p {
-            color: #b8a0d0;
-            font-size: 0.9rem;
-            letter-spacing: 1px;
-        }
+        #scan .scan-header p { color: #b8a0d0; font-size: 0.9rem; letter-spacing: 1px; }
 
-        .controls {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 16px;
-            margin: 15px 0 20px;
-        }
+        .controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin: 15px 0 20px; }
         .btn {
             padding: 16px 28px;
             border: none;
@@ -363,25 +391,11 @@
         .btn:hover::before { opacity: 1; }
         .btn:active { transform: scale(0.92); }
 
-        .btn-gold {
-            background: linear-gradient(145deg, #f7dc6f, #d4ac0d);
-            color: #1a0e1f;
-            box-shadow: 0 6px 25px rgba(241,196,15,0.3);
-        }
-        .btn-gold:hover {
-            transform: translateY(-5px) scale(1.03);
-            box-shadow: 0 12px 40px rgba(241,196,15,0.5);
-        }
+        .btn-gold { background: linear-gradient(145deg, #f7dc6f, #d4ac0d); color: #1a0e1f; box-shadow: 0 6px 25px rgba(241,196,15,0.3); }
+        .btn-gold:hover { transform: translateY(-5px) scale(1.03); box-shadow: 0 12px 40px rgba(241,196,15,0.5); }
 
-        .btn-purple {
-            background: linear-gradient(145deg, #a569bd, #7d3c98);
-            color: #fff;
-            box-shadow: 0 6px 25px rgba(155,89,182,0.3);
-        }
-        .btn-purple:hover {
-            transform: translateY(-5px) scale(1.03);
-            box-shadow: 0 12px 40px rgba(155,89,182,0.5);
-        }
+        .btn-purple { background: linear-gradient(145deg, #a569bd, #7d3c98); color: #fff; box-shadow: 0 6px 25px rgba(155,89,182,0.3); }
+        .btn-purple:hover { transform: translateY(-5px) scale(1.03); box-shadow: 0 12px 40px rgba(155,89,182,0.5); }
 
         .btn-green {
             background: linear-gradient(145deg, #2ecc71, #1e8449);
@@ -393,17 +407,9 @@
             border-radius: 50px;
             box-shadow: 0 6px 25px rgba(46,204,113,0.25);
         }
-        .btn-green:hover:not(:disabled) {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 12px 45px rgba(46,204,113,0.45);
-        }
+        .btn-green:hover:not(:disabled) { transform: translateY(-5px) scale(1.02); box-shadow: 0 12px 45px rgba(46,204,113,0.45); }
         .btn-green:disabled { background: #3a3a4a; color: #777; cursor: not-allowed; box-shadow: none; }
-        .btn-red {
-            background: linear-gradient(145deg, #e74c3c, #a93226);
-            color: #fff;
-            width: 100%;
-            max-width: 300px;
-        }
+        .btn-red { background: linear-gradient(145deg, #e74c3c, #a93226); color: #fff; width: 100%; max-width: 300px; }
         .btn-red:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(231,76,60,0.4); }
 
         .gender-btn {
@@ -422,11 +428,7 @@
             box-shadow: 0 0 30px rgba(241,196,15,0.4);
             transform: scale(1.05);
         }
-        .gender-btn:hover:not(.active) {
-            border-color: rgba(255,215,0,0.5);
-            color: #f7dc6f;
-            transform: translateY(-2px);
-        }
+        .gender-btn:hover:not(.active) { border-color: rgba(255,215,0,0.5); color: #f7dc6f; transform: translateY(-2px); }
 
         #camera-wrapper { display: none; width: 100%; max-width: 420px; margin: 10px auto; border-radius: 30px; border: 2px solid rgba(255,215,0,0.3); overflow: hidden; background: #0f0a18; }
         video { width: 100%; display: block; border-radius: 28px; }
@@ -481,10 +483,7 @@
             animation: spin 1s linear infinite;
             margin: 20px auto;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         #result-area {
             display: none;
@@ -549,10 +548,7 @@
             position: relative;
             z-index: 2;
         }
-        .btn-reset:hover {
-            background: rgba(255,215,0,0.08);
-            border-color: #f1c40f;
-        }
+        .btn-reset:hover { background: rgba(255,215,0,0.08); border-color: #f1c40f; }
 
         .btn-back {
             background: transparent;
@@ -783,7 +779,13 @@
 </head>
 <body>
 
-    <!-- ========== CONSENT OVERLAY ========== -->
+    <!-- Points Badge (always visible) -->
+    <div id="points-badge">
+        <span class="points-icon">💎</span>
+        <span id="points-value">0</span>
+    </div>
+
+    <!-- CONSENT OVERLAY -->
     <div id="consent-overlay">
         <div id="consent-modal">
             <div class="consent-icon">🔮</div>
@@ -801,68 +803,44 @@
         </div>
     </div>
 
-    <!-- ========== LEGAL OVERLAY: ΟΡΟΙ ΧΡΗΣΗΣ ========== -->
+    <!-- LEGAL OVERLAYS -->
     <div id="terms-overlay" class="legal-overlay">
         <div class="legal-modal">
             <button class="legal-close-btn" onclick="closeLegal('terms')" data-translate="true">✕</button>
             <h2 data-translate="true">📜 Όροι και Προϋποθέσεις Χρήσης</h2>
             <p data-translate="true"><strong>Τελευταία ενημέρωση: Μάιος 2026</strong></p>
             <p data-translate="true">Καλώς ορίσατε στο Omen (εφεξής «η Εφαρμογή» ή «ο Ιστότοπος»). Παρακαλούμε διαβάστε προσεκτικά τα παρακάτω κείμενα πριν χρησιμοποιήσετε τις υπηρεσίες μας. Η χρήση του ιστοτόπου συνεπάγεται την πλήρη και ανεπιφύλακτη αποδοχή των παρόντων όρων.</p>
-
             <h3 data-translate="true">1. Όριο Ηλικίας (Αυστηρά 18+)</h3>
             <p data-translate="true">Η χρήση της εφαρμογής Omen επιτρέπεται <strong>αποκλειστικά και μόνο</strong> σε άτομα που έχουν συμπληρώσει το 18ο έτος της ηλικίας τους (ενήλικες).</p>
-            <p data-translate="true">Με την αποδοχή των όρων και την επιλογή του σχετικού πλαισίου (checkbox), ο χρήστης δηλώνει υπεύθυνα ότι είναι ενήλικος.</p>
-            <p data-translate="true">Οι διαχειριστές του Omen δεν φέρουν καμία ευθύνη για ψευδείς δηλώσεις ηλικίας από πλευράς των επισκεπτών.</p>
-
             <h3 data-translate="true">2. Ψυχαγωγικός, Μη Κατευθυντικός και Χιουμοριστικός Χαρακτήρας</h3>
-            <p data-translate="true">Το Omen είναι μια ψηφιακή εφαρμογή που χρησιμοποιεί αλγόριθμους τεχνητής νοημοσύνης (AI) για να αναλύει σχήματα σε φωτογραφίες φλιτζανιών καφέ και να παράγει κείμενα βασισμένα σε ένα παραδοσιακό λεξικό συμβόλων.</p>
+            <p data-translate="true">Το Omen είναι μια ψηφιακή εφαρμογή που χρησιμοποιεί αλγόριθμους τεχνητής νοημοσύνης (AI).</p>
             <p data-translate="true">Η υπηρεσία παρέχεται <strong>αποκλειστικά και μόνο για σκοπούς χιούμορ, διασκέδασης και ψυχαγωγίας</strong>.</p>
-            <p data-translate="true">Τα αποτελέσματα της ανάλυσης δεν αποτελούν σε καμία περίπτωση πραγματικές, επιστημονικές, ιατρικές, ψυχολογικές, νομικές ή χρηματοοικονομικές προβλέψεις και συμβουλές.</p>
-            <p data-translate="true">Οι παραγόμενες απαντήσεις δεν έχουν σκοπό, πρόθεση ή ικανότητα να καθοδηγήσουν, να επηρεάσουν ή να κατευθύνουν τις αποφάσεις, τις πράξεις, την προσωπική ή την επαγγελματική ζωή των χρηστών.</p>
-
             <h3 data-translate="true">3. Περιορισμός Ευθύνης (Disclaimer)</h3>
             <p data-translate="true">Ο χρήστης συμφωνεί ότι χρησιμοποιεί την εφαρμογή με δική του αποκλειστική ευθύνη.</p>
-            <p data-translate="true">Οι δημιουργοί, οι ιδιοκτήτες και οι συνεργάτες του Omen δεν φέρουν καμία απολύτως αστική ή ποινική ευθύνη για οποιαδήποτε πράξη, απόφαση, απώλεια, ζημία (άμεση ή έμμεση) ή ψυχική αναστάτωση προκύψει από την ανάγνωση, την παρερμηνεία ή την εφαρμογή των χιουμοριστικών αποτελεσμάτων της καφεμαντείας στην πραγματική ζωή.</p>
-
             <h3 data-translate="true">4. Πνευματική Ιδιοκτησία</h3>
-            <p data-translate="true">Όλο το περιεχόμενο του ιστοτόπου (συμπεριλαμβανομένων των κειμένων, του λογότυπου, των γραφικών, των κωδίκων της εφαρμογής και του λεξικού συμβόλων) αποτελεί πνευματική ιδιοκτησία του Omen και προστατεύεται από τις σχετικές διατάξεις του ελληνικού και ευρωπαϊκού δικαίου.</p>
-            <p data-translate="true">Απαγορεύεται αυστηρά η αντιγραφή, αναπαραγωγή, αναδημοσίευση ή εμπορική εκμετάλλευση μέρους ή του συνόλου του κώδικα και των κειμένων χωρίς την έγγραφη άδεια των ιδιοκτητών.</p>
+            <p data-translate="true">Όλο το περιεχόμενο του ιστοτόπου αποτελεί πνευματική ιδιοκτησία του Omen.</p>
         </div>
     </div>
 
-    <!-- ========== LEGAL OVERLAY: ΠΟΛΙΤΙΚΗ ΑΠΟΡΡΗΤΟΥ ========== -->
     <div id="privacy-overlay" class="legal-overlay">
         <div class="legal-modal">
             <button class="legal-close-btn" onclick="closeLegal('privacy')" data-translate="true">✕</button>
             <h2 data-translate="true">🔒 Πολιτική Απορρήτου & Εμπιστευτικότητα</h2>
             <p data-translate="true"><strong>Τελευταία ενημέρωση: Μάιος 2026</strong></p>
-            <p data-translate="true">Στο Omen, η ιδιωτικότητα και η ασφάλεια των δεδομένων σας είναι η απόλυτη προτεραιότητά μας. Η παρούσα πολιτική εξηγεί πώς διαχειριζόμαστε τις πληροφορίες σας σύμφωνα με τον Γενικό Κανονισμό Προστασίας Δεδομένων της ΕΕ (GDPR).</p>
-
-            <h3 data-translate="true">1. Πώς Διαχειριζόμαστε τις Φωτογραφίες σας (Πολύ Σημαντικό)</h3>
-            <p data-translate="true"><strong>Δεν Αποθηκεύουμε τις Φωτογραφίες:</strong> Όταν τραβάτε ή ανεβάζετε μια φωτογραφία του φλιτζανιού σας, αυτή η εικόνα μετατρέπεται σε προσωρινή μορφή κώδικα (Base64) στη συσκευή σας και στέλνεται στον server μας αποκλειστικά και μόνο για να μεταφερθεί στο Gemini API της Google για την οπτική ανάλυση.</p>
-            <p data-translate="true"><strong>Καμία Μόνιμη Αποθήκευση:</strong> Οι φωτογραφίες σας ΔΕΝ αποθηκεύονται σε καμία βάση δεδομένων, ΔΕΝ κρατούνται στον server μας και διαγράφονται οριστικά από τη μνήμη αμέσως μόλις ολοκληρωθεί η ανάλυση (συνήθως μέσα σε ελάχιστα δευτερόλεπτα).</p>
-            <p data-translate="true">Δεν χρησιμοποιούμε τις φωτογραφίες για διαφημιστικούς σκοπούς, ούτε τις μοιραζόμαστε με τρίτους, εκτός από την ασφαλή, αυτοματοποιημένη αποστολή στο API της Google για την παραγωγή της πρόβλεψης.</p>
-
-            <h3 data-translate="true">2. Δεδομένα που Συλλέγουμε Αυτόματα (Cookies & Διαφημίσεις)</h3>
-            <p data-translate="true">Για τη σωστή λειτουργία της ιστοσελίδας και τη χρηματοδότησή της, συνεργαζόμαστε με τρίτες διαφημιστικές εταιρείες (όπως η Google AdSense και η Monetag). Αυτές οι εταιρείες ενδέχεται να συλλέγουν ανώνυμα τεχνικά δεδομένα:</p>
-            <p data-translate="true"><strong>Cookies:</strong> Χρησιμοποιούμε cookies για να θυμόμαστε τις προτιμήσεις σας (π.χ. αν έχετε πατήσει το checkbox ηλικίας) και για να αναλύουμε την επισκεψιμότητα (μέσω Google Analytics).</p>
-            <p data-translate="true"><strong>Διαφημίσεις Τρίτων (AdSense / Monetag):</strong> Οι διαφημιστές ενδέχεται να χρησιμοποιούν cookies για να προβάλλουν διαφημίσεις που σχετίζονται με τα ενδιαφέροντά σας. Μπορείτε να απενεργοποιήσετε τα εξατομικευμένα cookies μέσα από τις ρυθμίσεις του προγράμματος περιήγησής σας (browser).</p>
-            <p data-translate="true"><strong>Τοπική Αποθήκευση (Local Storage):</strong> Η εφαρμογή χρησιμοποιεί τοπική μνήμη στη συσκευή σας για να μετράει τις ημερήσιες προσπάθειές σας, ώστε να τηρούνται τα όρια χρήσης χωρίς να χρειάζεται να κάνετε εγγραφή (login).</p>
-
+            <h3 data-translate="true">1. Πώς Διαχειριζόμαστε τις Φωτογραφίες σας</h3>
+            <p data-translate="true"><strong>Δεν Αποθηκεύουμε τις Φωτογραφίες.</strong></p>
+            <h3 data-translate="true">2. Δεδομένα που Συλλέγουμε Αυτόματα</h3>
+            <p data-translate="true">Χρησιμοποιούμε cookies και τεχνολογίες για τη βελτίωση της εμπειρίας σας.</p>
             <h3 data-translate="true">3. Δικαιώματα των Χρηστών (GDPR)</h3>
-            <p data-translate="true">Σύμφωνα με τον ευρωπαϊκό νόμο, έχετε τα εξής δικαιώματα:</p>
-            <p data-translate="true">Το δικαίωμα να γνωρίζετε ποια δεδομένα σας επεξεργαζόμαστε (όπως εξηγείται στην παρούσα πολιτική, δεν κρατάμε προσωπικά σας στοιχεία ή φωτογραφίες).</p>
-            <p data-translate="true">Το δικαίωμα να διαγράψετε τα cookies και το ιστορικό του Omen από τον browser σας ανά πάσα στιγμή.</p>
-
-            <h3 data-translate="true">4. Αλλαγές στους Όρους και την Πολιτική Απορρήτου</h3>
-            <p data-translate="true">Το Omen διατηρεί το δικαίωμα να αλλάξει ή να επικαιροποιήσει αυτούς τους όρους και την πολιτική απορρήτου οποιαδήποτε στιγμή, προκειμένου να συμμορφώνεται με νέους νόμους ή τεχνικές αναβαθμίσεις. Οι αλλαγές θα εμφανίζονται σε αυτή τη σελίδα.</p>
-            <p data-translate="true">Για οποιαδήποτε απορία ή επικοινωνία σχετικά με τους όρους, παρακαλούμε επικοινωνήστε μαζί μας στη διεύθυνση ηλεκτρονικού ταχυδρομείου: <strong>info.franklydear@gmail.com</strong></p>
+            <p data-translate="true">Έχετε δικαίωμα να διαγράψετε τα cookies σας.</p>
+            <h3 data-translate="true">4. Αλλαγές στους Όρους</h3>
+            <p data-translate="true">Το Omen διατηρεί το δικαίωμα να αλλάξει αυτούς τους όρους.</p>
         </div>
     </div>
 
     <canvas id="bg-canvas"></canvas>
 
-    <!-- ========== SPLASH PAGE ========== -->
+    <!-- SPLASH PAGE -->
     <div id="splash" class="page active">
         <div class="splash-icon" id="splashIcon" onclick="goToScan()">🔮</div>
         <div class="splash-title">Omen</div>
@@ -871,6 +849,9 @@
             Η Μαντάμ Ζαΐρα σε περιμένει.<br>
             Άφησε τις σκιές του καφέ να αποκαλύψουν το πεπρωμένο σου.
         </div>
+        
+        <button class="btn-earn" onclick="earnPoints()" data-translate="true">🎁 Κέρδισε 30 Πόντους</button>
+        <button class="btn-mystic" onclick="goToScan()" data-translate="true">🔮 Ανάλυση Φλιτζανιού</button>
 
         <div class="install-prompt">
             <span class="install-icon">📲</span>
@@ -878,8 +859,6 @@
                 <strong>Συμβουλή:</strong> Προσθέστε αυτήν την εφαρμογή στην αρχική οθόνη του κινητού σας για άμεση πρόσβαση, σαν κανονική εφαρμογή!
             </span>
         </div>
-
-        <button class="btn-mystic" onclick="goToScan()" data-translate="true">🔮 Ξεκίνησε το ταξίδι</button>
 
         <div id="language-bar">
             <span class="lang-label" id="lang-label" data-translate="true">🌐 Γλώσσα</span>
@@ -918,7 +897,7 @@
         </div>
     </div>
 
-    <!-- ========== LIFELINE ROLLUP ========== -->
+    <!-- LIFELINE ROLLUP -->
     <div id="lifeline-rollup">
         <a href="https://lifeline.franklymadear.com" target="_blank" class="rollup-inner">
             <span class="rollup-stars rollup-star-1">✨</span>
@@ -930,13 +909,15 @@
         </a>
     </div>
 
-    <!-- ========== SCAN PAGE ========== -->
+    <!-- SCAN PAGE -->
     <div id="scan" class="page">
         <button class="btn-back" onclick="goToSplash()">☽ <span data-translate="true">Πίσω στην αρχή</span></button>
         <div class="scan-header">
             <h2 data-translate="true">Ανάλυση Φλιτζανιού</h2>
             <p data-translate="true">Διάλεξε μια εικόνα ή τράβηξε φωτογραφία</p>
         </div>
+
+        <button class="btn-earn" onclick="earnPoints()" data-translate="true">🎁 Κέρδισε 30 Πόντους</button>
 
         <div class="controls" id="inputControls">
             <button class="btn btn-gold" onclick="openCamera('environment')" data-translate="true">📷 Κάμερα</button>
@@ -960,7 +941,7 @@
             <img id="preview-img" src="" alt="Φλιτζάνι">
         </div>
 
-        <button class="btn btn-green" id="scanBtn" onclick="startAnalysis()" disabled data-translate="true">🔮 Ανάλυση Φλιτζανιού</button>
+        <button class="btn btn-green" id="scanBtn" onclick="startAnalysis()" disabled data-translate="true">🔮 Ανάλυση Φλιτζανιού (10 πόντοι)</button>
 
         <div id="loading-box">
             <div class="mantra" data-translate="true">✨ Η Μαντάμ Ζαΐρα διαβάζει τις σκιές... ✨</div>
@@ -976,7 +957,6 @@
             </div>
         </div>
 
-        <!-- FOOTER -->
         <div id="site-footer">
             <div class="footer-links">
                 <button class="footer-link" onclick="showLegal('terms')" data-translate="true">📜 Όροι Χρήσης</button>
@@ -985,7 +965,6 @@
         </div>
     </div>
 
-    <!-- ========== SCRIPTS ========== -->
     <script src="script.js"></script>
 </body>
 </html>
