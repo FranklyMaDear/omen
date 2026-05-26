@@ -108,10 +108,11 @@ function updateUIWithUserData(userData) {
     }
 
     userStarsUnlocks = userData.stars_unlocks_remaining || 0;
-    userReferralLink = userData.referral_link || '';
+    // ΔΕΝ χρησιμοποιούμε το referral_link από το backend αν είναι παλιό ή λάθος
+    // Το χτίζουμε φρέσκο μέσω της getReferralLink()
 
-    if (userData.referral_link) {
-        localStorage.setItem('omen_referral_link', userData.referral_link);
+    if (userData.referral_link && userData.referral_link.includes(OFFICIAL_BOT_USERNAME)) {
+        userReferralLink = userData.referral_link;
     }
 
     updateScanButton();
@@ -225,24 +226,15 @@ function updateScanButton() {
 // ====== REFERRAL SYSTEM (ΟΛΑ ΤΑ LINKS ΜΕ omenread_bot) ======
 
 /**
- * Βοηθητική συνάρτηση που επιστρέφει ΠΑΝΤΑ το σωστό referral link
- * Χρησιμοποιεί: 1) το link από το backend (userReferralLink), 
- *               2) αλλιώς το χτίζει με το OFFICIAL_BOT_USERNAME + currentUserId
- *               3) αν όλα αποτύχουν, επιστρέφει το link χωρίς user ID αλλά με σωστό bot
+ * ΚΑΘΑΡΗ ΣΥΝΑΡΤΗΣΗ ΠΟΥ ΧΤΙΖΕΙ ΠΑΝΤΑ ΦΡΕΣΚΟ REFERRAL LINK
+ * Δεν διαβάζει ποτέ από localStorage για να αποφύγει cached λάθος τιμές.
+ * Χρησιμοποιεί αποκλειστικά τη σταθερά OFFICIAL_BOT_USERNAME.
  */
 function getReferralLink() {
-    // Προτεραιότητα στο link που ήρθε από το backend
-    if (userReferralLink && userReferralLink.includes('omenread_bot')) {
-        return userReferralLink;
-    }
-    
-    // Αλλιώς χτίζουμε το link με το επίσημο bot username
     if (currentUserId) {
         return `https://t.me/${OFFICIAL_BOT_USERNAME}?start=${currentUserId}`;
     }
-    
-    // Έσχατη λύση: link χωρίς user ID (ο χρήστης πρέπει να ξαναμπεί)
-    console.error('❌ Could not generate referral link - no user ID');
+    // Fallback αν για κάποιο λόγο δεν έχουμε user ID
     return `https://t.me/${OFFICIAL_BOT_USERNAME}?start=unknown`;
 }
 
@@ -251,7 +243,7 @@ function createInviteModal() {
     const existingModal = document.getElementById('invite-modal');
     if (existingModal) existingModal.remove();
 
-    // ΧΡΗΣΗ ΤΗΣ ΒΟΗΘΗΤΙΚΗΣ ΣΥΝΑΡΤΗΣΗΣ – ΠΑΝΤΑ ΣΩΣΤΟ LINK
+    // ΠΑΝΤΑ ΦΡΕΣΚΟ LINK ΜΕΣΩ ΤΗΣ getReferralLink()
     const referralLink = getReferralLink();
 
     const userData = JSON.parse(localStorage.getItem('omen_user_data') || '{}');
