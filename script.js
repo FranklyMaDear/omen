@@ -17,7 +17,7 @@ const ANALYSIS_COST = 15;
 const DAILY_LIMIT = 5;
 const REFERRAL_REWARD = 20;
 
-// ΕΠΙΣΗΜΟ BOT USERNAME
+// ΕΠΙΣΗΜΟ BOT USERNAME – ΧΡΗΣΙΜΟΠΟΙΕΙΤΑΙ ΠΑΝΤΟΥ
 const OFFICIAL_BOT_USERNAME = 'omenread_bot';
 
 // State variables
@@ -47,6 +47,10 @@ function initTelegramWebApp() {
         if (tgWebApp.initDataUnsafe && tgWebApp.initDataUnsafe.user) {
             currentUserId = tgWebApp.initDataUnsafe.user.id;
             console.log('✅ Telegram User ID:', currentUserId);
+        } else {
+            // Fallback αν δεν υπάρχει initData
+            console.warn('⚠️ No initData, using fallback');
+            currentUserId = getOrCreateTestUserId();
         }
 
         // Handle viewport changes
@@ -58,17 +62,33 @@ function initTelegramWebApp() {
     } else {
         console.log('⚠️ Not running inside Telegram Mini App');
         // Fallback for testing
-        currentUserId = localStorage.getItem('omen_test_user_id');
-        if (!currentUserId) {
-            currentUserId = 'test_' + Date.now();
-            localStorage.setItem('omen_test_user_id', currentUserId);
-        }
+        currentUserId = getOrCreateTestUserId();
     }
+    
+    // Τελική δικλείδα ασφαλείας – το currentUserId δεν πρέπει να είναι ποτέ null
+    if (!currentUserId) {
+        currentUserId = 'unknown_' + Date.now();
+        console.error('❌ Could not determine user ID, using emergency fallback:', currentUserId);
+    }
+}
+
+function getOrCreateTestUserId() {
+    let testId = localStorage.getItem('omen_test_user_id');
+    if (!testId) {
+        testId = 'test_' + Date.now();
+        localStorage.setItem('omen_test_user_id', testId);
+        console.log('✅ Created test user ID:', testId);
+    }
+    return testId;
 }
 
 // ====== USER DATA MANAGEMENT ======
 async function loadUserData() {
-    if (!currentUserId) return;
+    if (!currentUserId) {
+        console.warn('⚠️ loadUserData called but currentUserId is null, retrying init...');
+        initTelegramWebApp();
+        if (!currentUserId) return;
+    }
 
     try {
         const response = await fetch(`/api/user/${currentUserId}`);
@@ -203,14 +223,36 @@ function updateScanButton() {
 }
 
 // ====== REFERRAL SYSTEM (ΟΛΑ ΤΑ LINKS ΜΕ omenread_bot) ======
+
+/**
+ * Βοηθητική συνάρτηση που επιστρέφει ΠΑΝΤΑ το σωστό referral link
+ * Χρησιμοποιεί: 1) το link από το backend (userReferralLink), 
+ *               2) αλλιώς το χτίζει με το OFFICIAL_BOT_USERNAME + currentUserId
+ *               3) αν όλα αποτύχουν, επιστρέφει το link χωρίς user ID αλλά με σωστό bot
+ */
+function getReferralLink() {
+    // Προτεραιότητα στο link που ήρθε από το backend
+    if (userReferralLink && userReferralLink.includes('omenread_bot')) {
+        return userReferralLink;
+    }
+    
+    // Αλλιώς χτίζουμε το link με το επίσημο bot username
+    if (currentUserId) {
+        return `https://t.me/${OFFICIAL_BOT_USERNAME}?start=${currentUserId}`;
+    }
+    
+    // Έσχατη λύση: link χωρίς user ID (ο χρήστης πρέπει να ξαναμπεί)
+    console.error('❌ Could not generate referral link - no user ID');
+    return `https://t.me/${OFFICIAL_BOT_USERNAME}?start=unknown`;
+}
+
 function createInviteModal() {
     // Remove existing modal if present
     const existingModal = document.getElementById('invite-modal');
     if (existingModal) existingModal.remove();
 
-    // ΧΡΗΣΗ ΤΟΥ ΕΠΙΣΗΜΟΥ BOT USERNAME
-    const referralLink = userReferralLink || 
-                        `https://t.me/${OFFICIAL_BOT_USERNAME}?start=${currentUserId}`;
+    // ΧΡΗΣΗ ΤΗΣ ΒΟΗΘΗΤΙΚΗΣ ΣΥΝΑΡΤΗΣΗΣ – ΠΑΝΤΑ ΣΩΣΤΟ LINK
+    const referralLink = getReferralLink();
 
     const userData = JSON.parse(localStorage.getItem('omen_user_data') || '{}');
     const invites = userData.successful_invites || 0;
@@ -264,6 +306,11 @@ function createInviteModal() {
 }
 
 function showInviteModal() {
+    // Πριν ανοίξουμε το modal, βεβαιωνόμαστε ότι έχουμε user ID
+    if (!currentUserId) {
+        console.warn('⚠️ currentUserId is null, reinitializing...');
+        initTelegramWebApp();
+    }
     createInviteModal();
     document.getElementById('invite-modal').style.display = 'flex';
 }
@@ -274,21 +321,24 @@ function closeInviteModal() {
 }
 
 function copyReferralLink() {
-    // ΧΡΗΣΗ ΤΟΥ ΕΠΙΣΗΜΟΥ BOT USERNAME
-    const referralLink = userReferralLink || 
-                        `https://t.me/${OFFICIAL_BOT_USERNAME}?start=${currentUserId}`;
+    const referralLink = getReferralLink();
 
     navigator.clipboard.writeText(referralLink).then(() => {
         showToast('✅ Το link αντιγράφηκε! Μοιράσου το με φίλους.');
     }).catch(() => {
-        showToast('❌ Αποτυχία αντιγραφής. Προσπάθησε ξανά.');
+        // Fallback για παλιότερους browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = referralLink;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showToast('✅ Το link αντιγράφηκε!');
     });
 }
 
 function shareViaTelegram() {
-    // ΧΡΗΣΗ ΤΟΥ ΕΠΙΣΗΜΟΥ BOT USERNAME
-    const referralLink = userReferralLink || 
-                        `https://t.me/${OFFICIAL_BOT_USERNAME}?start=${currentUserId}`;
+    const referralLink = getReferralLink();
 
     const shareText = encodeURIComponent(
         '🔮 Ανακάλυψε το μέλλον σου με την καφεμαντεία!\n' +
@@ -304,9 +354,7 @@ function shareViaTelegram() {
 }
 
 function shareViaWhatsApp() {
-    // ΧΡΗΣΗ ΤΟΥ ΕΠΙΣΗΜΟΥ BOT USERNAME
-    const referralLink = userReferralLink || 
-                        `https://t.me/${OFFICIAL_BOT_USERNAME}?start=${currentUserId}`;
+    const referralLink = getReferralLink();
 
     const shareText = encodeURIComponent(
         '🔮 Ανακάλυψε το μέλλον σου με την καφεμαντεία!\n' +
