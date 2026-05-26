@@ -1,6 +1,6 @@
 /**
  * Omen - Καφεμαντεία Mini App
- * Frontend Logic: Referral System, Telegram Stars, AI Analysis
+ * Frontend Logic: Referral System, Telegram Stars, AI Analysis, Translations, Lifeline Rollup
  * Επίσημο Bot: @omenread_bot
  */
 
@@ -17,7 +17,7 @@ const ANALYSIS_COST = 15;
 const DAILY_LIMIT = 5;
 const REFERRAL_REWARD = 20;
 
-// ΕΠΙΣΗΜΟ BOT USERNAME – ΠΟΤΕ ΠΛΕΟΝ ΔΕΝ ΑΛΛΑΖΕΙ
+// ΕΠΙΣΗΜΟ BOT USERNAME
 const OFFICIAL_BOT_USERNAME = 'omenread_bot';
 
 // State variables
@@ -31,11 +31,9 @@ let AdController = null;
 // Stars & Referral state
 let userStarsUnlocks = 0;
 
-// ====== ΚΑΘΑΡΙΣΜΑ ΠΑΛΙΩΝ CACHED ΔΕΔΟΜΕΝΩΝ ======
-localStorage.removeItem('omen_user_data');
-localStorage.removeItem('omen_referral_link');
-localStorage.removeItem('omen_points');
-localStorage.removeItem('omen_daily_count');
+// Lifeline timers
+let lifelineShowTimer = null;
+let lifelineHideTimer = null;
 
 // ====== TELEGRAM WEBAPP INITIALIZATION ======
 function initTelegramWebApp() {
@@ -198,12 +196,11 @@ function updateScanButton() {
     if (currentLang !== 'el') translateSingleElement(btn, btn.textContent, currentLang);
 }
 
-// ====== REFERRAL SYSTEM (ΑΜΕΣΟ ΧΤΙΣΙΜΟ LINK) ======
+// ====== REFERRAL SYSTEM ======
 function createInviteModal() {
     const existingModal = document.getElementById('invite-modal');
     if (existingModal) existingModal.remove();
 
-    // Φρέσκο link, ΠΟΤΕ από localStorage
     const userId = currentUserId || 'unknown';
     const referralLink = `https://t.me/${OFFICIAL_BOT_USERNAME}?start=${userId}`;
 
@@ -476,6 +473,7 @@ async function performAnalysis() {
                 resultArea.style.display = 'block';
                 addStarsToResult();
             }
+            // Μετάφραση αποτελέσματος αν δεν είναι ελληνικά
             if (currentLang !== 'el') {
                 try { await translateResult(originalResultText, currentLang); } catch (e) {}
             }
@@ -649,6 +647,7 @@ function selectGender(gender, btn) {
 
 // ====== PAGE NAVIGATION ======
 function goToScan() {
+    hideLifelineRollup();
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('scan').classList.add('active');
     resetScanUI();
@@ -658,12 +657,14 @@ function goToScan() {
 function goToSplash() {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('splash').classList.add('active');
+    updateScanButton();
 }
 
 // ====== CONSENT ======
 function checkConsent() {
     if (localStorage.getItem('omen_consent') === 'true') {
         document.getElementById('consent-overlay').classList.add('hidden');
+        startLifelineCycle();
     } else {
         document.getElementById('consent-overlay').classList.remove('hidden');
     }
@@ -672,6 +673,7 @@ function checkConsent() {
 function acceptConsent() {
     localStorage.setItem('omen_consent', 'true');
     document.getElementById('consent-overlay').classList.add('hidden');
+    startLifelineCycle();
 }
 
 // ====== LEGAL ======
@@ -726,25 +728,256 @@ async function earnPoints() {
     }
 }
 
-// ====== INIT ======
-document.addEventListener('DOMContentLoaded', () => {
-    initTelegramWebApp();
-    loadUserData();
-    updatePointsDisplay();
-    checkConsent();
-    updateScanButton();
-    initAdsgram();
-});
+// ====== TRANSLATION LOGIC (ΕΠΑΝΑΦΟΡΑ ΑΠΟ ΤΗΝ ΑΡΧΙΚΗ ΕΚΔΟΣΗ) ======
+var correctionMap = {
+    'en': {
+        'Coffee schop': 'Coffee Reading', 'coffee schop': 'Coffee Reading',
+        'Coffee shop': 'Coffee Reading', 'coffee shop': 'Coffee Reading',
+        'Καφεμαντεία': 'Coffee Reading', 'καφεμαντεία': 'Coffee Reading',
+        'Καφεμαντεία με AI': 'Coffee Reading with AI', 'καφεμαντεία με AI': 'Coffee Reading with AI',
+        'Ανάλυση Φλιτζανιού': 'Cup Analysis', 'ανάλυση φλιτζανιού': 'Cup Analysis',
+        'Η Ετυμηγορία του Καφέ': 'The Coffee Verdict', 'η ετυμηγορία του καφέ': 'The Coffee Verdict',
+        'Μαντάμ Ζαΐρα': 'Madame Zaira', 'μαντάμ ζαΐρα': 'Madame Zaira',
+        'Χρειάζεσαι': 'You need', 'χρειάζεσαι': 'You need',
+        'πόντους': 'points', 'πόντοι': 'points',
+        'Ημερήσιο όριο': 'Daily limit', 'ημερήσιο όριο': 'Daily limit',
+        'αναλύσεις': 'analyses',
+        'Κέρδισε με διαφήμιση': 'Earn with ad', 'κέρδισε με διαφήμιση': 'Earn with ad'
+    }
+};
 
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    setTimeout(() => {
-        initTelegramWebApp();
-        loadUserData();
-        updatePointsDisplay();
-        checkConsent();
+function saveOriginalTexts() {
+    document.querySelectorAll('[data-translate="true"]').forEach(function(el) {
+        var key = el.outerHTML;
+        if (!originalTexts[key]) {
+            originalTexts[key] = el.innerHTML.trim();
+        }
+    });
+}
+saveOriginalTexts();
+
+function setLanguage(lang) {
+    localStorage.setItem('omen_lang', lang);
+    currentLang = lang;
+}
+
+function getStoredLanguage() {
+    return localStorage.getItem('omen_lang') || 'el';
+}
+
+async function translateText(text, targetLang) {
+    var url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=' + targetLang + '&dt=t&q=' + encodeURIComponent(text);
+    try {
+        var response = await fetch(url);
+        var data = await response.json();
+        if (data && data[0]) {
+            var translated = '';
+            for (var i = 0; i < data[0].length; i++) {
+                if (data[0][i][0]) translated += data[0][i][0];
+            }
+            return translated;
+        }
+    } catch (e) { console.error('Translation failed', e); }
+    return text;
+}
+
+async function translateSingleElement(el, text, targetLang) {
+    try {
+        var translated = await translateText(text, targetLang);
+        var corrected = applyCorrections(translated, targetLang);
+        el.textContent = corrected;
+    } catch (e) { console.log('Translation error for element:', e); }
+}
+
+function applyCorrections(text, targetLang) {
+    if (correctionMap[targetLang]) {
+        var corrections = correctionMap[targetLang];
+        for (var wrong in corrections) {
+            var regex = new RegExp(wrong.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'gi');
+            text = text.replace(regex, corrections[wrong]);
+        }
+    }
+    return text;
+}
+
+async function translateBatch(texts, targetLang) {
+    var url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=el&tl=' + targetLang + '&dt=t&q=' + encodeURIComponent(texts.join('|||'));
+    var response = await fetch(url);
+    var data = await response.json();
+    var translations = [];
+    if (data && data[0]) {
+        var translatedText = '';
+        for (var i = 0; i < data[0].length; i++) {
+            if (data[0][i][0]) translatedText += data[0][i][0];
+        }
+        translations = translatedText.split('|||');
+    }
+    return translations;
+}
+
+async function translatePage(targetLang) {
+    var elements = document.querySelectorAll('[data-translate="true"]');
+    var textsToTranslate = [];
+    var elementsToUpdate = [];
+    elements.forEach(function(el) {
+        var text = el.textContent.trim();
+        if (text.length > 0 && text.length < 1500) {
+            textsToTranslate.push(text);
+            elementsToUpdate.push(el);
+        }
+    });
+    if (textsToTranslate.length === 0) {
+        finishTranslation();
+        return;
+    }
+    var batchSize = 10;
+    for (var i = 0; i < textsToTranslate.length; i += batchSize) {
+        var batch = textsToTranslate.slice(i, i + batchSize);
+        var batchElements = elementsToUpdate.slice(i, i + batchSize);
+        try {
+            var translatedTexts = await translateBatch(batch, targetLang);
+            for (var j = 0; j < batchElements.length; j++) {
+                if (translatedTexts[j]) {
+                    var correctedText = applyCorrections(translatedTexts[j], targetLang);
+                    batchElements[j].textContent = correctedText;
+                }
+            }
+        } catch (e) { console.log('Translation error:', e); }
+    }
+    finishTranslation();
+}
+
+function finishTranslation() {
+    var btn = document.getElementById('translate-btn');
+    btn.classList.remove('translating');
+    btn.textContent = '▶';
+    btn.disabled = false;
+    document.getElementById('reset-lang-btn').style.display = 'flex';
+}
+
+function startTranslation() {
+    var lang = document.getElementById('language-select').value;
+    if (lang === 'el') {
+        restoreOriginalTexts();
+        setLanguage('el');
+        document.getElementById('reset-lang-btn').style.display = 'none';
         updateScanButton();
-        initAdsgram();
-    }, 1);
+        if (originalResultText && document.getElementById('result-area').style.display !== 'none') {
+            document.getElementById('result-text').textContent = originalResultText;
+        }
+        return;
+    }
+    var btn = document.getElementById('translate-btn');
+    btn.classList.add('translating');
+    btn.textContent = '⟳';
+    btn.disabled = true;
+    setLanguage(lang);
+    translatePage(lang).then(() => {
+        updateScanButton();
+        if (originalResultText && document.getElementById('result-area').style.display !== 'none') {
+            translateResult(originalResultText, lang);
+        }
+    });
+}
+
+async function translateResult(original, targetLang) {
+    if (targetLang === 'el') {
+        document.getElementById('result-text').textContent = original;
+        return;
+    }
+    var translated = await translateText(original, targetLang);
+    var corrected = applyCorrections(translated, targetLang);
+    document.getElementById('result-text').textContent = corrected;
+}
+
+function restoreOriginalTexts() {
+    document.querySelectorAll('[data-translate="true"]').forEach(function(el) {
+        var key = el.outerHTML;
+        if (originalTexts[key]) {
+            el.innerHTML = originalTexts[key];
+        }
+    });
+}
+
+function resetToGreek() {
+    restoreOriginalTexts();
+    setLanguage('el');
+    document.getElementById('language-select').value = 'el';
+    document.getElementById('reset-lang-btn').style.display = 'none';
+    updateScanButton();
+    if (originalResultText && document.getElementById('result-area').style.display !== 'none') {
+        document.getElementById('result-text').textContent = originalResultText;
+    }
+}
+
+function detectLanguage() {
+    var userLang = navigator.language || navigator.userLanguage;
+    var langCode = userLang.split('-')[0];
+    var langMap = {
+        'el': 'el', 'en': 'en', 'de': 'de', 'fr': 'fr', 'es': 'es',
+        'it': 'it', 'ar': 'ar', 'zh': 'zh-CN', 'ja': 'ja', 'ru': 'ru',
+        'tr': 'tr', 'nl': 'nl', 'pt': 'pt', 'sv': 'sv', 'no': 'no',
+        'da': 'da', 'fi': 'fi', 'pl': 'pl', 'cs': 'cs', 'ro': 'ro',
+        'bg': 'bg', 'uk': 'uk', 'ko': 'ko', 'hi': 'hi', 'vi': 'vi',
+        'th': 'th', 'id': 'id', 'he': 'iw', 'iw': 'iw'
+    };
+    var mappedLang = langMap[langCode] || 'el';
+    var langSelect = document.getElementById('language-select');
+    if (langSelect) { langSelect.value = mappedLang; }
+    var labelMap = {
+        'el': '🌐 Γλώσσα', 'en': '🌐 Language', 'de': '🌐 Sprache',
+        'fr': '🌐 Langue', 'es': '🌐 Idioma', 'it': '🌐 Lingua',
+        'ar': '🌐 اللغة', 'zh-CN': '🌐 语言', 'ja': '🌐 言語',
+        'ru': '🌐 Язык', 'tr': '🌐 Dil', 'nl': '🌐 Taal',
+        'pt': '🌐 Idioma', 'sv': '🌐 Språk', 'no': '🌐 Språk',
+        'da': '🌐 Sprog', 'fi': '🌐 Kieli', 'pl': '🌐 Język',
+        'cs': '🌐 Jazyk', 'ro': '🌐 Limbă', 'bg': '🌐 Език',
+        'uk': '🌐 Мова', 'ko': '🌐 언어', 'hi': '🌐 भाषा',
+        'vi': '🌐 Ngôn ngữ', 'th': '🌐 ภาษา', 'id': '🌐 Bahasa',
+        'iw': '🌐 שפה'
+    };
+    var label = document.getElementById('lang-label');
+    if (label) { label.textContent = labelMap[mappedLang] || '🌐 Language'; }
+    if (mappedLang !== 'el') {
+        setLanguage(mappedLang);
+        setTimeout(function() { startTranslation(); }, 1000);
+    } else {
+        setLanguage('el');
+    }
+}
+detectLanguage();
+
+// ====== LIFELINE ROLLUP (ΕΠΑΝΑΦΟΡΑ ΑΠΟ ΤΗΝ ΑΡΧΙΚΗ ΕΚΔΟΣΗ) ======
+function startLifelineCycle() {
+    stopLifelineCycle();
+
+    function showBanner() {
+        const splashPage = document.getElementById('splash');
+        if (!splashPage || !splashPage.classList.contains('active')) {
+            lifelineShowTimer = setTimeout(showBanner, 1000);
+            return;
+        }
+        const rollup = document.getElementById('lifeline-rollup');
+        if (!rollup) return;
+        rollup.classList.add('visible');
+        lifelineHideTimer = setTimeout(() => {
+            rollup.classList.remove('visible');
+            lifelineShowTimer = setTimeout(showBanner, 5000);
+        }, 5000);
+    }
+
+    lifelineShowTimer = setTimeout(showBanner, 5000);
+}
+
+function stopLifelineCycle() {
+    if (lifelineShowTimer) { clearTimeout(lifelineShowTimer); lifelineShowTimer = null; }
+    if (lifelineHideTimer) { clearTimeout(lifelineHideTimer); lifelineHideTimer = null; }
+    const rollup = document.getElementById('lifeline-rollup');
+    if (rollup) { rollup.classList.remove('visible'); }
+}
+
+function hideLifelineRollup() {
+    stopLifelineCycle();
 }
 
 // ====== BACKGROUND STARS ======
@@ -771,8 +1004,23 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
     draw();
 })();
 
-// ====== TRANSLATION STUBS ======
-function translateSingleElement(el, text, lang) {}
-function translateResult(original, lang) {}
-function getStoredLanguage() { return localStorage.getItem('omen_lang')||'el'; }
-function startLifelineCycle() {}
+// ====== INIT ======
+document.addEventListener('DOMContentLoaded', () => {
+    initTelegramWebApp();
+    loadUserData();
+    updatePointsDisplay();
+    checkConsent();
+    updateScanButton();
+    initAdsgram();
+});
+
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    setTimeout(() => {
+        initTelegramWebApp();
+        loadUserData();
+        updatePointsDisplay();
+        checkConsent();
+        updateScanButton();
+        initAdsgram();
+    }, 1);
+}
