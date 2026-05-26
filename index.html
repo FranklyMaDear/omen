@@ -41,7 +41,6 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
 
-    <!-- Styles -->
     <style>
         /* ===== CSS Reset & Base ===== */
         * {
@@ -110,14 +109,8 @@
         }
 
         @keyframes fadeIn {
-            0% {
-                opacity: 0;
-                transform: scale(0.95);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1);
-            }
+            0% { opacity: 0; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1); }
         }
 
         .splash-icon {
@@ -139,16 +132,9 @@
         }
 
         @keyframes floatIcon {
-            0% {
-                transform: translateY(0px) scale(1);
-            }
-            50% {
-                transform: translateY(-12px) scale(1.02);
-                box-shadow: 0 0 120px rgba(241, 196, 15, 0.4);
-            }
-            100% {
-                transform: translateY(0px) scale(1);
-            }
+            0% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-12px) scale(1.02); box-shadow: 0 0 120px rgba(241, 196, 15, 0.4); }
+            100% { transform: translateY(0px) scale(1); }
         }
 
         .splash-title {
@@ -215,12 +201,8 @@
         }
 
         @keyframes gentleGlow {
-            0%, 100% {
-                box-shadow: 0 0 15px rgba(241, 196, 15, 0.1);
-            }
-            50% {
-                box-shadow: 0 0 25px rgba(241, 196, 15, 0.2);
-            }
+            0%, 100% { box-shadow: 0 0 15px rgba(241, 196, 15, 0.1); }
+            50% { box-shadow: 0 0 25px rgba(241, 196, 15, 0.2); }
         }
 
         /* ===== Buttons ===== */
@@ -286,14 +268,8 @@
         }
 
         @keyframes floatUp {
-            0% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-            100% {
-                opacity: 0;
-                transform: translateY(-80px) scale(1.5);
-            }
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-80px) scale(1.5); }
         }
 
         /* ===== Earn & Invite Buttons ===== */
@@ -454,9 +430,7 @@
         }
 
         @keyframes spin {
-            100% {
-                transform: rotate(360deg);
-            }
+            100% { transform: rotate(360deg); }
         }
 
         #reset-lang-btn {
@@ -570,34 +544,18 @@
         }
 
         @keyframes crystalGlow {
-            0%, 100% {
-                filter: drop-shadow(0 0 5px rgba(241, 196, 15, 0.5));
-                transform: scale(1);
-            }
-            50% {
-                filter: drop-shadow(0 0 15px rgba(241, 196, 15, 1));
-                transform: scale(1.15);
-            }
+            0%, 100% { filter: drop-shadow(0 0 5px rgba(241, 196, 15, 0.5)); transform: scale(1); }
+            50% { filter: drop-shadow(0 0 15px rgba(241, 196, 15, 1)); transform: scale(1.15); }
         }
 
         @keyframes starFloat {
-            0%, 100% {
-                transform: translateY(0) scale(1);
-                opacity: 0.5;
-            }
-            50% {
-                transform: translateY(-6px) scale(1.2);
-                opacity: 1;
-            }
+            0%, 100% { transform: translateY(0) scale(1); opacity: 0.5; }
+            50% { transform: translateY(-6px) scale(1.2); opacity: 1; }
         }
 
         @keyframes gentlePulse {
-            0%, 100% {
-                box-shadow: 0 -5px 30px rgba(241, 196, 15, 0.1);
-            }
-            50% {
-                box-shadow: 0 -5px 45px rgba(241, 196, 15, 0.25);
-            }
+            0%, 100% { box-shadow: 0 -5px 30px rgba(241, 196, 15, 0.1); }
+            50% { box-shadow: 0 -5px 45px rgba(241, 196, 15, 0.25); }
         }
 
         /* ===== Scan Page ===== */
@@ -835,18 +793,9 @@
         }
 
         @keyframes mysticPulse {
-            0% {
-                opacity: 0.5;
-                transform: scale(0.98);
-            }
-            50% {
-                opacity: 1;
-                transform: scale(1.04);
-            }
-            100% {
-                opacity: 0.5;
-                transform: scale(0.98);
-            }
+            0% { opacity: 0.5; transform: scale(0.98); }
+            50% { opacity: 1; transform: scale(1.04); }
+            100% { opacity: 0.5; transform: scale(0.98); }
         }
 
         .waiting-text {
@@ -918,18 +867,9 @@
         }
 
         @keyframes floatResultStar {
-            0% {
-                transform: translateY(0) rotate(0deg);
-                opacity: 0.3;
-            }
-            50% {
-                transform: translateY(-20px) rotate(180deg);
-                opacity: 0.8;
-            }
-            100% {
-                transform: translateY(0) rotate(360deg);
-                opacity: 0.3;
-            }
+            0% { transform: translateY(0) rotate(0deg); opacity: 0.3; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 0.8; }
+            100% { transform: translateY(0) rotate(360deg); opacity: 0.3; }
         }
 
         .btn-reset {
@@ -1003,14 +943,8 @@
         }
 
         @keyframes modalFadeIn {
-            0% {
-                opacity: 0;
-                transform: scale(0.9) translateY(20px);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
+            0% { opacity: 0; transform: scale(0.9) translateY(20px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
         }
 
         #consent-modal .consent-icon {
@@ -1244,140 +1178,53 @@
             font-weight: 600;
             text-align: center;
             max-width: 90%;
-            animation: fadeInUp 0.3s ease;
+            animation: toastFadeIn 0.3s ease;
         }
 
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateX(-50%) translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0);
-            }
+        @keyframes toastFadeIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
 
-        @keyframes fadeOutDown {
-            from {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0);
-            }
-            to {
-                opacity: 0;
-                transform: translateX(-50%) translateY(20px);
-            }
+        @keyframes toastFadeOut {
+            from { opacity: 1; transform: translateX(-50%) translateY(0); }
+            to { opacity: 0; transform: translateX(-50%) translateY(20px); }
         }
 
         /* ===== Mobile Responsive ===== */
         @media (max-width: 480px) {
-            .splash-title {
-                font-size: 2.4rem;
-            }
-            .splash-icon {
-                width: 140px;
-                height: 140px;
-            }
-            .btn {
-                padding: 12px 14px;
-                font-size: 0.85rem;
-            }
-            .controls {
-                gap: 4px;
-            }
-            #loading-box .mantra {
-                font-size: 1.2rem;
-            }
-            #consent-modal {
-                padding: 25px 18px;
-            }
-            #consent-modal h2 {
-                font-size: 1.3rem;
-            }
-            #consent-modal p {
-                font-size: 0.85rem;
-            }
-            #lifeline-rollup .rollup-inner {
-                padding: 10px 20px;
-            }
-            #lifeline-rollup .rollup-text {
-                font-size: 0.8rem;
-            }
-            #lifeline-rollup .rollup-icon {
-                font-size: 1.2rem;
-            }
-            #language-bar {
-                padding: 6px 10px;
-                gap: 5px;
-            }
-            #language-bar .lang-label {
-                font-size: 0.7rem;
-                min-width: 50px;
-            }
-            #language-bar select {
-                font-size: 0.7rem;
-                padding: 6px 25px 6px 8px;
-                min-width: 80px;
-            }
-            #translate-btn {
-                width: 30px;
-                height: 30px;
-                min-width: 30px;
-                font-size: 0.8rem;
-            }
-            #reset-lang-btn {
-                width: 30px;
-                height: 30px;
-                min-width: 30px;
-                font-size: 0.8rem;
-            }
-            .install-prompt .install-text {
-                font-size: 0.7rem;
-            }
-            .install-prompt .install-icon {
-                font-size: 1.4rem;
-            }
-            .splash-desc {
-                font-size: 0.7rem;
-            }
-            #camera-wrapper {
-                max-height: 45vh;
-            }
-            video {
-                max-height: 45vh;
-            }
-            .btn-earn {
-                padding: 12px 22px;
-                font-size: 0.9rem;
-            }
-            .btn-green {
-                padding: 16px;
-                font-size: 1rem;
-            }
-            #inviteBtn, #inviteBtnStatic {
-                padding: 12px 22px;
-                font-size: 0.9rem;
-            }
+            .splash-title { font-size: 2.4rem; }
+            .splash-icon { width: 140px; height: 140px; }
+            .btn { padding: 12px 14px; font-size: 0.85rem; }
+            .controls { gap: 4px; }
+            #loading-box .mantra { font-size: 1.2rem; }
+            #consent-modal { padding: 25px 18px; }
+            #consent-modal h2 { font-size: 1.3rem; }
+            #consent-modal p { font-size: 0.85rem; }
+            #lifeline-rollup .rollup-inner { padding: 10px 20px; }
+            #lifeline-rollup .rollup-text { font-size: 0.8rem; }
+            #lifeline-rollup .rollup-icon { font-size: 1.2rem; }
+            #language-bar { padding: 6px 10px; gap: 5px; }
+            #language-bar .lang-label { font-size: 0.7rem; min-width: 50px; }
+            #language-bar select { font-size: 0.7rem; padding: 6px 25px 6px 8px; min-width: 80px; }
+            #translate-btn { width: 30px; height: 30px; min-width: 30px; font-size: 0.8rem; }
+            #reset-lang-btn { width: 30px; height: 30px; min-width: 30px; font-size: 0.8rem; }
+            .install-prompt .install-text { font-size: 0.7rem; }
+            .install-prompt .install-icon { font-size: 1.4rem; }
+            .splash-desc { font-size: 0.7rem; }
+            #camera-wrapper { max-height: 45vh; }
+            video { max-height: 45vh; }
+            .btn-earn { padding: 12px 22px; font-size: 0.9rem; }
+            .btn-green { padding: 16px; font-size: 1rem; }
+            #inviteBtn, #inviteBtnStatic { padding: 12px 22px; font-size: 0.9rem; }
         }
 
         @media (max-width: 360px) {
-            .splash-title {
-                font-size: 2rem;
-            }
-            .splash-icon {
-                width: 120px;
-                height: 120px;
-            }
-            .btn {
-                padding: 10px 12px;
-                font-size: 0.8rem;
-            }
-            .controls {
-                gap: 3px;
-            }
-            #language-bar select {
-                min-width: 60px;
-            }
+            .splash-title { font-size: 2rem; }
+            .splash-icon { width: 120px; height: 120px; }
+            .btn { padding: 10px 12px; font-size: 0.8rem; }
+            .controls { gap: 3px; }
+            #language-bar select { min-width: 60px; }
         }
     </style>
 </head>
@@ -1610,6 +1457,6 @@
     </div>
 
     <!-- ===== MAIN SCRIPT ===== -->
-    <script src="script.js"></script>
+    <script src="script.js?v=4"></script>
 </body>
 </html>
