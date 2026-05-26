@@ -2,6 +2,7 @@
 Omen - Καφεμαντεία Mini App για Telegram
 Backend: Flask + python-telegram-bot v20+
 Περιλαμβάνει: Referral System, Telegram Stars (XTR), AI Analysis
+Επίσημο Bot: @omenread_bot
 """
 
 import logging
@@ -40,6 +41,9 @@ HUGGINGFACE_API_URL = os.environ.get(
 )
 HUGGINGFACE_API_KEY = os.environ.get("HUGGINGFACE_API_KEY", "hf_your_api_key_here")
 MINI_APP_URL = os.environ.get("MINI_APP_URL", "https://your-server.com")
+
+# ΕΠΙΣΗΜΟ BOT USERNAME
+OFFICIAL_BOT_USERNAME = "omenread_bot"
 
 # Constants
 ANALYSIS_COST = 15
@@ -389,7 +393,8 @@ def get_user_info(user_id):
     if not user:
         return jsonify({"error": "Failed to create user"}), 500
 
-    referral_link = f"https://t.me/{(await get_bot_username())}?start={user_id}"
+    # ΧΡΗΣΗ ΤΟΥ ΕΠΙΣΗΜΟΥ BOT USERNAME
+    referral_link = f"https://t.me/{OFFICIAL_BOT_USERNAME}?start={user_id}"
 
     response = {
         "user_id": user['user_id'],
@@ -416,7 +421,7 @@ async def get_bot_username():
         bot_info = await bot_instance.get_me()
         return bot_info.username
     except:
-        return "YourBotUsername"
+        return OFFICIAL_BOT_USERNAME  # Fallback στο επίσημο username
 
 @flask_app.route('/api/create-invoice', methods=['POST'])
 def create_invoice():
