@@ -1,6 +1,7 @@
 /**
  * Omen - Καφεμαντεία Mini App
  * Frontend Logic: Referral System, Telegram Stars, AI Analysis
+ * Επίσημο Bot: @omenread_bot
  */
 
 // ====== GLOBAL VARIABLES ======
@@ -15,6 +16,9 @@ const API_URL = '/api/analyze';
 const ANALYSIS_COST = 15;
 const DAILY_LIMIT = 5;
 const REFERRAL_REWARD = 20;
+
+// ΕΠΙΣΗΜΟ BOT USERNAME
+const OFFICIAL_BOT_USERNAME = 'omenread_bot';
 
 // State variables
 let isWatchingAds = false;
@@ -198,14 +202,15 @@ function updateScanButton() {
     }
 }
 
-// ====== REFERRAL SYSTEM ======
+// ====== REFERRAL SYSTEM (ΟΛΑ ΤΑ LINKS ΜΕ omenread_bot) ======
 function createInviteModal() {
     // Remove existing modal if present
     const existingModal = document.getElementById('invite-modal');
     if (existingModal) existingModal.remove();
 
+    // ΧΡΗΣΗ ΤΟΥ ΕΠΙΣΗΜΟΥ BOT USERNAME
     const referralLink = userReferralLink || 
-                        `https://t.me/YourBotUsername?start=${currentUserId}`;
+                        `https://t.me/${OFFICIAL_BOT_USERNAME}?start=${currentUserId}`;
 
     const userData = JSON.parse(localStorage.getItem('omen_user_data') || '{}');
     const invites = userData.successful_invites || 0;
@@ -269,8 +274,9 @@ function closeInviteModal() {
 }
 
 function copyReferralLink() {
+    // ΧΡΗΣΗ ΤΟΥ ΕΠΙΣΗΜΟΥ BOT USERNAME
     const referralLink = userReferralLink || 
-                        `https://t.me/YourBotUsername?start=${currentUserId}`;
+                        `https://t.me/${OFFICIAL_BOT_USERNAME}?start=${currentUserId}`;
 
     navigator.clipboard.writeText(referralLink).then(() => {
         showToast('✅ Το link αντιγράφηκε! Μοιράσου το με φίλους.');
@@ -280,8 +286,9 @@ function copyReferralLink() {
 }
 
 function shareViaTelegram() {
+    // ΧΡΗΣΗ ΤΟΥ ΕΠΙΣΗΜΟΥ BOT USERNAME
     const referralLink = userReferralLink || 
-                        `https://t.me/YourBotUsername?start=${currentUserId}`;
+                        `https://t.me/${OFFICIAL_BOT_USERNAME}?start=${currentUserId}`;
 
     const shareText = encodeURIComponent(
         '🔮 Ανακάλυψε το μέλλον σου με την καφεμαντεία!\n' +
@@ -297,8 +304,9 @@ function shareViaTelegram() {
 }
 
 function shareViaWhatsApp() {
+    // ΧΡΗΣΗ ΤΟΥ ΕΠΙΣΗΜΟΥ BOT USERNAME
     const referralLink = userReferralLink || 
-                        `https://t.me/YourBotUsername?start=${currentUserId}`;
+                        `https://t.me/${OFFICIAL_BOT_USERNAME}?start=${currentUserId}`;
 
     const shareText = encodeURIComponent(
         '🔮 Ανακάλυψε το μέλλον σου με την καφεμαντεία!\n' +
@@ -802,6 +810,7 @@ function showToast(message) {
         transform: translateX(-50%);
         background: rgba(20, 10, 40, 0.95);
         backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
         border: 2px solid rgba(241, 196, 15, 0.5);
         color: #f7dc6f;
         padding: 12px 24px;
@@ -810,13 +819,13 @@ function showToast(message) {
         font-weight: 600;
         text-align: center;
         max-width: 90%;
-        animation: fadeInUp 0.3s ease;
+        animation: toastFadeIn 0.3s ease;
     `;
     toast.textContent = message;
     document.body.appendChild(toast);
 
     setTimeout(() => {
-        toast.style.animation = 'fadeOutDown 0.3s ease';
+        toast.style.animation = 'toastFadeOut 0.3s ease';
         setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
@@ -824,11 +833,11 @@ function showToast(message) {
 // Add animation styles
 const toastStyles = document.createElement('style');
 toastStyles.textContent = `
-    @keyframes fadeInUp {
+    @keyframes toastFadeIn {
         from { opacity: 0; transform: translateX(-50%) translateY(20px); }
         to { opacity: 1; transform: translateX(-50%) translateY(0); }
     }
-    @keyframes fadeOutDown {
+    @keyframes toastFadeOut {
         from { opacity: 1; transform: translateX(-50%) translateY(0); }
         to { opacity: 0; transform: translateX(-50%) translateY(20px); }
     }
@@ -978,7 +987,7 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
     }, 1);
 }
 
-// Background stars (if needed)
+// Background stars
 function initBackgroundStars() {
     const canvas = document.getElementById('bg-canvas');
     if (!canvas) return;
@@ -1031,7 +1040,7 @@ function initBackgroundStars() {
 // Initialize stars
 initBackgroundStars();
 
-// ====== TRANSLATION STUBS (placeholder for your existing translation code) ======
+// ====== TRANSLATION STUBS ======
 function translateSingleElement(el, text, targetLang) {
     // Your existing translation logic
 }
@@ -1044,7 +1053,7 @@ function getStoredLanguage() {
     return localStorage.getItem('omen_lang') || 'el';
 }
 
-// ====== LIFELINE ROLLUP (placeholder) ======
+// ====== LIFELINE ROLLUP ======
 function startLifelineCycle() {
     // Your existing lifeline logic
 }
