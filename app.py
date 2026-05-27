@@ -16,7 +16,7 @@ import time
 from datetime import datetime, date, timedelta
 from io import BytesIO
 
-from flask import Flask, request, jsonify, render_template_string
+from flask import Flask, request, jsonify, render_template_string, send_from_directory
 from flask_cors import CORS
 
 from telegram import (
@@ -343,6 +343,10 @@ def serve_mini_app():
             return render_template_string(f.read())
     except FileNotFoundError:
         return "Mini App index.html not found", 404
+
+@flask_app.route('/script.js')
+def serve_script():
+    return send_from_directory('.', 'script.js')
 
 @flask_app.route('/api/health', methods=['GET'])
 def health_check():
