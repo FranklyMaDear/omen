@@ -1,7 +1,7 @@
 """
 Omen - Καφεμαντεία Mini App για Telegram
 Backend: Flask + python-telegram-bot v20+
-Περιλαμβάνει: Referral System, Telegram Stars (XTR), AI Analysis (Hugging Face)
+Περιλαμβάνει: Referral System, Telegram Stars (XTR), AI Analysis (Gemini 1.5 Flash)
 Επίσημο Bot: @omenread_bot
 """
 
@@ -11,6 +11,8 @@ import json
 import asyncio
 import base64
 import re
+import random
+import time
 from datetime import datetime, date, timedelta
 from io import BytesIO
 
@@ -35,11 +37,7 @@ from PIL import Image
 TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")
 WEBHOOK_URL = os.environ.get("WEBHOOK_URL", "https://your-server.com/webhook")
 ADMIN_USER_ID = int(os.environ.get("ADMIN_USER_ID", "123456789"))
-HUGGINGFACE_API_URL = os.environ.get(
-    "HUGGINGFACE_API_URL",
-    "https://api-inference.huggingface.co/models/your-model-name"
-)
-HUGGINGFACE_API_KEY = os.environ.get("HUGGINGFACE_API_KEY", "hf_your_api_key_here")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "YOUR_GEMINI_API_KEY_HERE")
 MINI_APP_URL = os.environ.get("MINI_APP_URL", "https://your-server.com")
 
 # ΕΠΙΣΗΜΟ BOT USERNAME
@@ -52,7 +50,7 @@ REFERRAL_REWARD = 20
 MAX_SUCCESSFUL_INVITES = 10
 STAR_UNLOCK_AMOUNT = 10
 STORY_SHARE_BONUS = 5
-NEW_USER_GIFT_POINTS = 50  # Δώρο 50 πόντων για νέους χρήστες
+NEW_USER_GIFT_POINTS = 50
 
 # ====== LOGGING ======
 logging.basicConfig(
@@ -73,7 +71,6 @@ bot_instance = telegram_app.bot
 DATABASE_PATH = "omen_users.db"
 
 def get_db_connection():
-    """Δημιουργεί σύνδεση με τη βάση δεδομένων"""
     conn = sqlite3.connect(DATABASE_PATH)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
@@ -81,11 +78,9 @@ def get_db_connection():
     return conn
 
 def init_database():
-    """Αρχικοποίηση της βάσης δεδομένων με όλους τους πίνακες"""
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Πίνακας χρηστών
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             user_id INTEGER PRIMARY KEY,
@@ -107,7 +102,6 @@ def init_database():
         )
     ''')
 
-    # Πίνακας παραπομπών (referrals)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS referrals (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -121,7 +115,6 @@ def init_database():
         )
     ''')
 
-    # Πίνακας συναλλαγών Stars
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS star_transactions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -135,7 +128,6 @@ def init_database():
         )
     ''')
 
-    # Πίνακας ιστορικού αναλύσεων
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS analysis_history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -158,7 +150,6 @@ init_database()
 # ====== HELPER FUNCTIONS ======
 
 def get_user(user_id):
-    """Ανάκτηση χρήστη από τη βάση"""
     conn = get_db_connection()
     user = conn.execute("SELECT * FROM users WHERE user_id = ?", (user_id,)).fetchone()
     conn.close()
@@ -166,17 +157,14 @@ def get_user(user_id):
 
 def create_or_update_user(user_id, username=None, first_name=None, last_name=None, 
                           language_code=None, referrer_id=None):
-    """Δημιουργεί ή ενημερώνει έναν χρήστη"""
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Έλεγχος ύπαρξης χρήστη
     existing = cursor.execute(
         "SELECT user_id FROM users WHERE user_id = ?", (user_id,)
     ).fetchone()
 
     if not existing:
-        # Δημιουργία νέου χρήστη με δώρο 50 πόντων
         cursor.execute('''
             INSERT INTO users (
                 user_id, username, first_name, last_name, language_code,
@@ -186,7 +174,6 @@ def create_or_update_user(user_id, username=None, first_name=None, last_name=Non
 
         logger.info(f"✅ New user created with {NEW_USER_GIFT_POINTS} gift points: {user_id}")
 
-        # Αν υπάρχει referrer, καταγραφή παραπομπής
         if referrer_id and referrer_id != user_id and referrer_id != 0:
             try:
                 cursor.execute('''
@@ -197,7 +184,6 @@ def create_or_update_user(user_id, username=None, first_name=None, last_name=Non
             except Exception as e:
                 logger.error(f"Referral insertion error: {e}")
     else:
-        # Ενημέρωση υπάρχοντος χρήστη
         cursor.execute('''
             UPDATE users 
             SET username = COALESCE(?, username),
@@ -211,7 +197,6 @@ def create_or_update_user(user_id, username=None, first_name=None, last_name=Non
     conn.close()
 
 def grant_referral_reward(referred_user_id):
-    """Δίνει το reward στον referrer μετά την πρώτη ανάλυση"""
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -248,7 +233,6 @@ def grant_referral_reward(referred_user_id):
     conn.close()
 
 async def send_referral_notification(referrer_id):
-    """Στέλνει ειδοποίηση στον referrer"""
     try:
         await bot_instance.send_message(
             chat_id=referrer_id,
@@ -264,14 +248,12 @@ async def send_referral_notification(referrer_id):
         logger.error(f"Failed to notify referrer {referrer_id}: {e}")
 
 def can_user_analyze(user_id):
-    """Ελέγχει αν ο χρήστης μπορεί να κάνει ανάλυση"""
     user = get_user(user_id)
     if not user:
         return False, "User not found"
 
     today = date.today().isoformat()
 
-    # Reset ημερήσιου μετρητή αν είναι νέα μέρα
     if user['last_analysis_date'] != today:
         conn = get_db_connection()
         conn.execute(
@@ -282,11 +264,9 @@ def can_user_analyze(user_id):
         conn.close()
         user['daily_analyses'] = 0
 
-    # Έλεγχος αν έχει stars unlocks
     if user['stars_unlocks_remaining'] > 0:
         return True, "stars"
 
-    # Έλεγχος πόντων και ημερήσιου ορίου
     if user['points'] < ANALYSIS_COST:
         return False, "insufficient_points"
     if user['daily_analyses'] >= DAILY_LIMIT:
@@ -295,7 +275,6 @@ def can_user_analyze(user_id):
     return True, "points"
 
 def deduct_analysis_cost(user_id, method='points'):
-    """Αφαιρεί το κόστος ανάλυσης"""
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -322,7 +301,6 @@ def deduct_analysis_cost(user_id, method='points'):
     conn.close()
 
 def add_analysis_to_history(user_id, image_hash, result_text, gender, unlocked_via):
-    """Καταγράφει την ανάλυση στο ιστορικό"""
     conn = get_db_connection()
     conn.execute('''
         INSERT INTO analysis_history (user_id, image_hash, result_text, gender, unlocked_via)
@@ -332,7 +310,6 @@ def add_analysis_to_history(user_id, image_hash, result_text, gender, unlocked_v
     conn.close()
 
 def compress_and_hash_image(base64_image):
-    """Συμπιέζει την εικόνα και δημιουργεί ένα hash"""
     try:
         if ',' in base64_image:
             base64_image = base64_image.split(',')[1]
@@ -361,7 +338,6 @@ def compress_and_hash_image(base64_image):
 
 @flask_app.route('/')
 def serve_mini_app():
-    """Σερβίρει το Mini App"""
     try:
         with open('index.html', 'r', encoding='utf-8') as f:
             return render_template_string(f.read())
@@ -370,12 +346,10 @@ def serve_mini_app():
 
 @flask_app.route('/api/health', methods=['GET'])
 def health_check():
-    """Health check endpoint"""
     return jsonify({"status": "ok", "timestamp": datetime.now().isoformat()})
 
 @flask_app.route('/api/user/<int:user_id>', methods=['GET'])
 def get_user_info(user_id):
-    """Επιστρέφει πλήρεις πληροφορίες χρήστη"""
     user = get_user(user_id)
     if not user:
         create_or_update_user(user_id)
@@ -407,7 +381,6 @@ def get_user_info(user_id):
 
 @flask_app.route('/api/create-invoice', methods=['POST'])
 def create_invoice():
-    """Δημιουργεί invoice για Telegram Stars"""
     try:
         data = request.json
         user_id = data.get('user_id')
@@ -430,7 +403,6 @@ def create_invoice():
         return jsonify({"error": str(e)}), 500
 
 async def send_invoice_async(user_id, payload):
-    """Ασύγχρονη αποστολή invoice"""
     return await bot_instance.send_invoice(
         chat_id=user_id,
         title="Ξεκλείδωμα Ανάλυσης Καφεμαντείας",
@@ -455,7 +427,7 @@ async def send_invoice_async(user_id, payload):
 
 @flask_app.route('/api/analyze', methods=['POST'])
 def analyze():
-    """Κύριο endpoint ανάλυσης εικόνας (συνδεδεμένο με Hugging Face)"""
+    """Κύριο endpoint ανάλυσης εικόνας με Gemini 1.5 Flash"""
     try:
         data = request.json
         user_id = data.get('user_id')
@@ -481,23 +453,12 @@ def analyze():
 
         compressed_image, image_hash = compress_and_hash_image(image_base64)
 
-        # Κλήση στο Hugging Face API
-        analysis_result = asyncio.run(call_huggingface_api(compressed_image, gender))
+        # Κλήση στο Gemini API (διορθωμένη)
+        analysis_result = asyncio.run(call_gemini_api(compressed_image, gender))
 
         if not analysis_result:
             # Fallback σε δυναμικό αποτέλεσμα σε περίπτωση αποτυχίας
-            analysis_result = (
-                "🔮 *Η Μαντάμ Ζαΐρα ομιλεί...*\n\n"
-                "Βλέπω τα σκοτεινά μονοπάτια του καφέ να σχηματίζουν έναν αετό στην αριστερή πλευρά του φλιτζανιού. "
-                "Ο αετός είναι το σύμβολο της δύναμης και της ανεξαρτησίας. "
-                "Σου ψιθυρίζει ότι σύντομα θα βρεθείς μπροστά σε μια μεγάλη απόφαση που θα αλλάξει τη ζωή σου.\n\n"
-                "Στο κέντρο διακρίνω ένα μικρό αστέρι, κρυμμένο ανάμεσα στα κατακάθια. "
-                "Αυτό είναι σημάδι ελπίδας και απροσδόκητης βοήθειας. "
-                "Κάποιος από το παρελθόν σου θα επιστρέψει με νέα που θα σε εκπλήξουν ευχάριστα.\n\n"
-                "Στον πάτο του φλιτζανιού, οι γραμμές ενώνονται σαν ποτάμι. "
-                "Το νερό συμβολίζει τα συναισθήματα - να είσαι έτοιμος για μια περίοδο έντονης δημιουργικότητας και έμπνευσης.\n\n"
-                "✨ *Μάντρα της ημέρας:* Αγκάλιασε την αλλαγή, γιατί το σύμπαν συνωμοτεί υπέρ σου."
-            )
+            analysis_result = generate_local_reading(gender)
 
         deduct_analysis_cost(user_id, method)
 
@@ -520,70 +481,130 @@ def analyze():
             "error": "Εσωτερικό σφάλμα κατά την ανάλυση"
         }), 500
 
-async def call_huggingface_api(image_base64, gender):
-    """Καλεί το Hugging Face API για ανάλυση εικόνας (πραγματική σύνδεση)"""
-    try:
-        gender_text = "γυναίκα" if gender == 'f' else "άντρα"
-
-        prompt = (
-            "Είσαι η Μαντάμ Ζαΐρα, μια έμπειρη και μυστηριώδης αναγνώστρια φλιτζανιών καφέ. "
-            "Ανάλυσε την εικόνα του φλιτζανιού που βλέπεις και δώσε μια λεπτομερή, "
-            "ποιητική και μυστικιστική ανάλυση των μοτίβων του καφέ. "
-            f"Η ανάλυση απευθύνεται σε μια {gender_text}. "
-            "Χρησιμοποίησε παραδοσιακά σύμβολα καφεμαντείας, μετάφρασέ τα σε προσωπικά μηνύματα "
-            "και ολοκλήρωσε με μια φράση-κλειδί για το μέλλον.\n\n"
-            "Μίλησε στο πρώτο πρόσωπο σαν να είσαι η Μαντάμ Ζαΐρα.\n"
-            "Ανάφερε συγκεκριμένα σχήματα ή μοτίβα που 'βλέπεις' στο φλιτζάνι.\n"
-            "Κράτησε έναν τόνο μυστηριακό αλλά φιλικό, με δόσεις χιούμορ.\n"
-            "Η απάντηση να είναι 3-4 παραγράφους."
-        )
-
-        # Προετοιμασία payload για Hugging Face Inference API
-        # Χρησιμοποιούμε ένα μοντέλο που υποστηρίζει multimodal (π.χ. llava-hf/llava-1.5-7b-hf)
-        # ή οτιδήποτε έχει οριστεί στο HUGGINGFACE_API_URL
-        payload = {
-            "inputs": {
-                "image": image_base64,
-                "prompt": prompt
-            },
-            "parameters": {
-                "max_new_tokens": 500,
-                "temperature": 0.8,
-                "do_sample": True
-            }
-        }
-
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            response = await client.post(
-                HUGGINGFACE_API_URL,
-                headers={
-                    "Authorization": f"Bearer {HUGGINGFACE_API_KEY}",
-                    "Content-Type": "application/json"
-                },
-                json=payload
-            )
-
-            if response.status_code == 200:
-                result = response.json()
-                # Ανάλογα με τη μορφή του μοντέλου, εξάγουμε το κείμενο
-                if isinstance(result, list) and len(result) > 0:
-                    generated = result[0].get('generated_text', '')
-                elif isinstance(result, dict):
-                    generated = result.get('generated_text', '')
-                else:
-                    generated = str(result)
-                return generated.strip()
-            else:
-                logger.error(f"HuggingFace API error: {response.status_code} - {response.text}")
-                return None
-
-    except Exception as e:
-        logger.error(f"HuggingFace API call error: {e}")
+async def call_gemini_api(image_base64, gender):
+    """Καλεί το Gemini API για ανάλυση εικόνας (μοντέλο gemini-1.5-flash)"""
+    if not GEMINI_API_KEY:
+        logger.error("❌ GEMINI_API_KEY not set!")
         return None
+
+    gender_text = "γυναίκα" if gender == 'f' else "άντρα"
+    
+    system_prompt = f"""Είσαι η Μαντάμ Ζαΐρα, μια έμπειρη, φιλική και ζεστή καφετζού.
+Μιλάς πάντα στον ενικό, φιλικά και απλά, σαν καλή φίλη.
+Ο χρήστης είναι {gender_text}.
+
+Η ανάλυσή σου πρέπει να είναι ΔΟΜΗΜΕΝΗ ως εξής:
+
+---
+👋 **ΧΑΙΡΕΤΙΣΜΟΣ**
+🔮 **ΤΙ ΒΛΕΠΩ ΣΤΟ ΦΛΙΤΖΑΝΙ ΣΟΥ**
+💖 **ΑΙΣΘΗΜΑΤΙΚΑ**
+💰 **ΕΠΑΓΓΕΛΜΑΤΙΚΑ & ΟΙΚΟΝΟΜΙΚΑ**
+🌿 **ΥΓΕΙΑ & ΠΡΟΣΩΠΙΚΗ ΖΩΗ**
+⚠️ **ΤΙ ΧΡΕΙΑΖΕΤΑΙ ΠΡΟΣΟΧΗ**
+💫 **ΣΥΜΒΟΥΛΗ ΤΗΣ ΖΑΪΡΑΣ**
+---
+
+Χρησιμοποίησε σύμβολα καφεμαντείας (π.χ. Καρδιά, Κλειδί, Αστέρι, Δαχτυλίδι, κλπ).
+Αν δεν διακρίνεις σύμβολα, γράψε μια γενική αισιόδοξη ανάλυση.
+"""
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+    
+    payload = {
+        "contents": [{
+            "parts": [
+                {"text": system_prompt + "\n\nΑνάλυσε αυτό το φλιτζάνι:"},
+                {"inline_data": {"mime_type": "image/jpeg", "data": image_base64}}
+            ]
+        }],
+        "safetySettings": [
+            {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"}
+        ],
+        "generationConfig": {
+            "temperature": 0.9,
+            "maxOutputTokens": 2048
+        }
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.post(url, json=payload)
+            logger.info(f"🔍 Gemini status: {response.status_code}")
+            if response.status_code == 200:
+                data = response.json()
+                if 'candidates' in data and data['candidates']:
+                    return data['candidates'][0]['content']['parts'][0]['text']
+            logger.error(f"Gemini error: {response.text}")
+    except Exception as e:
+        logger.error(f"🔥 Exception in call_gemini_api: {e}")
+    
+    return None
+
+def generate_local_reading(gender="f"):
+    """Πλήρες fallback με δομημένη ανάλυση"""
+    gender = str(gender)
+    if gender == "m":
+        greeting = random.choice([
+            "Γεια σου φίλε μου! Κάθισε να σου πω τι είδα στο φλιτζάνι σου σήμερα...",
+            "Αγαπητέ μου, γύρισα το φλιτζάνι σου και τα κατακάθια σχημάτισαν υπέροχα σχήματα!",
+            "Φίλε μου, το φλιτζάνι σου μίλησε και έχω να σου πω ωραία πράγματα!"
+        ])
+    else:
+        greeting = random.choice([
+            "Γεια σου φίλη μου! Κάθισε να σου πω τι είδα στο φλιτζάνι σου σήμερα...",
+            "Αγαπητή μου, γύρισα το φλιτζάνι σου και τα κατακάθια σχημάτισαν υπέροχα σχήματα!",
+            "Φίλη μου, το φλιτζάνι σου μίλησε και έχω να σου πω ωραία πράγματα!"
+        ])
+
+    reading = f"""---
+👋 **ΧΑΙΡΕΤΙΣΜΟΣ**
+
+{greeting}
+
+---
+
+🔮 **ΤΙ ΒΛΕΠΩ ΣΤΟ ΦΛΙΤΖΑΝΙ ΣΟΥ**
+
+Κοιτάζοντας προσεκτικά το φλιτζάνι σου, διακρίνω αρκετά ενδιαφέροντα σχήματα! Το πιο έντονο που ξεχωρίζει είναι μια **Καρδιά** στο κέντρο. Υπάρχει επίσης ένα **Κλειδί** στα δεξιά και ένα **Αστέρι** στον πάτο.
+
+---
+
+💖 **ΑΙΣΘΗΜΑΤΙΚΑ**
+
+Βλέπω Καρδιά! Αυτό σημαίνει έρωτα και αγάπη. Δείχνει ότι υπάρχει δυνατό συναίσθημα στη ζωή σου. Αν είσαι ελεύθερη/ελεύθερος, έρχεται κάποιος που θα σε αγαπήσει αληθινά.
+
+---
+
+💰 **ΕΠΑΓΓΕΛΜΑΤΙΚΑ & ΟΙΚΟΝΟΜΙΚΑ**
+
+Στον επαγγελματικό τομέα διακρίνω Κλειδί. Αυτό δείχνει μεγάλες επιτυχίες! Νέες πόρτες ανοίγουν για σένα. Οι κόποι σου θα πιάσουν τόπο σύντομα.
+
+---
+
+🌿 **ΥΓΕΙΑ & ΠΡΟΣΩΠΙΚΗ ΖΩΗ**
+
+Σε θέματα υγείας βλέπω ένα Αστέρι. Αυτό σημαίνει καλά νέα για την υγεία σου. Να είσαι αισιόδοξος/η!
+
+---
+
+⚠️ **ΤΙ ΧΡΕΙΑΖΕΤΑΙ ΠΡΟΣΟΧΗ**
+
+Θέλω όμως να προσέξεις και κάτι: βλέπω μικρά σημάδια που μοιάζουν με αγκάθια. Αυτό σημαίνει μικροπροβλήματα, αλλά θα ξεπεραστούν εύκολα. Μην τρομάζεις!
+
+---
+
+💫 **ΣΥΜΒΟΥΛΗ ΤΗΣ ΖΑΪΡΑΣ**
+
+{random.choice(['Να θυμάσαι: η τύχη ευνοεί τους τολμηρούς! Προχώρα με αυτοπεποίθηση. ✨', 'Η ζωή είναι σαν τον καφέ: άλλοτε πικρή, άλλοτε γλυκιά. Εσύ κρατάς το φλιτζάνι! 💫', 'Ό,τι κι αν δείχνει το φλιτζάνι, να ξέρεις ότι η δύναμη είναι στα χέρια σου. 🤗'])}
+"""
+    return reading
 
 @flask_app.route('/api/share-story', methods=['POST'])
 def share_story():
-    """Επιβραβεύει τον χρήστη που μοιράστηκε το αποτέλεσμα ως story"""
     try:
         data = request.json
         user_id = data.get('user_id')
@@ -610,7 +631,6 @@ def share_story():
 
 @flask_app.route('/api/check-payment-status', methods=['POST'])
 def check_payment_status():
-    """Ελέγχει αν μια πληρωμή ολοκληρώθηκε"""
     try:
         data = request.json
         user_id = data.get('user_id')
@@ -634,7 +654,6 @@ def check_payment_status():
 # ====== TELEGRAM BOT HANDLERS ======
 
 async def start_command(update: Update, context: CallbackContext):
-    """Χειρίζεται την εντολή /start και το deep linking"""
     user = update.effective_user
     args = context.args
 
@@ -696,13 +715,11 @@ async def start_command(update: Update, context: CallbackContext):
     )
 
 async def precheckout_callback(update: Update, context: CallbackContext):
-    """Επιβεβαιώνει το PreCheckoutQuery"""
     query = update.pre_checkout_query
     await query.answer(ok=True)
     logger.info(f"✅ PreCheckoutQuery approved for user {query.from_user.id}")
 
 async def successful_payment_handler(update: Update, context: CallbackContext):
-    """Χειρίζεται επιτυχημένες πληρωμές σε Telegram Stars"""
     payment = update.message.successful_payment
     user_id = update.effective_user.id
     payload = payment.invoice_payload
@@ -756,7 +773,6 @@ async def successful_payment_handler(update: Update, context: CallbackContext):
 
 @flask_app.route('/webhook', methods=['POST'])
 async def webhook():
-    """Webhook για λήψη updates από το Telegram"""
     if request.method == "POST":
         try:
             update = Update.de_json(request.get_json(force=True), telegram_app.bot)
@@ -770,7 +786,6 @@ async def webhook():
 # ====== APPLICATION SETUP ======
 
 def setup_telegram_handlers():
-    """Ρύθμιση των handlers του Telegram bot"""
     telegram_app.add_handler(CommandHandler("start", start_command))
     telegram_app.add_handler(PreCheckoutQueryHandler(precheckout_callback))
     telegram_app.add_handler(
@@ -779,7 +794,6 @@ def setup_telegram_handlers():
     logger.info("✅ Telegram handlers setup complete")
 
 async def setup_webhook():
-    """Ρύθμιση του webhook στο Telegram"""
     try:
         await telegram_app.bot.set_webhook(url=WEBHOOK_URL)
         logger.info(f"✅ Webhook set to: {WEBHOOK_URL}")
@@ -794,6 +808,6 @@ if __name__ == '__main__':
     logger.info("🚀 Starting Omen Mini App server...")
     flask_app.run(
         host='0.0.0.0',
-        port=int(os.environ.get('PORT', 5000)),
+        port=int(os.environ.get('PORT', 7860)),
         debug=False
     )
