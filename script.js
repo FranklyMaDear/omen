@@ -805,7 +805,7 @@ async function earnPoints() {
     }
 }
 
-// ====== TRANSLATION LOGIC ======
+// ====== TRANSLATION LOGIC (ΕΠΑΝΑΦΟΡΑ ΑΠΟ ΤΗΝ ΑΡΧΙΚΗ ΕΚΔΟΣΗ) ======
 var correctionMap = {
     'en': {
         'Coffee schop': 'Coffee Reading', 'coffee schop': 'Coffee Reading',
