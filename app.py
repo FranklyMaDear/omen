@@ -1,7 +1,7 @@
 """
 Omen - Καφεμαντεία Mini App για Telegram
 Backend: Flask + python-telegram-bot v20+
-Περιλαμβάνει: Referral System, Telegram Stars (XTR), AI Analysis (Gemini 1.5 Pro)
+Περιλαμβάνει: Referral System, Telegram Stars (XTR), AI Analysis (Gemini 1.5 Flash)
 Επίσημο Bot: @omenread_bot
 """
 
@@ -532,8 +532,8 @@ async def call_gemini_api(image_base64, gender):
 Αν δεν διακρίνεις σύμβολα, γράψε μια γενική αισιόδοξη ανάλυση.
 """
 
-    # Χρησιμοποιούμε το gemini-1.5-pro (πιθανότατα έχει δωρεάν quota)
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key={GEMINI_API_KEY}"
+    # ✅ ΑΛΛΑΓΗ: χρησιμοποιούμε v1 αντί v1beta – η σταθερή έκδοση υποστηρίζει τα νέα μοντέλα
+    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
     
     payload = {
         "contents": [{
@@ -562,7 +562,7 @@ async def call_gemini_api(image_base64, gender):
                 data = response.json()
                 if 'candidates' in data and data['candidates']:
                     return data['candidates'][0]['content']['parts'][0]['text']
-            # Αποφεύγουμε να τυπώσουμε ολόκληρο το response που μπορεί να περιέχει το κλειδί
+            # Καταγράφουμε μόνο τον κωδικό σφάλματος, όχι ολόκληρο το response
             logger.error(f"Gemini error: status {response.status_code}")
     except Exception as e:
         logger.error(f"🔥 Exception in call_gemini_api: {e}")
@@ -830,7 +830,7 @@ async def setup_webhook():
 
 if __name__ == '__main__':
     setup_telegram_handlers()
-    # asyncio.run(setup_webhook())   # Σχολιασμένο
+    # asyncio.run(setup_webhook())
     logger.info("🚀 Starting Omen Mini App server...")
     flask_app.run(
         host='0.0.0.0',
