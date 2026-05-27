@@ -43,11 +43,7 @@
 
     <style>
         /* ===== CSS Reset & Base ===== */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         html, body {
             width: 100%;
@@ -96,9 +92,7 @@
             margin: 0 auto;
         }
 
-        .page.active {
-            display: flex;
-        }
+        .page.active { display: flex; }
 
         /* ===== Splash Page ===== */
         #splash {
@@ -183,22 +177,14 @@
             cursor: default;
         }
 
-        .install-prompt .install-icon {
-            font-size: 1.8rem;
-            flex-shrink: 0;
-        }
-
+        .install-prompt .install-icon { font-size: 1.8rem; flex-shrink: 0; }
         .install-prompt .install-text {
             color: #d5c8e8;
             font-size: 0.8rem;
             letter-spacing: 0.5px;
             line-height: 1.5;
         }
-
-        .install-prompt .install-text strong {
-            color: #f7dc6f;
-            font-weight: 600;
-        }
+        .install-prompt .install-text strong { color: #f7dc6f; font-weight: 600; }
 
         @keyframes gentleGlow {
             0%, 100% { box-shadow: 0 0 15px rgba(241, 196, 15, 0.1); }
@@ -225,10 +211,7 @@
             transform: scale(1.06) translateY(-4px);
             box-shadow: 0 0 70px rgba(241, 196, 15, 0.5);
         }
-
-        .btn-mystic:active {
-            transform: scale(0.95);
-        }
+        .btn-mystic:active { transform: scale(0.95); }
 
         /* ===== Points Display ===== */
         .points-inline {
@@ -246,14 +229,8 @@
             white-space: nowrap;
             transition: all 0.3s ease;
         }
-
-        .points-inline.pop {
-            transform: scale(1.2);
-        }
-
-        .points-inline .points-icon {
-            font-size: 1.2rem;
-        }
+        .points-inline.pop { transform: scale(1.2); }
+        .points-inline .points-icon { font-size: 1.2rem; }
 
         /* ===== Floating Points Animation ===== */
         .floating-points {
@@ -266,7 +243,6 @@
             text-shadow: 0 0 20px rgba(241, 196, 15, 0.8);
             animation: floatUp 1.5s ease-out forwards;
         }
-
         @keyframes floatUp {
             0% { opacity: 1; transform: translateY(0) scale(1); }
             100% { opacity: 0; transform: translateY(-80px) scale(1.5); }
@@ -292,12 +268,10 @@
             max-width: 280px;
             margin: 5px auto;
         }
-
         .btn-earn:hover {
             transform: translateY(-3px) scale(1.03);
             box-shadow: 0 12px 40px rgba(241, 196, 15, 0.5);
         }
-
         .btn-earn:disabled {
             background: #3a3a4a;
             color: #777;
@@ -324,18 +298,14 @@
             max-width: 280px;
             margin: 5px auto;
         }
-
         #inviteBtn:hover, #inviteBtnStatic:hover {
             transform: translateY(-3px) scale(1.03);
             box-shadow: 0 12px 40px rgba(155, 89, 182, 0.5);
         }
+        #inviteBtn:active, #inviteBtnStatic:active { transform: scale(0.92); }
 
-        #inviteBtn:active, #inviteBtnStatic:active {
-            transform: scale(0.92);
-        }
-
-        /* ===== Language Bar ===== */
-        #language-bar {
+        /* ===== Language Bar (inside consent & standalone) ===== */
+        .language-bar {
             display: flex;
             align-items: center;
             gap: 8px;
@@ -354,8 +324,7 @@
             flex-wrap: wrap;
             justify-content: center;
         }
-
-        #language-bar .lang-label {
+        .language-bar .lang-label {
             color: #f7dc6f;
             font-size: 0.8rem;
             font-weight: 700;
@@ -364,8 +333,7 @@
             min-width: 60px;
             text-align: center;
         }
-
-        #language-bar select {
+        .language-bar select {
             flex: 1;
             min-width: 100px;
             background: rgba(10, 5, 25, 0.9);
@@ -383,20 +351,17 @@
             background-repeat: no-repeat;
             background-position: right 10px center;
             outline: none;
-            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
+            font-family: inherit;
         }
-
-        #language-bar select:focus {
+        .language-bar select:focus {
             border-color: #f7dc6f;
             box-shadow: 0 0 15px rgba(241, 196, 15, 0.2);
         }
-
-        #language-bar select option {
+        .language-bar select option {
             background: #1a0a2e;
             color: #e0c5f0;
         }
-
-        #translate-btn {
+        .translate-btn {
             background: linear-gradient(145deg, #f7dc6f, #d4ac0d);
             color: #1a0e1f;
             border: none;
@@ -413,27 +378,18 @@
             box-shadow: 0 0 15px rgba(241, 196, 15, 0.3);
             transition: all 0.3s;
         }
-
-        #translate-btn:hover {
+        .translate-btn:hover {
             transform: scale(1.1);
             box-shadow: 0 0 25px rgba(241, 196, 15, 0.6);
         }
-
-        #translate-btn:active {
-            transform: scale(0.9);
-        }
-
-        #translate-btn.translating {
+        .translate-btn:active { transform: scale(0.9); }
+        .translate-btn.translating {
             animation: spin 0.8s linear infinite;
             pointer-events: none;
             opacity: 0.7;
         }
-
-        @keyframes spin {
-            100% { transform: rotate(360deg); }
-        }
-
-        #reset-lang-btn {
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .reset-lang-btn {
             background: linear-gradient(145deg, #a569bd, #7d3c98);
             color: #fff;
             border: none;
@@ -450,8 +406,7 @@
             box-shadow: 0 0 15px rgba(155, 89, 182, 0.3);
             transition: all 0.3s;
         }
-
-        #reset-lang-btn:hover {
+        .reset-lang-btn:hover {
             transform: scale(1.1);
             box-shadow: 0 0 25px rgba(155, 89, 182, 0.6);
         }
@@ -469,11 +424,7 @@
             transform: translateY(100%);
             transition: transform 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1);
         }
-
-        #lifeline-rollup.visible {
-            transform: translateY(0);
-        }
-
+        #lifeline-rollup.visible { transform: translateY(0); }
         #lifeline-rollup .rollup-inner {
             pointer-events: auto;
             display: flex;
@@ -492,25 +443,21 @@
             transition: all 0.3s;
             animation: gentlePulse 2.5s infinite ease-in-out;
         }
-
         #lifeline-rollup .rollup-inner:hover {
             border-color: #f7dc6f;
             box-shadow: 0 -5px 40px rgba(241, 196, 15, 0.3);
             background: rgba(30, 15, 50, 0.95);
         }
-
         #lifeline-rollup .rollup-icon {
             font-size: 1.4rem;
             animation: crystalGlow 2s infinite ease-in-out;
         }
-
         #lifeline-rollup .rollup-text {
             color: #f7dc6f;
             font-weight: 600;
             font-size: 0.9rem;
             letter-spacing: 2px;
         }
-
         #lifeline-rollup .rollup-stars {
             position: absolute;
             pointer-events: none;
@@ -518,41 +465,19 @@
             color: #f7dc6f;
             opacity: 0.7;
         }
-
-        #lifeline-rollup .rollup-star-1 {
-            top: -12px;
-            left: 15px;
-            animation: starFloat 2s infinite ease-in-out;
-        }
-
-        #lifeline-rollup .rollup-star-2 {
-            top: -8px;
-            right: 20px;
-            animation: starFloat 2.5s infinite ease-in-out 0.3s;
-        }
-
-        #lifeline-rollup .rollup-star-3 {
-            bottom: -5px;
-            left: 30px;
-            animation: starFloat 3s infinite ease-in-out 0.6s;
-        }
-
-        #lifeline-rollup .rollup-star-4 {
-            bottom: -8px;
-            right: 35px;
-            animation: starFloat 2.2s infinite ease-in-out 0.9s;
-        }
+        #lifeline-rollup .rollup-star-1 { top: -12px; left: 15px; animation: starFloat 2s infinite ease-in-out; }
+        #lifeline-rollup .rollup-star-2 { top: -8px; right: 20px; animation: starFloat 2.5s infinite ease-in-out 0.3s; }
+        #lifeline-rollup .rollup-star-3 { bottom: -5px; left: 30px; animation: starFloat 3s infinite ease-in-out 0.6s; }
+        #lifeline-rollup .rollup-star-4 { bottom: -8px; right: 35px; animation: starFloat 2.2s infinite ease-in-out 0.9s; }
 
         @keyframes crystalGlow {
             0%, 100% { filter: drop-shadow(0 0 5px rgba(241, 196, 15, 0.5)); transform: scale(1); }
             50% { filter: drop-shadow(0 0 15px rgba(241, 196, 15, 1)); transform: scale(1.15); }
         }
-
         @keyframes starFloat {
             0%, 100% { transform: translateY(0) scale(1); opacity: 0.5; }
             50% { transform: translateY(-6px) scale(1.2); opacity: 1; }
         }
-
         @keyframes gentlePulse {
             0%, 100% { box-shadow: 0 -5px 30px rgba(241, 196, 15, 0.1); }
             50% { box-shadow: 0 -5px 45px rgba(241, 196, 15, 0.25); }
@@ -565,12 +490,10 @@
             padding-bottom: 40px;
             justify-content: flex-start;
         }
-
         #scan .scan-header {
             text-align: center;
             width: 100%;
         }
-
         #scan .scan-header h2 {
             font-size: 2rem;
             background: linear-gradient(135deg, #e6c27a, #d4af37);
@@ -579,7 +502,6 @@
             background-clip: text;
             letter-spacing: 3px;
         }
-
         #scan .scan-header p {
             color: #b8a0d0;
             font-size: 0.9rem;
@@ -614,7 +536,6 @@
             position: relative;
             overflow: hidden;
         }
-
         .btn::before {
             content: "";
             position: absolute;
@@ -626,21 +547,14 @@
             opacity: 0;
             transition: opacity 0.6s;
         }
-
-        .btn:hover::before {
-            opacity: 1;
-        }
-
-        .btn:active {
-            transform: scale(0.92);
-        }
+        .btn:hover::before { opacity: 1; }
+        .btn:active { transform: scale(0.92); }
 
         .btn-gold {
             background: linear-gradient(145deg, #f7dc6f, #d4ac0d);
             color: #1a0e1f;
             box-shadow: 0 6px 25px rgba(241, 196, 15, 0.3);
         }
-
         .btn-gold:hover {
             transform: translateY(-5px) scale(1.03);
             box-shadow: 0 12px 40px rgba(241, 196, 15, 0.5);
@@ -651,7 +565,6 @@
             color: #fff;
             box-shadow: 0 6px 25px rgba(155, 89, 182, 0.3);
         }
-
         .btn-purple:hover {
             transform: translateY(-5px) scale(1.03);
             box-shadow: 0 12px 40px rgba(155, 89, 182, 0.5);
@@ -667,12 +580,10 @@
             border-radius: 50px;
             box-shadow: 0 6px 25px rgba(46, 204, 113, 0.25);
         }
-
         .btn-green:hover:not(:disabled) {
             transform: translateY(-5px) scale(1.02);
             box-shadow: 0 12px 45px rgba(46, 204, 113, 0.45);
         }
-
         .btn-green:disabled {
             background: #3a3a4a;
             color: #777;
@@ -686,7 +597,6 @@
             width: 100%;
             max-width: 300px;
         }
-
         .btn-red:hover {
             transform: translateY(-3px);
             box-shadow: 0 10px 30px rgba(231, 76, 60, 0.4);
@@ -702,7 +612,6 @@
             color: #b9a6d4;
             transition: all 0.4s;
         }
-
         .gender-btn.active {
             background: linear-gradient(145deg, #f7dc6f, #d4ac0d);
             color: #1a0e1f;
@@ -710,7 +619,6 @@
             box-shadow: 0 0 30px rgba(241, 196, 15, 0.4);
             transform: scale(1.05);
         }
-
         .gender-btn:hover:not(.active) {
             border-color: rgba(255, 215, 0, 0.5);
             color: #f7dc6f;
@@ -729,7 +637,6 @@
             background: #0f0a18;
             max-height: 50vh;
         }
-
         video {
             width: 100%;
             height: auto;
@@ -738,7 +645,6 @@
             border-radius: 18px;
             object-fit: contain;
         }
-
         #captureBtn {
             display: none;
             margin: 10px auto;
@@ -750,7 +656,6 @@
             margin: 10px auto;
             text-align: center;
         }
-
         #preview-img {
             max-width: 200px;
             width: 100%;
@@ -758,7 +663,6 @@
             border: 2px solid #d4af37;
             box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
         }
-
         .preview-label {
             color: #d4af37;
             font-weight: 300;
@@ -782,7 +686,6 @@
             width: 100%;
             max-width: 400px;
         }
-
         #loading-box .mantra {
             font-size: 1.4rem;
             color: #f5d76e;
@@ -791,13 +694,11 @@
             margin-bottom: 15px;
             animation: mysticPulse 2s infinite ease-in-out;
         }
-
         @keyframes mysticPulse {
             0% { opacity: 0.5; transform: scale(0.98); }
             50% { opacity: 1; transform: scale(1.04); }
             100% { opacity: 0.5; transform: scale(0.98); }
         }
-
         .waiting-text {
             font-size: 1rem;
             color: #b9a6d4;
@@ -807,7 +708,6 @@
             border-radius: 30px;
             background: rgba(255, 215, 0, 0.08);
         }
-
         .loading-spinner {
             width: 50px;
             height: 50px;
@@ -832,7 +732,6 @@
             position: relative;
             overflow: hidden;
         }
-
         #result-area h2 {
             color: #f5d76e;
             font-weight: 300;
@@ -845,7 +744,6 @@
             position: relative;
             z-index: 2;
         }
-
         #result-text {
             color: #e6d5f5;
             font-size: 0.95rem;
@@ -855,7 +753,6 @@
             position: relative;
             z-index: 2;
         }
-
         .result-star {
             position: absolute;
             color: #f7dc6f;
@@ -865,13 +762,11 @@
             font-size: 1.2rem;
             z-index: 1;
         }
-
         @keyframes floatResultStar {
             0% { transform: translateY(0) rotate(0deg); opacity: 0.3; }
             50% { transform: translateY(-20px) rotate(180deg); opacity: 0.8; }
             100% { transform: translateY(0) rotate(360deg); opacity: 0.3; }
         }
-
         .btn-reset {
             background: transparent;
             border: 1px solid rgba(255, 215, 0, 0.3);
@@ -886,12 +781,10 @@
             position: relative;
             z-index: 2;
         }
-
         .btn-reset:hover {
             background: rgba(255, 215, 0, 0.08);
             border-color: #f1c40f;
         }
-
         .btn-back {
             background: transparent;
             border: none;
@@ -902,7 +795,6 @@
             transition: 0.3s;
             letter-spacing: 2px;
         }
-
         .btn-back:hover {
             color: #f7dc6f;
         }
@@ -923,17 +815,14 @@
             justify-content: center;
             padding: 20px;
         }
-
-        #consent-overlay.hidden {
-            display: none;
-        }
+        #consent-overlay.hidden { display: none; }
 
         #consent-modal {
             background: linear-gradient(145deg, #1a0e2a, #2a1a3a);
             border: 2px solid rgba(241, 196, 15, 0.3);
             border-radius: 30px;
             padding: 35px 25px;
-            max-width: 480px;
+            max-width: 520px;
             width: 100%;
             text-align: center;
             box-shadow: 0 0 100px rgba(241, 196, 15, 0.2);
@@ -941,7 +830,6 @@
             max-height: 90vh;
             overflow-y: auto;
         }
-
         @keyframes modalFadeIn {
             0% { opacity: 0; transform: scale(0.9) translateY(20px); }
             100% { opacity: 1; transform: scale(1) translateY(0); }
@@ -952,21 +840,18 @@
             margin-bottom: 15px;
             animation: floatIcon 3s infinite ease-in-out;
         }
-
         #consent-modal h2 {
             color: #f7dc6f;
             font-size: 1.6rem;
             margin-bottom: 15px;
             letter-spacing: 2px;
         }
-
         #consent-modal p {
             color: #d5c8e8;
             font-size: 0.95rem;
             line-height: 1.7;
             margin-bottom: 20px;
         }
-
         #consent-modal .consent-links {
             display: flex;
             gap: 15px;
@@ -974,7 +859,6 @@
             margin-bottom: 20px;
             flex-wrap: wrap;
         }
-
         #consent-modal .consent-link {
             color: #f7dc6f;
             text-decoration: underline;
@@ -985,10 +869,16 @@
             border: none;
             font-family: inherit;
         }
-
         #consent-modal .consent-link:hover {
             color: #fff;
             text-shadow: 0 0 15px rgba(241, 196, 15, 0.5);
+        }
+
+        /* Language bar inside consent */
+        #consent-modal .language-bar {
+            margin: 15px auto 20px;
+            width: 100%;
+            max-width: 100%;
         }
 
         #consent-btn {
@@ -1005,7 +895,6 @@
             letter-spacing: 1px;
             width: 100%;
         }
-
         #consent-btn:hover {
             transform: scale(1.04) translateY(-3px);
             box-shadow: 0 0 70px rgba(241, 196, 15, 0.5);
@@ -1021,14 +910,12 @@
             border-top: 1px solid rgba(255, 215, 0, 0.1);
             width: 100%;
         }
-
         #site-footer .footer-links {
             display: flex;
             gap: 20px;
             justify-content: center;
             flex-wrap: wrap;
         }
-
         #site-footer .footer-link {
             color: #b9a6d4;
             cursor: pointer;
@@ -1040,7 +927,6 @@
             font-family: inherit;
             letter-spacing: 1px;
         }
-
         #site-footer .footer-link:hover {
             color: #f7dc6f;
             text-shadow: 0 0 10px rgba(241, 196, 15, 0.3);
@@ -1062,10 +948,7 @@
             justify-content: center;
             padding: 20px;
         }
-
-        .legal-overlay.active {
-            display: flex;
-        }
+        .legal-overlay.active { display: flex; }
 
         .legal-modal {
             background: linear-gradient(145deg, #1a0e2a, #2a1a3a);
@@ -1078,7 +961,6 @@
             overflow-y: auto;
             position: relative;
         }
-
         .legal-modal h2 {
             color: #f7dc6f;
             text-align: center;
@@ -1086,27 +968,19 @@
             letter-spacing: 2px;
             font-size: 1.4rem;
         }
-
         .legal-modal h3 {
             color: #f7dc6f;
             margin-top: 15px;
             font-size: 1.05rem;
         }
-
         .legal-modal p, .legal-modal li {
             color: #d5c8e8;
             font-size: 0.9rem;
             line-height: 1.6;
             margin-bottom: 10px;
         }
-
-        .legal-modal ul, .legal-modal ol {
-            padding-left: 20px;
-        }
-
-        .legal-modal strong {
-            color: #f7dc6f;
-        }
+        .legal-modal ul, .legal-modal ol { padding-left: 20px; }
+        .legal-modal strong { color: #f7dc6f; }
 
         .legal-close-btn {
             position: sticky;
@@ -1127,13 +1001,12 @@
             z-index: 5;
             margin-bottom: 10px;
         }
-
         .legal-close-btn:hover {
             background: rgba(255, 215, 0, 0.4);
             transform: rotate(90deg);
         }
 
-        /* ===== Share Story Button (Dynamically Created) ===== */
+        /* ===== Share Story Button ===== */
         #shareStoryBtn {
             background: linear-gradient(145deg, #a569bd, #7d3c98);
             color: #fff;
@@ -1151,15 +1024,11 @@
             width: 80%;
             max-width: 300px;
         }
-
         #shareStoryBtn:hover {
             transform: translateY(-3px) scale(1.03);
             box-shadow: 0 12px 40px rgba(155, 89, 182, 0.5);
         }
-
-        #shareStoryBtn:active {
-            transform: scale(0.92);
-        }
+        #shareStoryBtn:active { transform: scale(0.92); }
 
         /* ===== Toast Notification ===== */
         #toast-message {
@@ -1180,12 +1049,10 @@
             max-width: 90%;
             animation: toastFadeIn 0.3s ease;
         }
-
         @keyframes toastFadeIn {
             from { opacity: 0; transform: translateX(-50%) translateY(20px); }
             to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
-
         @keyframes toastFadeOut {
             from { opacity: 1; transform: translateX(-50%) translateY(0); }
             to { opacity: 0; transform: translateX(-50%) translateY(20px); }
@@ -1204,11 +1071,11 @@
             #lifeline-rollup .rollup-inner { padding: 10px 20px; }
             #lifeline-rollup .rollup-text { font-size: 0.8rem; }
             #lifeline-rollup .rollup-icon { font-size: 1.2rem; }
-            #language-bar { padding: 6px 10px; gap: 5px; }
-            #language-bar .lang-label { font-size: 0.7rem; min-width: 50px; }
-            #language-bar select { font-size: 0.7rem; padding: 6px 25px 6px 8px; min-width: 80px; }
-            #translate-btn { width: 30px; height: 30px; min-width: 30px; font-size: 0.8rem; }
-            #reset-lang-btn { width: 30px; height: 30px; min-width: 30px; font-size: 0.8rem; }
+            #consent-modal .language-bar { padding: 6px 10px; gap: 5px; }
+            #consent-modal .language-bar .lang-label { font-size: 0.7rem; min-width: 50px; }
+            #consent-modal .language-bar select { font-size: 0.7rem; padding: 6px 25px 6px 8px; min-width: 80px; }
+            #consent-modal .translate-btn { width: 30px; height: 30px; min-width: 30px; font-size: 0.8rem; }
+            #consent-modal .reset-lang-btn { width: 30px; height: 30px; min-width: 30px; font-size: 0.8rem; }
             .install-prompt .install-text { font-size: 0.7rem; }
             .install-prompt .install-icon { font-size: 1.4rem; }
             .splash-desc { font-size: 0.7rem; }
@@ -1224,7 +1091,7 @@
             .splash-icon { width: 120px; height: 120px; }
             .btn { padding: 10px 12px; font-size: 0.8rem; }
             .controls { gap: 3px; }
-            #language-bar select { min-width: 60px; }
+            #consent-modal .language-bar select { min-width: 60px; }
         }
     </style>
 </head>
@@ -1247,6 +1114,44 @@
                 <button class="consent-link" onclick="showLegal('terms')" data-translate="true">📜 Όροι Χρήσης</button>
                 <button class="consent-link" onclick="showLegal('privacy')" data-translate="true">🔒 Πολιτική Απορρήτου</button>
             </div>
+
+            <!-- Language Bar Inside Consent -->
+            <div class="language-bar">
+                <span class="lang-label" data-translate="true">🌐 Γλώσσα</span>
+                <select id="consent-language-select">
+                    <option value="el">🇬🇷 Ελληνικά</option>
+                    <option value="en">🇬🇧 English</option>
+                    <option value="de">🇩🇪 Deutsch</option>
+                    <option value="fr">🇫🇷 Français</option>
+                    <option value="es">🇪🇸 Español</option>
+                    <option value="it">🇮🇹 Italiano</option>
+                    <option value="ar">🇸🇦 العربية</option>
+                    <option value="zh-CN">🇨🇳 中文</option>
+                    <option value="ja">🇯🇵 日本語</option>
+                    <option value="ru">🇷🇺 Русский</option>
+                    <option value="tr">🇹🇷 Türkçe</option>
+                    <option value="nl">🇳🇱 Nederlands</option>
+                    <option value="pt">🇵🇹 Português</option>
+                    <option value="sv">🇸🇪 Svenska</option>
+                    <option value="no">🇳🇴 Norsk</option>
+                    <option value="da">🇩🇰 Dansk</option>
+                    <option value="fi">🇫🇮 Suomi</option>
+                    <option value="pl">🇵🇱 Polski</option>
+                    <option value="cs">🇨🇿 Čeština</option>
+                    <option value="ro">🇷🇴 Română</option>
+                    <option value="bg">🇧🇬 Български</option>
+                    <option value="uk">🇺🇦 Українська</option>
+                    <option value="ko">🇰🇷 한국어</option>
+                    <option value="hi">🇮🇳 हिन्दी</option>
+                    <option value="vi">🇻🇳 Tiếng Việt</option>
+                    <option value="th">🇹🇭 ไทย</option>
+                    <option value="id">🇮🇩 Indonesia</option>
+                    <option value="iw">🇮🇱 עברית</option>
+                </select>
+                <button class="translate-btn" onclick="startTranslationFromConsent()" title="Μετάφραση">▶</button>
+                <button class="reset-lang-btn" onclick="resetToGreekFromConsent()" title="Επιστροφή στα Ελληνικά">↺</button>
+            </div>
+
             <button id="consent-btn" onclick="acceptConsent()" data-translate="true">Συμφωνώ & Είμαι άνω των 18 ετών</button>
         </div>
     </div>
@@ -1326,9 +1231,9 @@
             </span>
         </div>
 
-        <!-- Language Bar -->
-        <div id="language-bar">
-            <span class="lang-label" id="lang-label" data-translate="true">🌐 Γλώσσα</span>
+        <!-- Language Bar on Splash (optional) -->
+        <div class="language-bar" id="splash-language-bar">
+            <span class="lang-label" data-translate="true">🌐 Γλώσσα</span>
             <select id="language-select">
                 <option value="el">🇬🇷 Ελληνικά</option>
                 <option value="en">🇬🇧 English</option>
@@ -1359,8 +1264,8 @@
                 <option value="id">🇮🇩 Indonesia</option>
                 <option value="iw">🇮🇱 עברית</option>
             </select>
-            <button id="translate-btn" onclick="startTranslation()" title="Μετάφραση">▶</button>
-            <button id="reset-lang-btn" onclick="resetToGreek()" title="Επιστροφή στα Ελληνικά">↺</button>
+            <button class="translate-btn" onclick="startTranslation()" title="Μετάφραση">▶</button>
+            <button class="reset-lang-btn" onclick="resetToGreek()" title="Επιστροφή στα Ελληνικά">↺</button>
         </div>
     </div>
 
