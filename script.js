@@ -6,7 +6,7 @@
 
 // ====== GLOBAL VARIABLES ======
 let tgWebApp = null;
-let currentUserId = null;
+let currentUserId = null;        // <-- Πλέον null αν δεν υπάρχει Telegram ID
 let currentLang = 'el';
 let originalTexts = {};
 let originalResultText = '';
@@ -119,8 +119,8 @@ function initTelegramWebApp() {
             currentUserId = tgWebApp.initDataUnsafe.user.id;
             console.log('✅ Telegram User ID:', currentUserId);
         } else {
-            console.warn('⚠️ No initData, using fallback');
-            currentUserId = getOrCreateTestUserId();
+            console.warn('⚠️ No initData, leaving currentUserId null');
+            currentUserId = null;   // <-- Δεν δημιουργούμε ψεύτικο ID
         }
 
         tgWebApp.onEvent('viewportChanged', () => {
@@ -130,29 +130,16 @@ function initTelegramWebApp() {
         console.log('✅ Telegram WebApp initialized');
     } else {
         console.log('⚠️ Not running inside Telegram Mini App');
-        currentUserId = getOrCreateTestUserId();
+        currentUserId = null;
     }
-    
-    if (!currentUserId) {
-        currentUserId = 'unknown_' + Date.now();
-        console.error('❌ Could not determine user ID, using emergency fallback:', currentUserId);
-    }
-}
-
-function getOrCreateTestUserId() {
-    let testId = localStorage.getItem('omen_test_user_id');
-    if (!testId) {
-        testId = 'test_' + Date.now();
-        localStorage.setItem('omen_test_user_id', testId);
-    }
-    return testId;
 }
 
 // ====== USER DATA MANAGEMENT ======
 async function loadUserData() {
     if (!currentUserId) {
-        initTelegramWebApp();
-        if (!currentUserId) return;
+        // Δημιουργία guest ID: guest_ + timestamp
+        currentUserId = 'guest_' + Date.now();
+        console.log('🔹 Generated guest ID:', currentUserId);
     }
 
     try {
@@ -192,7 +179,7 @@ function addPoints(amount) {
     const current = getPoints();
     setPoints(current + amount);
     showFloatingPoints(amount);
-    playSuccessSound(); // ήχος όταν κερδίζονται πόντοι
+    playSuccessSound();
 }
 
 function deductPoints(amount) {
@@ -516,7 +503,6 @@ async function performAnalysis() {
         loadingBox.scrollIntoView({ behavior: 'smooth' });
     }
 
-    // Ήχος κατά την έναρξη της ανάλυσης
     playAnalysisSound();
 
     try {
@@ -543,10 +529,8 @@ async function performAnalysis() {
                 resultArea.style.display = 'block';
                 addStarsToResult();
             }
-            // Ήχος επιτυχίας όταν εμφανίζεται το αποτέλεσμα
             playSuccessSound();
 
-            // Μετάφραση αποτελέσματος αν δεν είναι ελληνικά
             if (currentLang !== 'el') {
                 try { await translateResult(originalResultText, currentLang); } catch (e) {}
             }
@@ -735,10 +719,9 @@ function goToSplash() {
 
 // ====== CONSENT ======
 function checkConsent() {
-    if (localStorage.getItem('omen_consent') === 'true') {
+    if (sessionStorage.getItem('omen_consent') === 'true') {   // <-- sessionStorage αντί για localStorage
         document.getElementById('consent-overlay').classList.add('hidden');
         startLifelineCycle();
-        // Ήχος κατά την έναρξη (εφόσον έχει ήδη αποδεχθεί)
         playMysticSound();
     } else {
         document.getElementById('consent-overlay').classList.remove('hidden');
@@ -746,10 +729,9 @@ function checkConsent() {
 }
 
 function acceptConsent() {
-    localStorage.setItem('omen_consent', 'true');
+    sessionStorage.setItem('omen_consent', 'true');   // <-- sessionStorage
     document.getElementById('consent-overlay').classList.add('hidden');
     startLifelineCycle();
-    // Ήχος κατά την αποδοχή
     playMysticSound();
 }
 
@@ -805,7 +787,7 @@ async function earnPoints() {
     }
 }
 
-// ====== TRANSLATION LOGIC (ΕΠΑΝΑΦΟΡΑ ΑΠΟ ΤΗΝ ΑΡΧΙΚΗ ΕΚΔΟΣΗ) ======
+// ====== TRANSLATION LOGIC (αυτούσια) ======
 var correctionMap = {
     'en': {
         'Coffee schop': 'Coffee Reading', 'coffee schop': 'Coffee Reading',
@@ -834,12 +816,12 @@ function saveOriginalTexts() {
 saveOriginalTexts();
 
 function setLanguage(lang) {
-    localStorage.setItem('omen_lang', lang);
+    sessionStorage.setItem('omen_lang', lang);   // <-- sessionStorage για να ακολουθεί το session
     currentLang = lang;
 }
 
 function getStoredLanguage() {
-    return localStorage.getItem('omen_lang') || 'el';
+    return sessionStorage.getItem('omen_lang') || 'el';   // <-- sessionStorage
 }
 
 async function translateText(text, targetLang) {
@@ -990,7 +972,6 @@ function resetToGreek() {
     }
 }
 
-// ====== TRANSLATION FROM CONSENT (εναλλακτική για το modal) ======
 function startTranslationFromConsent() {
     var lang = document.getElementById('consent-language-select').value;
     if (lang === 'el') {
