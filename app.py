@@ -50,7 +50,7 @@ REFERRAL_REWARD = 20
 MAX_SUCCESSFUL_INVITES = 10
 STAR_UNLOCK_AMOUNT = 10
 STORY_SHARE_BONUS = 5
-NEW_USER_GIFT_POINTS = 50
+NEW_USER_GIFT_POINTS = 30   # <-- Άλλαξε από 50 σε 30
 
 # ====== LOGGING ======
 logging.basicConfig(
@@ -334,6 +334,23 @@ def compress_and_hash_image(base64_image):
         logger.error(f"Image compression error: {e}")
         return base64_image, None
 
+# ====== USER ID PARSER (για guest IDs) ======
+def parse_user_id(raw_user_id):
+    """Μετατρέπει το user_id σε ακέραιο, υποστηρίζοντας guest IDs τύπου 'guest_1234567890'"""
+    if isinstance(raw_user_id, int):
+        return raw_user_id
+    if isinstance(raw_user_id, str):
+        if raw_user_id.startswith("guest_"):
+            try:
+                return int(raw_user_id.split("_")[1])
+            except (IndexError, ValueError):
+                return None
+        try:
+            return int(raw_user_id)
+        except ValueError:
+            return None
+    return None
+
 # ====== FLASK API ROUTES ======
 
 @flask_app.route('/')
@@ -352,17 +369,22 @@ def serve_script():
 def health_check():
     return jsonify({"status": "ok", "timestamp": datetime.now().isoformat()})
 
-@flask_app.route('/api/user/<int:user_id>', methods=['GET'])
+@flask_app.route('/api/user/<user_id>', methods=['GET'])
 def get_user_info(user_id):
-    user = get_user(user_id)
+    # Αποδοχή και strings (guest IDs)
+    uid = parse_user_id(user_id)
+    if uid is None:
+        return jsonify({"error": "Invalid user_id format"}), 400
+
+    user = get_user(uid)
     if not user:
-        create_or_update_user(user_id)
-        user = get_user(user_id)
+        create_or_update_user(uid)
+        user = get_user(uid)
 
     if not user:
         return jsonify({"error": "Failed to create user"}), 500
 
-    referral_link = f"https://t.me/{OFFICIAL_BOT_USERNAME}?start={user_id}"
+    referral_link = f"https://t.me/{OFFICIAL_BOT_USERNAME}?start={uid}"
 
     response = {
         "user_id": user['user_id'],
@@ -392,10 +414,14 @@ def create_invoice():
         if not user_id:
             return jsonify({"error": "Missing user_id"}), 400
 
-        timestamp = int(datetime.now().timestamp())
-        payload = f"unlock_analysis_{user_id}_{timestamp}"
+        uid = parse_user_id(user_id)
+        if uid is None:
+            return jsonify({"error": "Invalid user_id"}), 400
 
-        invoice_result = asyncio.run(send_invoice_async(user_id, payload))
+        timestamp = int(datetime.now().timestamp())
+        payload = f"unlock_analysis_{uid}_{timestamp}"
+
+        invoice_result = asyncio.run(send_invoice_async(uid, payload))
 
         return jsonify({
             "success": True,
@@ -434,16 +460,24 @@ def analyze():
     """Κύριο endpoint ανάλυσης εικόνας με Gemini 1.5 Flash"""
     try:
         data = request.json
-        user_id = data.get('user_id')
+        raw_user_id = data.get('user_id')
         image_base64 = data.get('image')
         gender = data.get('gender', 'f')
 
-        if not user_id:
+        if not raw_user_id:
             return jsonify({"success": False, "error": "Missing user_id"}), 400
         if not image_base64:
             return jsonify({"success": False, "error": "Missing image data"}), 400
 
-        can_analyze, method = can_user_analyze(user_id)
+        uid = parse_user_id(raw_user_id)
+        if uid is None:
+            return jsonify({"success": False, "error": "Invalid user_id format"}), 400
+
+        # Δημιουργία χρήστη αν δεν υπάρχει (δώρο 30 πόντοι για νέο)
+        if not get_user(uid):
+            create_or_update_user(uid)
+
+        can_analyze, method = can_user_analyze(uid)
         if not can_analyze:
             error_messages = {
                 "insufficient_points": f"Χρειάζεσαι {ANALYSIS_COST} πόντους",
@@ -457,20 +491,18 @@ def analyze():
 
         compressed_image, image_hash = compress_and_hash_image(image_base64)
 
-        # Κλήση στο Gemini API (διορθωμένη)
         analysis_result = asyncio.run(call_gemini_api(compressed_image, gender))
 
         if not analysis_result:
-            # Fallback σε δυναμικό αποτέλεσμα σε περίπτωση αποτυχίας
             analysis_result = generate_local_reading(gender)
 
-        deduct_analysis_cost(user_id, method)
+        deduct_analysis_cost(uid, method)
 
-        user = get_user(user_id)
+        user = get_user(uid)
         if user and user['total_analyses'] == 0:
-            grant_referral_reward(user_id)
+            grant_referral_reward(uid)
 
-        add_analysis_to_history(user_id, image_hash, analysis_result, gender, method)
+        add_analysis_to_history(uid, image_hash, analysis_result, gender, method)
 
         return jsonify({
             "success": True,
@@ -611,15 +643,19 @@ def generate_local_reading(gender="f"):
 def share_story():
     try:
         data = request.json
-        user_id = data.get('user_id')
+        raw_user_id = data.get('user_id')
 
-        if not user_id:
+        if not raw_user_id:
             return jsonify({"error": "Missing user_id"}), 400
+
+        uid = parse_user_id(raw_user_id)
+        if uid is None:
+            return jsonify({"error": "Invalid user_id"}), 400
 
         conn = get_db_connection()
         conn.execute(
             "UPDATE users SET points = points + ? WHERE user_id = ?",
-            (STORY_SHARE_BONUS, user_id)
+            (STORY_SHARE_BONUS, uid)
         )
         conn.commit()
         conn.close()
@@ -637,12 +673,16 @@ def share_story():
 def check_payment_status():
     try:
         data = request.json
-        user_id = data.get('user_id')
+        raw_user_id = data.get('user_id')
 
-        if not user_id:
+        if not raw_user_id:
             return jsonify({"error": "Missing user_id"}), 400
 
-        user = get_user(user_id)
+        uid = parse_user_id(raw_user_id)
+        if uid is None:
+            return jsonify({"error": "Invalid user_id"}), 400
+
+        user = get_user(uid)
         if not user:
             return jsonify({"error": "User not found"}), 404
 
@@ -808,7 +848,7 @@ async def setup_webhook():
 
 if __name__ == '__main__':
     setup_telegram_handlers()
-    asyncio.run(setup_webhook())
+    # asyncio.run(setup_webhook())   # <-- Σχολιασμένο για να μη βγάζει timeout
     logger.info("🚀 Starting Omen Mini App server...")
     flask_app.run(
         host='0.0.0.0',
