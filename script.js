@@ -6,36 +6,27 @@
 
 // ====== GLOBAL VARIABLES ======
 let tgWebApp = null;
-let currentUserId = null;        // <-- Πλέον null αν δεν υπάρχει Telegram ID
+let currentUserId = null;        // null αν δεν υπάρχει Telegram ID
 let currentLang = 'el';
 let originalTexts = {};
 let originalResultText = '';
 
-// Configuration
 const API_URL = '/api/analyze';
 const ANALYSIS_COST = 15;
 const DAILY_LIMIT = 5;
 const REFERRAL_REWARD = 20;
-
-// ΕΠΙΣΗΜΟ BOT USERNAME
 const OFFICIAL_BOT_USERNAME = 'omenread_bot';
 
-// State variables
 let isWatchingAds = false;
 let isAnalyzing = false;
 let currentImageBase64 = null;
 let selectedGender = 'f';
 let currentStream = null;
 let AdController = null;
-
-// Stars & Referral state
 let userStarsUnlocks = 0;
 
-// Lifeline timers
 let lifelineShowTimer = null;
 let lifelineHideTimer = null;
-
-// Audio context for sound effects
 let audioCtx = null;
 
 // ====== SOUND EFFECTS ======
@@ -59,9 +50,7 @@ function playMysticSound() {
         gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
         osc.start();
         osc.stop(audioCtx.currentTime + 0.5);
-    } catch (e) {
-        console.log('Audio not supported');
-    }
+    } catch (e) {}
 }
 
 function playSuccessSound() {
@@ -80,9 +69,7 @@ function playSuccessSound() {
             osc.start(audioCtx.currentTime + i * 0.15);
             osc.stop(audioCtx.currentTime + i * 0.15 + 0.3);
         });
-    } catch (e) {
-        console.log('Audio not supported');
-    }
+    } catch (e) {}
 }
 
 function playAnalysisSound() {
@@ -100,9 +87,7 @@ function playAnalysisSound() {
         gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.2);
         osc.start();
         osc.stop(audioCtx.currentTime + 1.2);
-    } catch (e) {
-        console.log('Audio not supported');
-    }
+    } catch (e) {}
 }
 
 // ====== TELEGRAM WEBAPP INITIALIZATION ======
@@ -111,7 +96,6 @@ function initTelegramWebApp() {
         tgWebApp = window.Telegram.WebApp;
         tgWebApp.ready();
         tgWebApp.expand();
-
         tgWebApp.setHeaderColor('#0a0a12');
         tgWebApp.setBackgroundColor('#0a0a12');
 
@@ -120,7 +104,7 @@ function initTelegramWebApp() {
             console.log('✅ Telegram User ID:', currentUserId);
         } else {
             console.warn('⚠️ No initData, leaving currentUserId null');
-            currentUserId = null;   // <-- Δεν δημιουργούμε ψεύτικο ID
+            currentUserId = null;
         }
 
         tgWebApp.onEvent('viewportChanged', () => {
@@ -210,7 +194,7 @@ function showFloatingPoints(amount) {
     }
 }
 
-// ====== DAILY LIMIT MANAGEMENT ======
+// ====== DAILY LIMIT ======
 function getDailyAnalyses() {
     const userData = JSON.parse(localStorage.getItem('omen_user_data') || '{}');
     return parseInt(userData.daily_analyses || '0');
@@ -250,7 +234,7 @@ function updateScanButton() {
     if (currentLang !== 'el') translateSingleElement(btn, btn.textContent, currentLang);
 }
 
-// ====== REFERRAL SYSTEM ======
+// ====== REFERRAL ======
 function createInviteModal() {
     const existingModal = document.getElementById('invite-modal');
     if (existingModal) existingModal.remove();
@@ -374,7 +358,7 @@ async function shareStory() {
     }
 }
 
-// ====== TELEGRAM STARS (XTR) ======
+// ====== TELEGRAM STARS ======
 async function unlockWithStars() {
     if (!currentUserId) {
         showToast('Πρέπει να είσαι συνδεδεμένος μέσω Telegram.');
@@ -480,7 +464,7 @@ function showAnalysisOptions() {
     document.body.insertAdjacentHTML('beforeend', modalHTML);
 }
 
-// ====== MAIN ANALYSIS FUNCTION ======
+// ====== MAIN ANALYSIS ======
 async function performAnalysis() {
     if (!currentImageBase64 || isAnalyzing) return;
     if (!canAnalyze()) {
@@ -717,9 +701,9 @@ function goToSplash() {
     updateScanButton();
 }
 
-// ====== CONSENT ======
+// ====== CONSENT (sessionStorage) ======
 function checkConsent() {
-    if (sessionStorage.getItem('omen_consent') === 'true') {   // <-- sessionStorage αντί για localStorage
+    if (sessionStorage.getItem('omen_consent') === 'true') {
         document.getElementById('consent-overlay').classList.add('hidden');
         startLifelineCycle();
         playMysticSound();
@@ -729,7 +713,7 @@ function checkConsent() {
 }
 
 function acceptConsent() {
-    sessionStorage.setItem('omen_consent', 'true');   // <-- sessionStorage
+    sessionStorage.setItem('omen_consent', 'true');
     document.getElementById('consent-overlay').classList.add('hidden');
     startLifelineCycle();
     playMysticSound();
@@ -787,7 +771,7 @@ async function earnPoints() {
     }
 }
 
-// ====== TRANSLATION LOGIC (αυτούσια) ======
+// ====== TRANSLATION ======
 var correctionMap = {
     'en': {
         'Coffee schop': 'Coffee Reading', 'coffee schop': 'Coffee Reading',
@@ -816,12 +800,12 @@ function saveOriginalTexts() {
 saveOriginalTexts();
 
 function setLanguage(lang) {
-    sessionStorage.setItem('omen_lang', lang);   // <-- sessionStorage για να ακολουθεί το session
+    sessionStorage.setItem('omen_lang', lang);
     currentLang = lang;
 }
 
 function getStoredLanguage() {
-    return sessionStorage.getItem('omen_lang') || 'el';   // <-- sessionStorage
+    return sessionStorage.getItem('omen_lang') || 'el';
 }
 
 async function translateText(text, targetLang) {
