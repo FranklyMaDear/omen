@@ -1,7 +1,7 @@
 """
 Omen - Καφεμαντεία Mini App για Telegram
 Backend: Flask + python-telegram-bot v20+
-Περιλαμβάνει: Referral System, Telegram Stars (XTR), AI Analysis (Gemini 1.5 Flash)
+Περιλαμβάνει: Referral System, Telegram Stars (XTR), AI Analysis (Gemini 1.5 Pro)
 Επίσημο Bot: @omenread_bot
 """
 
@@ -40,17 +40,15 @@ ADMIN_USER_ID = int(os.environ.get("ADMIN_USER_ID", "123456789"))
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "YOUR_GEMINI_API_KEY_HERE")
 MINI_APP_URL = os.environ.get("MINI_APP_URL", "https://your-server.com")
 
-# ΕΠΙΣΗΜΟ BOT USERNAME
 OFFICIAL_BOT_USERNAME = "omenread_bot"
 
-# Constants
 ANALYSIS_COST = 15
 DAILY_LIMIT = 5
 REFERRAL_REWARD = 20
 MAX_SUCCESSFUL_INVITES = 10
 STAR_UNLOCK_AMOUNT = 10
 STORY_SHARE_BONUS = 5
-NEW_USER_GIFT_POINTS = 30   # <-- Άλλαξε από 50 σε 30
+NEW_USER_GIFT_POINTS = 30
 
 # ====== LOGGING ======
 logging.basicConfig(
@@ -59,15 +57,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# ====== FLASK APP ======
 flask_app = Flask(__name__)
 CORS(flask_app)
 
-# ====== TELEGRAM BOT APPLICATION ======
 telegram_app = Application.builder().token(TOKEN).build()
 bot_instance = telegram_app.bot
 
-# ====== DATABASE SETUP ======
 DATABASE_PATH = "omen_users.db"
 
 def get_db_connection():
@@ -146,8 +141,6 @@ def init_database():
     logger.info("✅ Database initialized successfully")
 
 init_database()
-
-# ====== HELPER FUNCTIONS ======
 
 def get_user(user_id):
     conn = get_db_connection()
@@ -334,9 +327,7 @@ def compress_and_hash_image(base64_image):
         logger.error(f"Image compression error: {e}")
         return base64_image, None
 
-# ====== USER ID PARSER (για guest IDs) ======
 def parse_user_id(raw_user_id):
-    """Μετατρέπει το user_id σε ακέραιο, υποστηρίζοντας guest IDs τύπου 'guest_1234567890'"""
     if isinstance(raw_user_id, int):
         return raw_user_id
     if isinstance(raw_user_id, str):
@@ -351,7 +342,7 @@ def parse_user_id(raw_user_id):
             return None
     return None
 
-# ====== FLASK API ROUTES ======
+# ====== FLASK ROUTES ======
 
 @flask_app.route('/')
 def serve_mini_app():
@@ -371,7 +362,6 @@ def health_check():
 
 @flask_app.route('/api/user/<user_id>', methods=['GET'])
 def get_user_info(user_id):
-    # Αποδοχή και strings (guest IDs)
     uid = parse_user_id(user_id)
     if uid is None:
         return jsonify({"error": "Invalid user_id format"}), 400
@@ -457,7 +447,6 @@ async def send_invoice_async(user_id, payload):
 
 @flask_app.route('/api/analyze', methods=['POST'])
 def analyze():
-    """Κύριο endpoint ανάλυσης εικόνας με Gemini 1.5 Flash"""
     try:
         data = request.json
         raw_user_id = data.get('user_id')
@@ -473,7 +462,6 @@ def analyze():
         if uid is None:
             return jsonify({"success": False, "error": "Invalid user_id format"}), 400
 
-        # Δημιουργία χρήστη αν δεν υπάρχει (δώρο 30 πόντοι για νέο)
         if not get_user(uid):
             create_or_update_user(uid)
 
@@ -518,7 +506,6 @@ def analyze():
         }), 500
 
 async def call_gemini_api(image_base64, gender):
-    """Καλεί το Gemini API για ανάλυση εικόνας (μοντέλο gemini-1.5-flash)"""
     if not GEMINI_API_KEY:
         logger.error("❌ GEMINI_API_KEY not set!")
         return None
@@ -545,7 +532,8 @@ async def call_gemini_api(image_base64, gender):
 Αν δεν διακρίνεις σύμβολα, γράψε μια γενική αισιόδοξη ανάλυση.
 """
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+    # Χρησιμοποιούμε το gemini-1.5-pro (πιθανότατα έχει δωρεάν quota)
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key={GEMINI_API_KEY}"
     
     payload = {
         "contents": [{
@@ -574,14 +562,14 @@ async def call_gemini_api(image_base64, gender):
                 data = response.json()
                 if 'candidates' in data and data['candidates']:
                     return data['candidates'][0]['content']['parts'][0]['text']
-            logger.error(f"Gemini error: {response.text}")
+            # Αποφεύγουμε να τυπώσουμε ολόκληρο το response που μπορεί να περιέχει το κλειδί
+            logger.error(f"Gemini error: status {response.status_code}")
     except Exception as e:
         logger.error(f"🔥 Exception in call_gemini_api: {e}")
     
     return None
 
 def generate_local_reading(gender="f"):
-    """Πλήρες fallback με δομημένη ανάλυση"""
     gender = str(gender)
     if gender == "m":
         greeting = random.choice([
@@ -813,8 +801,6 @@ async def successful_payment_handler(update: Update, context: CallbackContext):
     finally:
         conn.close()
 
-# ====== WEBHOOK ROUTE ======
-
 @flask_app.route('/webhook', methods=['POST'])
 async def webhook():
     if request.method == "POST":
@@ -826,8 +812,6 @@ async def webhook():
             logger.error(f"Webhook error: {e}")
             return 'error', 500
     return 'Method not allowed', 405
-
-# ====== APPLICATION SETUP ======
 
 def setup_telegram_handlers():
     telegram_app.add_handler(CommandHandler("start", start_command))
@@ -844,11 +828,9 @@ async def setup_webhook():
     except Exception as e:
         logger.error(f"Failed to set webhook: {e}")
 
-# ====== MAIN EXECUTION ======
-
 if __name__ == '__main__':
     setup_telegram_handlers()
-    # asyncio.run(setup_webhook())   # <-- Σχολιασμένο για να μη βγάζει timeout
+    # asyncio.run(setup_webhook())   # Σχολιασμένο
     logger.info("🚀 Starting Omen Mini App server...")
     flask_app.run(
         host='0.0.0.0',
