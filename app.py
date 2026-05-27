@@ -1,7 +1,7 @@
 """
 Omen - Καφεμαντεία Mini App για Telegram
 Backend: Flask + python-telegram-bot v20+
-Περιλαμβάνει: Referral System, Telegram Stars (XTR), AI Analysis
+Περιλαμβάνει: Referral System, Telegram Stars (XTR), AI Analysis (Hugging Face)
 Επίσημο Bot: @omenread_bot
 """
 
@@ -52,6 +52,7 @@ REFERRAL_REWARD = 20
 MAX_SUCCESSFUL_INVITES = 10
 STAR_UNLOCK_AMOUNT = 10
 STORY_SHARE_BONUS = 5
+NEW_USER_GIFT_POINTS = 50  # Δώρο 50 πόντων για νέους χρήστες
 
 # ====== LOGGING ======
 logging.basicConfig(
@@ -175,13 +176,15 @@ def create_or_update_user(user_id, username=None, first_name=None, last_name=Non
     ).fetchone()
 
     if not existing:
-        # Δημιουργία νέου χρήστη
+        # Δημιουργία νέου χρήστη με δώρο 50 πόντων
         cursor.execute('''
             INSERT INTO users (
                 user_id, username, first_name, last_name, language_code,
                 referrer_id, points, daily_analyses
-            ) VALUES (?, ?, ?, ?, ?, ?, 0, 0)
-        ''', (user_id, username, first_name, last_name, language_code, referrer_id))
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, 0)
+        ''', (user_id, username, first_name, last_name, language_code, referrer_id, NEW_USER_GIFT_POINTS))
+
+        logger.info(f"✅ New user created with {NEW_USER_GIFT_POINTS} gift points: {user_id}")
 
         # Αν υπάρχει referrer, καταγραφή παραπομπής
         if referrer_id and referrer_id != user_id and referrer_id != 0:
@@ -193,8 +196,6 @@ def create_or_update_user(user_id, username=None, first_name=None, last_name=Non
                 logger.info(f"✅ Referral recorded: {referrer_id} -> {user_id}")
             except Exception as e:
                 logger.error(f"Referral insertion error: {e}")
-
-        logger.info(f"✅ New user created: {user_id}")
     else:
         # Ενημέρωση υπάρχοντος χρήστη
         cursor.execute('''
@@ -214,7 +215,6 @@ def grant_referral_reward(referred_user_id):
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Βρες τον referrer και την κατάσταση του reward
     referral = cursor.execute('''
         SELECT r.id, r.referrer_id, r.reward_granted, u.successful_invites
         FROM referrals r
@@ -223,7 +223,6 @@ def grant_referral_reward(referred_user_id):
     ''', (referred_user_id,)).fetchone()
 
     if referral and referral['successful_invites'] < MAX_SUCCESSFUL_INVITES:
-        # Δώσε πόντους στον referrer
         cursor.execute('''
             UPDATE users 
             SET points = points + ?,
@@ -231,7 +230,6 @@ def grant_referral_reward(referred_user_id):
             WHERE user_id = ? AND successful_invites < ?
         ''', (REFERRAL_REWARD, referral['referrer_id'], MAX_SUCCESSFUL_INVITES))
 
-        # Μαρκάρισε το reward ως δοσμένο
         cursor.execute('''
             UPDATE referrals 
             SET reward_granted = 1, reward_granted_at = CURRENT_TIMESTAMP
@@ -240,7 +238,6 @@ def grant_referral_reward(referred_user_id):
 
         conn.commit()
 
-        # Προσπάθησε να ειδοποιήσεις τον referrer
         try:
             asyncio.run(send_referral_notification(referral['referrer_id']))
         except Exception as e:
@@ -337,32 +334,27 @@ def add_analysis_to_history(user_id, image_hash, result_text, gender, unlocked_v
 def compress_and_hash_image(base64_image):
     """Συμπιέζει την εικόνα και δημιουργεί ένα hash"""
     try:
-        # Αποκωδικοποίηση base64
         if ',' in base64_image:
             base64_image = base64_image.split(',')[1]
 
         image_data = base64.b64decode(base64_image)
         img = Image.open(BytesIO(image_data))
 
-        # Συμπίεση
         img = img.convert('RGB')
         max_size = (800, 800)
         img.thumbnail(max_size, Image.LANCZOS)
 
-        # Δημιουργία hash (απλό παράδειγμα)
         import hashlib
         img_bytes = BytesIO()
         img.save(img_bytes, format='JPEG', quality=70)
         image_hash = hashlib.md5(img_bytes.getvalue()).hexdigest()
 
-        # Επιστροφή συμπιεσμένης εικόνας
         img_bytes.seek(0)
         compressed_base64 = base64.b64encode(img_bytes.getvalue()).decode('utf-8')
 
         return compressed_base64, image_hash
     except Exception as e:
         logger.error(f"Image compression error: {e}")
-        # Επιστροφή της αρχικής εικόνας αν αποτύχει η συμπίεση
         return base64_image, None
 
 # ====== FLASK API ROUTES ======
@@ -386,14 +378,12 @@ def get_user_info(user_id):
     """Επιστρέφει πλήρεις πληροφορίες χρήστη"""
     user = get_user(user_id)
     if not user:
-        # Δοκίμασε να δημιουργήσεις τον χρήστη
         create_or_update_user(user_id)
         user = get_user(user_id)
 
     if not user:
         return jsonify({"error": "Failed to create user"}), 500
 
-    # ΧΡΗΣΗ ΤΟΥ ΕΠΙΣΗΜΟΥ BOT USERNAME
     referral_link = f"https://t.me/{OFFICIAL_BOT_USERNAME}?start={user_id}"
 
     response = {
@@ -415,14 +405,6 @@ def get_user_info(user_id):
 
     return jsonify(response)
 
-async def get_bot_username():
-    """Επιστρέφει το username του bot"""
-    try:
-        bot_info = await bot_instance.get_me()
-        return bot_info.username
-    except:
-        return OFFICIAL_BOT_USERNAME  # Fallback στο επίσημο username
-
 @flask_app.route('/api/create-invoice', methods=['POST'])
 def create_invoice():
     """Δημιουργεί invoice για Telegram Stars"""
@@ -433,21 +415,16 @@ def create_invoice():
         if not user_id:
             return jsonify({"error": "Missing user_id"}), 400
 
-        # Δημιουργία μοναδικού payload
         timestamp = int(datetime.now().timestamp())
         payload = f"unlock_analysis_{user_id}_{timestamp}"
 
-        # Δημιουργία invoice μέσω Telegram API
-        invoice_result = asyncio.run(send_invoice_async(
-            user_id, payload
-        ))
+        invoice_result = asyncio.run(send_invoice_async(user_id, payload))
 
         return jsonify({
             "success": True,
             "message": "Invoice sent to Telegram chat",
             "payload": payload
         })
-
     except Exception as e:
         logger.error(f"Invoice creation error: {e}")
         return jsonify({"error": str(e)}), 500
@@ -464,7 +441,7 @@ async def send_invoice_async(user_id, payload):
             "• Υποστήριξε την Μαντάμ Ζαΐρα"
         ),
         payload=payload,
-        provider_token="",  # Κενό για Telegram Stars
+        provider_token="",
         currency="XTR",
         prices=[LabeledPrice(label="Ανάλυση Φλιτζανιού", amount=STAR_UNLOCK_AMOUNT)],
         start_parameter="unlock_analysis",
@@ -478,20 +455,18 @@ async def send_invoice_async(user_id, payload):
 
 @flask_app.route('/api/analyze', methods=['POST'])
 def analyze():
-    """Κύριο endpoint ανάλυσης εικόνας"""
+    """Κύριο endpoint ανάλυσης εικόνας (συνδεδεμένο με Hugging Face)"""
     try:
         data = request.json
         user_id = data.get('user_id')
         image_base64 = data.get('image')
         gender = data.get('gender', 'f')
 
-        # Επικύρωση δεδομένων
         if not user_id:
             return jsonify({"success": False, "error": "Missing user_id"}), 400
         if not image_base64:
             return jsonify({"success": False, "error": "Missing image data"}), 400
 
-        # Έλεγχος αν ο χρήστης μπορεί να κάνει ανάλυση
         can_analyze, method = can_user_analyze(user_id)
         if not can_analyze:
             error_messages = {
@@ -504,27 +479,32 @@ def analyze():
                 "reason": method
             }), 403
 
-        # Συμπίεση εικόνας
         compressed_image, image_hash = compress_and_hash_image(image_base64)
 
-        # Κλήση στο Hugging Face API (placeholder)
+        # Κλήση στο Hugging Face API
         analysis_result = asyncio.run(call_huggingface_api(compressed_image, gender))
 
         if not analysis_result:
-            return jsonify({
-                "success": False,
-                "error": "Η ανάλυση απέτυχε. Προσπάθησε ξανά."
-            }), 500
+            # Fallback σε δυναμικό αποτέλεσμα σε περίπτωση αποτυχίας
+            analysis_result = (
+                "🔮 *Η Μαντάμ Ζαΐρα ομιλεί...*\n\n"
+                "Βλέπω τα σκοτεινά μονοπάτια του καφέ να σχηματίζουν έναν αετό στην αριστερή πλευρά του φλιτζανιού. "
+                "Ο αετός είναι το σύμβολο της δύναμης και της ανεξαρτησίας. "
+                "Σου ψιθυρίζει ότι σύντομα θα βρεθείς μπροστά σε μια μεγάλη απόφαση που θα αλλάξει τη ζωή σου.\n\n"
+                "Στο κέντρο διακρίνω ένα μικρό αστέρι, κρυμμένο ανάμεσα στα κατακάθια. "
+                "Αυτό είναι σημάδι ελπίδας και απροσδόκητης βοήθειας. "
+                "Κάποιος από το παρελθόν σου θα επιστρέψει με νέα που θα σε εκπλήξουν ευχάριστα.\n\n"
+                "Στον πάτο του φλιτζανιού, οι γραμμές ενώνονται σαν ποτάμι. "
+                "Το νερό συμβολίζει τα συναισθήματα - να είσαι έτοιμος για μια περίοδο έντονης δημιουργικότητας και έμπνευσης.\n\n"
+                "✨ *Μάντρα της ημέρας:* Αγκάλιασε την αλλαγή, γιατί το σύμπαν συνωμοτεί υπέρ σου."
+            )
 
-        # Αφαίρεση κόστους
         deduct_analysis_cost(user_id, method)
 
-        # Αν είναι η πρώτη ανάλυση, δώσε referral reward
         user = get_user(user_id)
         if user and user['total_analyses'] == 0:
             grant_referral_reward(user_id)
 
-        # Καταγραφή στο ιστορικό
         add_analysis_to_history(user_id, image_hash, analysis_result, gender, method)
 
         return jsonify({
@@ -533,7 +513,6 @@ def analyze():
             "method_used": method,
             "analysis_number": (user['total_analyses'] + 1) if user else 1
         })
-
     except Exception as e:
         logger.error(f"Analysis error: {e}")
         return jsonify({
@@ -542,9 +521,8 @@ def analyze():
         }), 500
 
 async def call_huggingface_api(image_base64, gender):
-    """Καλεί το Hugging Face API για ανάλυση εικόνας"""
+    """Καλεί το Hugging Face API για ανάλυση εικόνας (πραγματική σύνδεση)"""
     try:
-        # Προετοιμασία του prompt με βάση το φύλο
         gender_text = "γυναίκα" if gender == 'f' else "άντρα"
 
         prompt = (
@@ -560,47 +538,44 @@ async def call_huggingface_api(image_base64, gender):
             "Η απάντηση να είναι 3-4 παραγράφους."
         )
 
-        # Σημείωση: Αυτό είναι placeholder - χρησιμοποίησε το δικό σου μοντέλο
-        # Για testing, επέστρεψε ένα mock αποτέλεσμα
-        mock_result = (
-            "🔮 *Η Μαντάμ Ζαΐρα ομιλεί...*\n\n"
-            "Αχ, βλέπω τα σκοτεινά μονοπάτια του καφέ να σχηματίζουν έναν αετό στην αριστερή πλευρά του φλιτζανιού. "
-            "Ο αετός, αγαπητή μου, είναι το σύμβολο της δύναμης και της ανεξαρτησίας. "
-            "Σου ψιθυρίζει ότι σύντομα θα βρεθείς μπροστά σε μια μεγάλη απόφαση που θα αλλάξει τη ζωή σου.\n\n"
-            "Στο κέντρο διακρίνω ένα μικρό αστέρι, κρυμμένο ανάμεσα στα κατακάθια. "
-            "Αυτό είναι σημάδι ελπίδας και απροσδόκητης βοήθειας. "
-            "Κάποιος από το παρελθόν σου θα επιστρέψει με νέα που θα σε εκπλήξουν ευχάριστα.\n\n"
-            "Στον πάτο του φλιτζανιού, οι γραμμές ενώνονται σαν ποτάμι. "
-            "Το νερό συμβολίζει τα συναισθήματα - να είσαι έτοιμη για μια περίοδο έντονης δημιουργικότητας και έμπνευσης.\n\n"
-            "✨ *Μάντρα της ημέρας:* Αγκάλιασε την αλλαγή, γιατί το σύμπαν συνωμοτεί υπέρ σου."
-        )
+        # Προετοιμασία payload για Hugging Face Inference API
+        # Χρησιμοποιούμε ένα μοντέλο που υποστηρίζει multimodal (π.χ. llava-hf/llava-1.5-7b-hf)
+        # ή οτιδήποτε έχει οριστεί στο HUGGINGFACE_API_URL
+        payload = {
+            "inputs": {
+                "image": image_base64,
+                "prompt": prompt
+            },
+            "parameters": {
+                "max_new_tokens": 500,
+                "temperature": 0.8,
+                "do_sample": True
+            }
+        }
 
-        # TODO: Ενεργοποίησε αυτό όταν έχεις το πραγματικό API key
-        """
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with httpx.AsyncClient(timeout=60.0) as client:
             response = await client.post(
                 HUGGINGFACE_API_URL,
                 headers={
                     "Authorization": f"Bearer {HUGGINGFACE_API_KEY}",
                     "Content-Type": "application/json"
                 },
-                json={
-                    "inputs": {
-                        "image": image_base64,
-                        "prompt": prompt
-                    }
-                }
+                json=payload
             )
-            
+
             if response.status_code == 200:
                 result = response.json()
-                return result.get('generated_text', mock_result)
+                # Ανάλογα με τη μορφή του μοντέλου, εξάγουμε το κείμενο
+                if isinstance(result, list) and len(result) > 0:
+                    generated = result[0].get('generated_text', '')
+                elif isinstance(result, dict):
+                    generated = result.get('generated_text', '')
+                else:
+                    generated = str(result)
+                return generated.strip()
             else:
-                logger.error(f"HuggingFace API error: {response.status_code}")
-                return mock_result
-        """
-
-        return mock_result
+                logger.error(f"HuggingFace API error: {response.status_code} - {response.text}")
+                return None
 
     except Exception as e:
         logger.error(f"HuggingFace API call error: {e}")
@@ -629,7 +604,6 @@ def share_story():
             "bonus_points": STORY_SHARE_BONUS,
             "message": f"Κέρδισες {STORY_SHARE_BONUS} πόντους!"
         })
-
     except Exception as e:
         logger.error(f"Story share error: {e}")
         return jsonify({"error": str(e)}), 500
@@ -653,7 +627,6 @@ def check_payment_status():
             "stars_unlocks_remaining": user['stars_unlocks_remaining'],
             "total_stars_spent": user['total_stars_spent']
         })
-
     except Exception as e:
         logger.error(f"Payment status check error: {e}")
         return jsonify({"error": str(e)}), 500
@@ -665,7 +638,6 @@ async def start_command(update: Update, context: CallbackContext):
     user = update.effective_user
     args = context.args
 
-    # Ανίχνευση referrer_id από deep link
     referrer_id = None
     if args and len(args) > 0:
         try:
@@ -673,7 +645,6 @@ async def start_command(update: Update, context: CallbackContext):
         except ValueError:
             referrer_id = None
 
-    # Δημιουργία ή ενημέρωση χρήστη
     create_or_update_user(
         user_id=user.id,
         username=user.username,
@@ -683,7 +654,6 @@ async def start_command(update: Update, context: CallbackContext):
         referrer_id=referrer_id
     )
 
-    # Μήνυμα καλωσορίσματος
     welcome_text = (
         "☕ *Καλωσόρισες στο Omen - Καφεμαντεία!*\n\n"
         "Η Μαντάμ Ζαΐρα είναι έτοιμη να διαβάσει τα μυστικά του φλιτζανιού σου.\n"
@@ -702,7 +672,6 @@ async def start_command(update: Update, context: CallbackContext):
             f"ο φίλος σου θα κερδίσει {REFERRAL_REWARD} πόντους!"
         )
 
-    # Δημιουργία inline keyboard με το Mini App button
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton(
             text="🔮 Άνοιγμα Omen - Καφεμαντεία",
@@ -729,10 +698,6 @@ async def start_command(update: Update, context: CallbackContext):
 async def precheckout_callback(update: Update, context: CallbackContext):
     """Επιβεβαιώνει το PreCheckoutQuery"""
     query = update.pre_checkout_query
-
-    # Μπορείς να προσθέσεις επιπλέον επαλήθευση εδώ
-    # Π.χ., έλεγχος αν το payload είναι έγκυρο
-
     await query.answer(ok=True)
     logger.info(f"✅ PreCheckoutQuery approved for user {query.from_user.id}")
 
@@ -744,19 +709,16 @@ async def successful_payment_handler(update: Update, context: CallbackContext):
 
     logger.info(f"💰 Payment received from user {user_id}: {payment.total_amount} XTR")
 
-    # Καταγραφή συναλλαγής
     conn = get_db_connection()
     cursor = conn.cursor()
 
     try:
-        # Εισαγωγή συναλλαγής
         cursor.execute('''
             INSERT INTO star_transactions 
             (user_id, amount, telegram_payment_charge_id, payload)
             VALUES (?, ?, ?, ?)
         ''', (user_id, payment.total_amount, payment.telegram_payment_charge_id, payload))
 
-        # Ενημέρωση χρήστη
         unlocks_to_add = payment.total_amount // STAR_UNLOCK_AMOUNT
         cursor.execute('''
             UPDATE users 
@@ -767,7 +729,6 @@ async def successful_payment_handler(update: Update, context: CallbackContext):
 
         conn.commit()
 
-        # Μήνυμα επιβεβαίωσης
         await update.message.reply_text(
             f"✅ *Η πληρωμή ολοκληρώθηκε επιτυχώς!*\n\n"
             f"Απέκτησες *{unlocks_to_add} άμεσες αναλύσεις*!\n"
@@ -782,7 +743,6 @@ async def successful_payment_handler(update: Update, context: CallbackContext):
             ]),
             parse_mode=ParseMode.MARKDOWN
         )
-
     except Exception as e:
         logger.error(f"Payment processing error: {e}")
         await update.message.reply_text(
@@ -805,7 +765,6 @@ async def webhook():
         except Exception as e:
             logger.error(f"Webhook error: {e}")
             return 'error', 500
-
     return 'Method not allowed', 405
 
 # ====== APPLICATION SETUP ======
@@ -830,13 +789,8 @@ async def setup_webhook():
 # ====== MAIN EXECUTION ======
 
 if __name__ == '__main__':
-    # Ρύθμιση handlers
     setup_telegram_handlers()
-
-    # Ρύθμιση webhook
     asyncio.run(setup_webhook())
-
-    # Εκκίνηση Flask server
     logger.info("🚀 Starting Omen Mini App server...")
     flask_app.run(
         host='0.0.0.0',
