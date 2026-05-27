@@ -1,6 +1,6 @@
 /**
  * Omen - Καφεμαντεία Mini App
- * Frontend Logic: Referral System, Telegram Stars, AI Analysis, Translations, Lifeline Rollup
+ * Frontend Logic: Referral System, Telegram Stars, AI Analysis, Translations, Lifeline Rollup, Sound Effects
  * Επίσημο Bot: @omenread_bot
  */
 
@@ -34,6 +34,76 @@ let userStarsUnlocks = 0;
 // Lifeline timers
 let lifelineShowTimer = null;
 let lifelineHideTimer = null;
+
+// Audio context for sound effects
+let audioCtx = null;
+
+// ====== SOUND EFFECTS ======
+function initAudio() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+}
+
+function playMysticSound() {
+    try {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+        osc.frequency.linearRampToValueAtTime(660, audioCtx.currentTime + 0.3);
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.5);
+    } catch (e) {
+        console.log('Audio not supported');
+    }
+}
+
+function playSuccessSound() {
+    try {
+        initAudio();
+        const notes = [523, 659, 784];
+        notes.forEach((freq, i) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.15);
+            gain.gain.setValueAtTime(0.25, audioCtx.currentTime + i * 0.15);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.15 + 0.3);
+            osc.start(audioCtx.currentTime + i * 0.15);
+            osc.stop(audioCtx.currentTime + i * 0.15 + 0.3);
+        });
+    } catch (e) {
+        console.log('Audio not supported');
+    }
+}
+
+function playAnalysisSound() {
+    try {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+        osc.frequency.linearRampToValueAtTime(500, audioCtx.currentTime + 0.5);
+        osc.frequency.linearRampToValueAtTime(200, audioCtx.currentTime + 1.0);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.2);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 1.2);
+    } catch (e) {
+        console.log('Audio not supported');
+    }
+}
 
 // ====== TELEGRAM WEBAPP INITIALIZATION ======
 function initTelegramWebApp() {
@@ -122,6 +192,7 @@ function addPoints(amount) {
     const current = getPoints();
     setPoints(current + amount);
     showFloatingPoints(amount);
+    playSuccessSound(); // ήχος όταν κερδίζονται πόντοι
 }
 
 function deductPoints(amount) {
@@ -153,10 +224,6 @@ function showFloatingPoints(amount) {
 }
 
 // ====== DAILY LIMIT MANAGEMENT ======
-function getToday() {
-    return new Date().toISOString().split('T')[0];
-}
-
 function getDailyAnalyses() {
     const userData = JSON.parse(localStorage.getItem('omen_user_data') || '{}');
     return parseInt(userData.daily_analyses || '0');
@@ -449,6 +516,9 @@ async function performAnalysis() {
         loadingBox.scrollIntoView({ behavior: 'smooth' });
     }
 
+    // Ήχος κατά την έναρξη της ανάλυσης
+    playAnalysisSound();
+
     try {
         const response = await fetch(API_URL, {
             method: 'POST',
@@ -473,6 +543,9 @@ async function performAnalysis() {
                 resultArea.style.display = 'block';
                 addStarsToResult();
             }
+            // Ήχος επιτυχίας όταν εμφανίζεται το αποτέλεσμα
+            playSuccessSound();
+
             // Μετάφραση αποτελέσματος αν δεν είναι ελληνικά
             if (currentLang !== 'el') {
                 try { await translateResult(originalResultText, currentLang); } catch (e) {}
@@ -665,6 +738,8 @@ function checkConsent() {
     if (localStorage.getItem('omen_consent') === 'true') {
         document.getElementById('consent-overlay').classList.add('hidden');
         startLifelineCycle();
+        // Ήχος κατά την έναρξη (εφόσον έχει ήδη αποδεχθεί)
+        playMysticSound();
     } else {
         document.getElementById('consent-overlay').classList.remove('hidden');
     }
@@ -674,6 +749,8 @@ function acceptConsent() {
     localStorage.setItem('omen_consent', 'true');
     document.getElementById('consent-overlay').classList.add('hidden');
     startLifelineCycle();
+    // Ήχος κατά την αποδοχή
+    playMysticSound();
 }
 
 // ====== LEGAL ======
@@ -728,7 +805,7 @@ async function earnPoints() {
     }
 }
 
-// ====== TRANSLATION LOGIC (ΕΠΑΝΑΦΟΡΑ ΑΠΟ ΤΗΝ ΑΡΧΙΚΗ ΕΚΔΟΣΗ) ======
+// ====== TRANSLATION LOGIC ======
 var correctionMap = {
     'en': {
         'Coffee schop': 'Coffee Reading', 'coffee schop': 'Coffee Reading',
@@ -849,10 +926,13 @@ async function translatePage(targetLang) {
 
 function finishTranslation() {
     var btn = document.getElementById('translate-btn');
-    btn.classList.remove('translating');
-    btn.textContent = '▶';
-    btn.disabled = false;
-    document.getElementById('reset-lang-btn').style.display = 'flex';
+    if (btn) { btn.classList.remove('translating'); btn.textContent = '▶'; btn.disabled = false; }
+    var btn2 = document.querySelector('#consent-modal .translate-btn');
+    if (btn2) { btn2.classList.remove('translating'); btn2.textContent = '▶'; btn2.disabled = false; }
+    var resetBtn = document.getElementById('reset-lang-btn');
+    if (resetBtn) resetBtn.style.display = 'flex';
+    var resetBtn2 = document.querySelector('#consent-modal .reset-lang-btn');
+    if (resetBtn2) resetBtn2.style.display = 'flex';
 }
 
 function startTranslation() {
@@ -910,6 +990,38 @@ function resetToGreek() {
     }
 }
 
+// ====== TRANSLATION FROM CONSENT (εναλλακτική για το modal) ======
+function startTranslationFromConsent() {
+    var lang = document.getElementById('consent-language-select').value;
+    if (lang === 'el') {
+        restoreOriginalTexts();
+        setLanguage('el');
+        document.querySelector('#consent-modal .reset-lang-btn').style.display = 'none';
+        return;
+    }
+    var btn = document.querySelector('#consent-modal .translate-btn');
+    btn.classList.add('translating');
+    btn.textContent = '⟳';
+    btn.disabled = true;
+    setLanguage(lang);
+    translatePage(lang).then(() => {
+        if (originalResultText && document.getElementById('result-area').style.display !== 'none') {
+            translateResult(originalResultText, lang);
+        }
+    });
+}
+
+function resetToGreekFromConsent() {
+    restoreOriginalTexts();
+    setLanguage('el');
+    document.getElementById('consent-language-select').value = 'el';
+    document.querySelector('#consent-modal .reset-lang-btn').style.display = 'none';
+    if (originalResultText && document.getElementById('result-area').style.display !== 'none') {
+        document.getElementById('result-text').textContent = originalResultText;
+    }
+}
+
+// ====== LANGUAGE DETECTION ======
 function detectLanguage() {
     var userLang = navigator.language || navigator.userLanguage;
     var langCode = userLang.split('-')[0];
@@ -924,6 +1036,8 @@ function detectLanguage() {
     var mappedLang = langMap[langCode] || 'el';
     var langSelect = document.getElementById('language-select');
     if (langSelect) { langSelect.value = mappedLang; }
+    var consentLangSelect = document.getElementById('consent-language-select');
+    if (consentLangSelect) { consentLangSelect.value = mappedLang; }
     var labelMap = {
         'el': '🌐 Γλώσσα', 'en': '🌐 Language', 'de': '🌐 Sprache',
         'fr': '🌐 Langue', 'es': '🌐 Idioma', 'it': '🌐 Lingua',
@@ -938,6 +1052,8 @@ function detectLanguage() {
     };
     var label = document.getElementById('lang-label');
     if (label) { label.textContent = labelMap[mappedLang] || '🌐 Language'; }
+    var consentLabel = document.querySelector('#consent-modal .lang-label');
+    if (consentLabel) { consentLabel.textContent = labelMap[mappedLang] || '🌐 Language'; }
     if (mappedLang !== 'el') {
         setLanguage(mappedLang);
         setTimeout(function() { startTranslation(); }, 1000);
@@ -947,7 +1063,7 @@ function detectLanguage() {
 }
 detectLanguage();
 
-// ====== LIFELINE ROLLUP (ΕΠΑΝΑΦΟΡΑ ΑΠΟ ΤΗΝ ΑΡΧΙΚΗ ΕΚΔΟΣΗ) ======
+// ====== LIFELINE ROLLUP ======
 function startLifelineCycle() {
     stopLifelineCycle();
 
