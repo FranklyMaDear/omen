@@ -47,10 +47,12 @@ OFFICIAL_BOT_USERNAME = "omenread_bot"
 # Constants
 ANALYSIS_COST = 15
 DAILY_LIMIT = 5
-REFERRAL_REWARD = 20
-MAX_SUCCESSFUL_INVITES = 10
+REFERRAL_REWARD = 20        # Πόντοι ανά πρόσκληση
+MAX_SUCCESSFUL_INVITES = 10 # Απαιτούμενος αριθμός για milestone
+MILESTONE_BONUS = 100       # Έξτρα πόντοι όταν φτάσει τις MAX_SUCCESSFUL_INVITES
 STAR_UNLOCK_AMOUNT = 10
 STORY_SHARE_BONUS = 5
+WELCOME_BONUS = 50          # Αρχικοί πόντοι νέου χρήστη
 
 # ====== LOGGING ======
 logging.basicConfig(
@@ -97,6 +99,7 @@ def init_database():
             total_stars_spent INTEGER DEFAULT 0,
             stars_unlocks_remaining INTEGER DEFAULT 0,
             welcome_bonus_granted INTEGER DEFAULT 0,
+            milestone_bonus_granted INTEGER DEFAULT 0,  -- νέο πεδίο
             joined_at TEXT DEFAULT CURRENT_TIMESTAMP,
             last_active_at TEXT DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (referrer_id) REFERENCES users(user_id)
@@ -142,11 +145,15 @@ def init_database():
         )
     ''')
 
-    # Προσθήκη του πεδίου welcome_bonus_granted σε υπάρχουσες βάσεις
+    # Προσθήκη πεδίων που μπορεί να λείπουν από παλαιότερες βάσεις
     try:
         cursor.execute("ALTER TABLE users ADD COLUMN welcome_bonus_granted INTEGER DEFAULT 0")
     except sqlite3.OperationalError:
-        pass  # Το πεδίο υπάρχει ήδη
+        pass
+    try:
+        cursor.execute("ALTER TABLE users ADD COLUMN milestone_bonus_granted INTEGER DEFAULT 0")
+    except sqlite3.OperationalError:
+        pass
 
     conn.commit()
     conn.close()
@@ -167,7 +174,8 @@ def create_or_update_user(user_id, username=None, first_name=None, last_name=Non
     cursor = conn.cursor()
 
     existing = cursor.execute(
-        "SELECT user_id, welcome_bonus_granted FROM users WHERE user_id = ?", (user_id,)
+        "SELECT user_id, welcome_bonus_granted, successful_invites, milestone_bonus_granted FROM users WHERE user_id = ?",
+        (user_id,)
     ).fetchone()
 
     if not existing:
@@ -175,8 +183,8 @@ def create_or_update_user(user_id, username=None, first_name=None, last_name=Non
             INSERT INTO users (
                 user_id, username, first_name, last_name, language_code,
                 referrer_id, points, daily_analyses, welcome_bonus_granted
-            ) VALUES (?, ?, ?, ?, ?, ?, 50, 0, 1)
-        ''', (user_id, username, first_name, last_name, language_code, referrer_id))
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 1)
+        ''', (user_id, username, first_name, last_name, language_code, referrer_id, WELCOME_BONUS))
 
         if referrer_id and referrer_id != user_id and referrer_id != 0:
             try:
@@ -184,17 +192,19 @@ def create_or_update_user(user_id, username=None, first_name=None, last_name=Non
                     INSERT OR IGNORE INTO referrals (referrer_id, referred_user_id)
                     VALUES (?, ?)
                 ''', (referrer_id, user_id))
+                # Πίστωση 20 πόντων στον referrer και έλεγχος milestone
+                update_referrer_points(cursor, referrer_id)
                 logger.info(f"✅ Referral recorded: {referrer_id} -> {user_id}")
             except Exception as e:
                 logger.error(f"Referral insertion error: {e}")
 
-        logger.info(f"✅ New user created with 50 points: {user_id}")
+        logger.info(f"✅ New user created with {WELCOME_BONUS} points: {user_id}")
     else:
         if not existing['welcome_bonus_granted']:
             cursor.execute('''
-                UPDATE users SET points = points + 50, welcome_bonus_granted = 1
+                UPDATE users SET points = points + ?, welcome_bonus_granted = 1
                 WHERE user_id = ?
-            ''', (user_id,))
+            ''', (WELCOME_BONUS, user_id))
         cursor.execute('''
             UPDATE users
             SET username = COALESCE(?, username),
@@ -206,6 +216,31 @@ def create_or_update_user(user_id, username=None, first_name=None, last_name=Non
 
     conn.commit()
     conn.close()
+
+def update_referrer_points(cursor, referrer_id):
+    """Πιστώνει 20 πόντους για νέα referral και ελέγχει το milestone bonus."""
+    # Αύξηση successful_invites και πόντοι
+    cursor.execute('''
+        UPDATE users
+        SET points = points + ?,
+            successful_invites = successful_invites + 1
+        WHERE user_id = ?
+    ''', (REFERRAL_REWARD, referrer_id))
+    
+    # Έλεγχος αν έφτασε το όριο και δεν έχει πάρει ήδη milestone bonus
+    referrer = cursor.execute(
+        "SELECT successful_invites, milestone_bonus_granted FROM users WHERE user_id = ?",
+        (referrer_id,)
+    ).fetchone()
+    
+    if referrer and referrer['successful_invites'] >= MAX_SUCCESSFUL_INVITES and not referrer['milestone_bonus_granted']:
+        cursor.execute('''
+            UPDATE users
+            SET points = points + ?,
+                milestone_bonus_granted = 1
+            WHERE user_id = ?
+        ''', (MILESTONE_BONUS, referrer_id))
+        logger.info(f"🏆 Milestone bonus {MILESTONE_BONUS} points granted to {referrer_id}")
 
 def _run_async_in_thread(coro):
     """Εκτελεί μια async κορουτίνα σε ξεχωριστό thread με δικό του event loop."""
@@ -220,6 +255,7 @@ def _run_async_in_thread(coro):
     thread.start()
 
 def grant_referral_reward(referred_user_id):
+    """Δίνει 20 πόντους στον referrer όταν ο referred κάνει την πρώτη του ανάλυση."""
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -243,6 +279,20 @@ def grant_referral_reward(referred_user_id):
             SET reward_granted = 1, reward_granted_at = CURRENT_TIMESTAMP
             WHERE id = ?
         ''', (referral['id'],))
+
+        # Milestone check
+        referrer = cursor.execute(
+            "SELECT successful_invites, milestone_bonus_granted FROM users WHERE user_id = ?",
+            (referral['referrer_id'],)
+        ).fetchone()
+        if referrer and referrer['successful_invites'] >= MAX_SUCCESSFUL_INVITES and not referrer['milestone_bonus_granted']:
+            cursor.execute('''
+                UPDATE users
+                SET points = points + ?,
+                    milestone_bonus_granted = 1
+                WHERE user_id = ?
+            ''', (MILESTONE_BONUS, referral['referrer_id']))
+            logger.info(f"🏆 Milestone bonus granted to {referral['referrer_id']}")
 
         conn.commit()
 
@@ -403,22 +453,6 @@ def register_user():
         referrer_id=referrer_id
     )
 
-    if referrer_id and referrer_id != user_id:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        existing_ref = cursor.execute(
-            "SELECT id FROM referrals WHERE referred_user_id = ?", (user_id,)
-        ).fetchone()
-        if not existing_ref:
-            cursor.execute('''
-                INSERT INTO referrals (referrer_id, referred_user_id)
-                VALUES (?, ?)
-            ''', (referrer_id, user_id))
-            cursor.execute('UPDATE users SET points = points + 20 WHERE user_id = ?', (referrer_id,))
-            conn.commit()
-            logger.info(f"Referral reward: {referrer_id} +20 points")
-        conn.close()
-
     user = get_user(user_id)
     referral_link = f"https://t.me/{OFFICIAL_BOT_USERNAME}/app?startapp=ref_{user_id}"
     return jsonify({
@@ -459,7 +493,21 @@ def get_user_info(user_id_str):
         "max_invites": MAX_SUCCESSFUL_INVITES,
         "analysis_cost": ANALYSIS_COST,
         "daily_limit": DAILY_LIMIT,
-        "referral_reward": REFERRAL_REWARD
+        "referral_reward": REFERRAL_REWARD,
+        "milestone_bonus": MILESTONE_BONUS,
+        "milestone_bonus_granted": user['milestone_bonus_granted']
+    })
+
+@app.route('/api/referral-count/<int:user_id>', methods=['GET'])
+def referral_count(user_id):
+    """Επιστρέφει τον αριθμό προσκλήσεων και το μέγιστο για εμφάνιση προόδου."""
+    user = get_user(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    return jsonify({
+        "successful_invites": user['successful_invites'],
+        "max_invites": MAX_SUCCESSFUL_INVITES,
+        "milestone_bonus_granted": user['milestone_bonus_granted']
     })
 
 @app.route('/api/create-invoice', methods=['POST'])
@@ -549,7 +597,6 @@ def analyze():
             "Η απάντηση να είναι 3-4 παραγράφους."
         )
 
-        # Χρήση google-generativeai (παλιά βιβλιοθήκη)
         response = gemini_model.generate_content(
             [image_bytes, prompt]
         )
