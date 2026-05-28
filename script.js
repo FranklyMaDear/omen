@@ -29,7 +29,7 @@ let lifelineShowTimer = null;
 let lifelineHideTimer = null;
 
 // ====== ADSGRAM ======
-const ADSGRAM_BLOCK_ID = '32708';
+const ADSGRAM_BLOCK_ID = '32221';   // Νέο Block ID
 
 function initAdsgram() {
     if (typeof window.Adsgram !== 'undefined') {
@@ -55,22 +55,15 @@ function showRewardedAd() {
         });
 }
 
-// ====== CONSENT ======
+// ====== CONSENT (εμφάνιση πάντα) ======
 function checkConsent() {
-    const consent = localStorage.getItem('omen_consent');
     const consentOverlay = document.getElementById('consent-overlay');
-    if (consent === 'true') {
-        if (consentOverlay) consentOverlay.classList.add('hidden');
-        startLifelineCycle();
-    } else {
-        if (consentOverlay) consentOverlay.classList.remove('hidden');
-    }
+    if (consentOverlay) consentOverlay.classList.remove('hidden');
+    startLifelineCycle();
 }
 
 function acceptConsent() {
-    localStorage.setItem('omen_consent', 'true');
     document.getElementById('consent-overlay').classList.add('hidden');
-    startLifelineCycle();
 }
 
 // ====== LEGAL ======
@@ -90,9 +83,7 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// ====== TRANSLATION (αμετάβλητο) ======
-// ... (κράτησα όλο το translation section όπως ήταν, δεν άλλαξε τίποτα)
-
+// ====== TRANSLATION ======
 var correctionMap = {
     'en': {
         'Coffee schop': 'Coffee Reading', 'coffee schop': 'Coffee Reading',
@@ -508,15 +499,42 @@ async function earnPoints() {
     }
 }
 
-// ====== LIFELINE ROLLUP (αμετάβλητο) ======
-function startLifelineCycle() { /* ... όπως πριν ... */ }
-function stopLifelineCycle() { /* ... */ }
-function hideLifelineRollup() { /* ... */ }
+// ====== LIFELINE ROLLUP ======
+function startLifelineCycle() {
+    stopLifelineCycle();
+
+    function showBanner() {
+        const splashPage = document.getElementById('splash');
+        if (!splashPage.classList.contains('active')) {
+            lifelineShowTimer = setTimeout(showBanner, 1000);
+            return;
+        }
+        const rollup = document.getElementById('lifeline-rollup');
+        rollup.classList.add('visible');
+        lifelineHideTimer = setTimeout(() => {
+            rollup.classList.remove('visible');
+            lifelineShowTimer = setTimeout(showBanner, 5000);
+        }, 5000);
+    }
+
+    lifelineShowTimer = setTimeout(showBanner, 5000);
+}
+
+function stopLifelineCycle() {
+    if (lifelineShowTimer) { clearTimeout(lifelineShowTimer); lifelineShowTimer = null; }
+    if (lifelineHideTimer) { clearTimeout(lifelineHideTimer); lifelineHideTimer = null; }
+    const rollup = document.getElementById('lifeline-rollup');
+    if (rollup) { rollup.classList.remove('visible'); }
+}
+
+function hideLifelineRollup() {
+    stopLifelineCycle();
+}
 
 // ====== CAMERA & IMAGE HANDLING ======
-// ... (αμετάβλητο)
+// ... (αμετάβλητο, κρατήστε το όπως είναι)
 
-// ====== MAIN ANALYSIS (ΔΙΟΡΘΩΜΕΝΟ!) ======
+// ====== MAIN ANALYSIS ======
 async function performAnalysis() {
     if (!currentImageBase64 || isAnalyzing) return;
     if (!canAnalyze()) {
@@ -539,12 +557,11 @@ async function performAnalysis() {
     document.getElementById('loading-box').scrollIntoView({ behavior: 'smooth' });
 
     try {
-        // ✅ ΠΡΟΣΘΗΚΕ user_id ΣΤΟ BODY
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                user_id: currentUserId,   // <-- Αριθμός πλέον
+                user_id: currentUserId,
                 image: currentImageBase64,
                 gender: selectedGender
             })
@@ -582,7 +599,52 @@ async function performAnalysis() {
     }
 }
 
-// ====== INIT (ΔΙΟΡΘΩΜΕΝΟ!) ======
+// ====== REGISTRATION & REFERRAL ======
+async function registerUser() {
+    if (!currentUserId) return;
+    const startParam = tgWebApp?.initDataUnsafe?.start_param || '';
+    const user = tgWebApp?.initDataUnsafe?.user || {};
+
+    try {
+        const response = await fetch('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: currentUserId,
+                start_param: startParam,
+                first_name: user.first_name || '',
+                last_name: user.last_name || '',
+                username: user.username || '',
+                language_code: user.language_code || ''
+            })
+        });
+        if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem('omen_user_data', JSON.stringify(data));
+            updateUIWithUserData(data);
+        }
+    } catch (e) {
+        console.error('Registration error:', e);
+    }
+}
+
+function shareReferralLink() {
+    if (!currentUserId) {
+        alert('Πρέπει να είσαι συνδεδεμένος μέσω Telegram.');
+        return;
+    }
+    const referralLink = `https://t.me/${OFFICIAL_BOT_USERNAME}/app?startapp=ref_${currentUserId}`;
+    const shareText = encodeURIComponent('🔮 Ανακάλυψε το μέλλον σου με την καφεμαντεία! Μπες στο Omen και κέρδισε 50 πόντους! ✨\n' + referralLink);
+    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${shareText}`;
+
+    if (tgWebApp) {
+        tgWebApp.openTelegramLink(shareUrl);
+    } else {
+        window.open(shareUrl, '_blank');
+    }
+}
+
+// ====== INIT ======
 function initTelegramWebApp() {
     if (window.Telegram && window.Telegram.WebApp) {
         tgWebApp = window.Telegram.WebApp;
@@ -591,16 +653,16 @@ function initTelegramWebApp() {
         tgWebApp.setHeaderColor('#0a0a12');
         tgWebApp.setBackgroundColor('#0a0a12');
         if (tgWebApp.initDataUnsafe && tgWebApp.initDataUnsafe.user) {
-            currentUserId = tgWebApp.initDataUnsafe.user.id; // αριθμός
+            currentUserId = tgWebApp.initDataUnsafe.user.id;
         } else {
-            // Δημιουργία test ID ως ΑΡΙΘΜΟΣ (timestamp)
             let id = localStorage.getItem('omen_test_user_id');
             if (!id) {
-                id = Date.now(); // αριθμός
+                id = Date.now();
                 localStorage.setItem('omen_test_user_id', id);
             }
             currentUserId = parseInt(id);
         }
+        registerUser();
     } else {
         let id = localStorage.getItem('omen_test_user_id');
         if (!id) {
@@ -608,8 +670,31 @@ function initTelegramWebApp() {
             localStorage.setItem('omen_test_user_id', id);
         }
         currentUserId = parseInt(id);
+        registerUser();
     }
 }
 
-// ... υπόλοιπες συναρτήσεις (loadUserData, referral, stars κλπ.) παραμένουν ίδιες,
-// αλλά τώρα το currentUserId είναι πάντα ακέραιος και στέλνεται σωστά.
+async function loadUserData() {
+    if (!currentUserId) return;
+    try {
+        const res = await fetch(`/api/user/${currentUserId}`);
+        if (res.ok) {
+            const data = await res.json();
+            localStorage.setItem('omen_user_data', JSON.stringify(data));
+            updateUIWithUserData(data);
+        }
+    } catch (e) {}
+}
+
+function updateUIWithUserData(data) {
+    if (data.points !== undefined) setPoints(data.points);
+    userStarsUnlocks = data.stars_unlocks_remaining || 0;
+    updateScanButton();
+}
+
+updatePointsDisplay();
+checkConsent();
+updateScanButton();
+initAdsgram();
+initTelegramWebApp();
+loadUserData();
