@@ -142,11 +142,10 @@ def init_database():
         )
     ''')
 
-    # Προσθήκη του πεδίου welcome_bonus_granted σε υπάρχουσες βάσεις
     try:
         cursor.execute("ALTER TABLE users ADD COLUMN welcome_bonus_granted INTEGER DEFAULT 0")
     except sqlite3.OperationalError:
-        pass  # Το πεδίο υπάρχει ήδη
+        pass
 
     conn.commit()
     conn.close()
