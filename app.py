@@ -142,6 +142,12 @@ def init_database():
         )
     ''')
 
+    # Προσθήκη του πεδίου welcome_bonus_granted σε υπάρχουσες βάσεις
+    try:
+        cursor.execute("ALTER TABLE users ADD COLUMN welcome_bonus_granted INTEGER DEFAULT 0")
+    except sqlite3.OperationalError:
+        pass  # Το πεδίο υπάρχει ήδη
+
     conn.commit()
     conn.close()
     logger.info("✅ Database initialized successfully")
@@ -184,7 +190,6 @@ def create_or_update_user(user_id, username=None, first_name=None, last_name=Non
 
         logger.info(f"✅ New user created with 50 points: {user_id}")
     else:
-        # Αν υπάρχει αλλά δεν έχει πάρει ακόμα το welcome bonus (παλιοί χρήστες)
         if not existing['welcome_bonus_granted']:
             cursor.execute('''
                 UPDATE users SET points = points + 50, welcome_bonus_granted = 1
@@ -389,7 +394,6 @@ def register_user():
         except ValueError:
             pass
 
-    # Δημιουργία/ενημέρωση χρήστη (50 πόντοι welcome bonus αν νέος)
     create_or_update_user(
         user_id=user_id,
         username=username,
@@ -399,7 +403,6 @@ def register_user():
         referrer_id=referrer_id
     )
 
-    # Πίστωση referrer (20 πόντοι) αν είναι νέος ο referred
     if referrer_id and referrer_id != user_id:
         conn = get_db_connection()
         cursor = conn.cursor()
