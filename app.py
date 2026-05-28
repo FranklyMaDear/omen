@@ -9,10 +9,11 @@ import os
 import json
 import asyncio
 import base64
+import threading
 from datetime import datetime, date
 from io import BytesIO
 
-from flask import Flask, request, jsonify, render_template_string
+from flask import Flask, request, jsonify, render_template_string, send_from_directory
 from flask_cors import CORS
 
 from google import genai
@@ -194,6 +195,18 @@ def create_or_update_user(user_id, username=None, first_name=None, last_name=Non
     conn.commit()
     conn.close()
 
+def _run_async_in_thread(coro):
+    """Εκτελεί μια async κορουτίνα σε ξεχωριστό thread με δικό του event loop."""
+    def run():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(coro)
+        finally:
+            loop.close()
+    thread = threading.Thread(target=run, daemon=True)
+    thread.start()
+
 def grant_referral_reward(referred_user_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -221,11 +234,8 @@ def grant_referral_reward(referred_user_id):
 
         conn.commit()
 
-        try:
-            asyncio.run(send_referral_notification(referral['referrer_id']))
-        except Exception as e:
-            logger.warning(f"Could not send referral notification: {e}")
-
+        # Αντικατάσταση του asyncio.run με background thread
+        _run_async_in_thread(send_referral_notification(referral['referrer_id']))
         logger.info(f"✅ Referral reward granted: {referral['referrer_id']} got {REFERRAL_REWARD} points")
 
     conn.close()
@@ -344,6 +354,11 @@ def serve_mini_app():
     except FileNotFoundError:
         return "Mini App index.html not found", 404
 
+# Νέο route για το script.js
+@app.route('/script.js')
+def serve_script():
+    return send_from_directory('.', 'script.js')
+
 @app.route('/api/health', methods=['GET'])
 def health_check():
     return jsonify({"status": "ok", "timestamp": datetime.now().isoformat()})
@@ -388,7 +403,8 @@ def create_invoice():
         timestamp = int(datetime.now().timestamp())
         payload = f"unlock_analysis_{user_id}_{timestamp}"
 
-        asyncio.run(send_invoice_async(user_id, payload))
+        # Αντικατάσταση του asyncio.run με background thread
+        _run_async_in_thread(send_invoice_async(user_id, payload))
 
         return jsonify({
             "success": True,
