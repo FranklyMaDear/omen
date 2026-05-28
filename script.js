@@ -29,7 +29,7 @@ let lifelineShowTimer = null;
 let lifelineHideTimer = null;
 
 // ====== ADSGRAM ======
-const ADSGRAM_BLOCK_ID = '32221';   // Νέο Block ID
+const ADSGRAM_BLOCK_ID = '32221';
 
 function initAdsgram() {
     if (typeof window.Adsgram !== 'undefined') {
@@ -64,6 +64,32 @@ function checkConsent() {
 
 function acceptConsent() {
     document.getElementById('consent-overlay').classList.add('hidden');
+}
+
+// ====== CONSENT TRANSLATION ======
+function changeConsentLang(lang) {
+    // Αποθηκεύουμε προσωρινά την επιλεγμένη γλώσσα
+    setLanguage(lang);
+    document.getElementById('language-select').value = lang;
+}
+
+async function translateConsent() {
+    const lang = document.getElementById('consent-lang-select').value;
+    if (lang === 'el') {
+        restoreOriginalTexts();
+        document.getElementById('reset-lang-btn').style.display = 'none';
+        return;
+    }
+    const btn = document.querySelector('#consent-modal .consent-lang-bar button');
+    btn.textContent = '⟳';
+    btn.disabled = true;
+    
+    setLanguage(lang);
+    await translatePage(lang);
+    
+    btn.textContent = '▶';
+    btn.disabled = false;
+    document.getElementById('reset-lang-btn').style.display = 'flex';
 }
 
 // ====== LEGAL ======
@@ -189,9 +215,11 @@ async function translatePage(targetLang) {
 
 function finishTranslation() {
     var btn = document.getElementById('translate-btn');
-    btn.classList.remove('translating');
-    btn.textContent = '▶';
-    btn.disabled = false;
+    if (btn) {
+        btn.classList.remove('translating');
+        btn.textContent = '▶';
+        btn.disabled = false;
+    }
     document.getElementById('reset-lang-btn').style.display = 'flex';
 }
 
@@ -532,7 +560,109 @@ function hideLifelineRollup() {
 }
 
 // ====== CAMERA & IMAGE HANDLING ======
-// ... (αμετάβλητο, κρατήστε το όπως είναι)
+const video = document.getElementById('webcam');
+
+function resetScanUI() {
+    document.getElementById('result-area').style.display = 'none';
+    document.getElementById('camera-wrapper').style.display = 'none';
+    document.getElementById('captureBtn').style.display = 'none';
+    document.getElementById('preview-wrapper').style.display = 'none';
+    document.getElementById('scanBtn').disabled = true;
+    document.getElementById('loading-box').style.display = 'none';
+    document.querySelectorAll('.result-star').forEach(s => s.remove());
+    if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+        currentStream = null;
+    }
+    originalResultText = '';
+}
+
+function resetScan() {
+    resetScanUI();
+    currentImageBase64 = null;
+    isAnalyzing = false;
+    document.getElementById('inputControls').style.display = 'flex';
+    document.getElementById('gender-select').style.display = 'flex';
+    document.getElementById('scanBtn').style.display = 'block';
+    document.getElementById('fileInput').value = "";
+    updateScanButton();
+}
+
+async function openCamera(facingMode) {
+    resetScanUI();
+    try {
+        if (currentStream) {
+            currentStream.getTracks().forEach(track => track.stop());
+        }
+        currentStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: { ideal: facingMode } }
+        });
+        video.srcObject = currentStream;
+        document.getElementById('camera-wrapper').style.display = 'block';
+        document.getElementById('captureBtn').style.display = 'flex';
+        setTimeout(() => {
+            document.getElementById('captureBtn').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 300);
+    } catch (err) {
+        alert("Δεν μπόρεσα να ανοίξω την κάμερα. Δοκίμασε το 'Ανέβασμα'.");
+    }
+}
+
+function takePhoto() {
+    if (!currentStream) return;
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    currentImageBase64 = canvas.toDataURL('image/jpeg', 0.7);
+    currentStream.getTracks().forEach(track => track.stop());
+    document.getElementById('camera-wrapper').style.display = 'none';
+    document.getElementById('captureBtn').style.display = 'none';
+    showPreview(currentImageBase64);
+}
+
+function handleUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    resetScanUI();
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            const compressed = compressImage(img, 800, 0.7);
+            currentImageBase64 = compressed;
+            showPreview(currentImageBase64);
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+function compressImage(image, maxWidth, quality) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    let width = image.width;
+    let height = image.height;
+    if (width > maxWidth) {
+        const ratio = maxWidth / width;
+        width = maxWidth;
+        height = height * ratio;
+    }
+    canvas.width = width;
+    canvas.height = height;
+    ctx.drawImage(image, 0, 0, width, height);
+    return canvas.toDataURL('image/jpeg', quality);
+}
+
+function showPreview(imageSrc) {
+    document.getElementById('preview-img').src = imageSrc;
+    document.getElementById('preview-wrapper').style.display = 'block';
+    updateScanButton();
+    setTimeout(() => {
+        document.getElementById('scanBtn').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 200);
+}
 
 // ====== MAIN ANALYSIS ======
 async function performAnalysis() {
@@ -596,6 +726,22 @@ async function performAnalysis() {
         document.getElementById('loading-box').style.display = 'none';
         isAnalyzing = false;
         updateScanButton();
+    }
+}
+
+function addStarsToResult() {
+    const resultArea = document.getElementById('result-area');
+    document.querySelectorAll('.result-star').forEach(s => s.remove());
+    const emojis = ['✨', '⭐', '💫', '🌟', '✨', '🔮', '💖', '🌙', '☽', '✧'];
+    for (let i = 0; i < 15; i++) {
+        const star = document.createElement('span');
+        star.className = 'result-star';
+        star.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        star.style.left = Math.random() * 90 + '%';
+        star.style.top = Math.random() * 90 + '%';
+        star.style.animationDelay = Math.random() * 3 + 's';
+        star.style.fontSize = (Math.random() * 1.5 + 0.8) + 'rem';
+        resultArea.appendChild(star);
     }
 }
 
