@@ -96,6 +96,7 @@ def init_database():
             successful_invites INTEGER DEFAULT 0,
             total_stars_spent INTEGER DEFAULT 0,
             stars_unlocks_remaining INTEGER DEFAULT 0,
+            welcome_bonus_granted INTEGER DEFAULT 0,
             joined_at TEXT DEFAULT CURRENT_TIMESTAMP,
             last_active_at TEXT DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (referrer_id) REFERENCES users(user_id)
@@ -160,15 +161,15 @@ def create_or_update_user(user_id, username=None, first_name=None, last_name=Non
     cursor = conn.cursor()
 
     existing = cursor.execute(
-        "SELECT user_id FROM users WHERE user_id = ?", (user_id,)
+        "SELECT user_id, welcome_bonus_granted FROM users WHERE user_id = ?", (user_id,)
     ).fetchone()
 
     if not existing:
         cursor.execute('''
             INSERT INTO users (
                 user_id, username, first_name, last_name, language_code,
-                referrer_id, points, daily_analyses
-            ) VALUES (?, ?, ?, ?, ?, ?, 0, 0)
+                referrer_id, points, daily_analyses, welcome_bonus_granted
+            ) VALUES (?, ?, ?, ?, ?, ?, 50, 0, 1)
         ''', (user_id, username, first_name, last_name, language_code, referrer_id))
 
         if referrer_id and referrer_id != user_id and referrer_id != 0:
@@ -181,8 +182,14 @@ def create_or_update_user(user_id, username=None, first_name=None, last_name=Non
             except Exception as e:
                 logger.error(f"Referral insertion error: {e}")
 
-        logger.info(f"✅ New user created: {user_id}")
+        logger.info(f"✅ New user created with 50 points: {user_id}")
     else:
+        # Αν υπάρχει αλλά δεν έχει πάρει ακόμα το welcome bonus (παλιοί χρήστες)
+        if not existing['welcome_bonus_granted']:
+            cursor.execute('''
+                UPDATE users SET points = points + 50, welcome_bonus_granted = 1
+                WHERE user_id = ?
+            ''', (user_id,))
         cursor.execute('''
             UPDATE users
             SET username = COALESCE(?, username),
@@ -234,7 +241,6 @@ def grant_referral_reward(referred_user_id):
 
         conn.commit()
 
-        # Αντικατάσταση του asyncio.run με background thread
         _run_async_in_thread(send_referral_notification(referral['referrer_id']))
         logger.info(f"✅ Referral reward granted: {referral['referrer_id']} got {REFERRAL_REWARD} points")
 
@@ -354,7 +360,6 @@ def serve_mini_app():
     except FileNotFoundError:
         return "Mini App index.html not found", 404
 
-# Νέο route για το script.js
 @app.route('/script.js')
 def serve_script():
     return send_from_directory('.', 'script.js')
@@ -363,18 +368,80 @@ def serve_script():
 def health_check():
     return jsonify({"status": "ok", "timestamp": datetime.now().isoformat()})
 
-@app.route('/api/user/<int:user_id>', methods=['GET'])
-def get_user_info(user_id):
+@app.route('/api/register', methods=['POST'])
+def register_user():
+    """Εγγραφή/σύνδεση χρήστη, διαβάζει start_param για referrals."""
+    data = request.json
+    user_id = data.get('user_id')
+    if not user_id:
+        return jsonify({"error": "Missing user_id"}), 400
+
+    start_param = data.get('start_param', '')
+    first_name = data.get('first_name', '')
+    last_name = data.get('last_name', '')
+    username = data.get('username', '')
+    language_code = data.get('language_code', '')
+
+    referrer_id = None
+    if start_param and start_param.startswith('ref_'):
+        try:
+            referrer_id = int(start_param[4:])
+        except ValueError:
+            pass
+
+    # Δημιουργία/ενημέρωση χρήστη (50 πόντοι welcome bonus αν νέος)
+    create_or_update_user(
+        user_id=user_id,
+        username=username,
+        first_name=first_name,
+        last_name=last_name,
+        language_code=language_code,
+        referrer_id=referrer_id
+    )
+
+    # Πίστωση referrer (20 πόντοι) αν είναι νέος ο referred
+    if referrer_id and referrer_id != user_id:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        existing_ref = cursor.execute(
+            "SELECT id FROM referrals WHERE referred_user_id = ?", (user_id,)
+        ).fetchone()
+        if not existing_ref:
+            cursor.execute('''
+                INSERT INTO referrals (referrer_id, referred_user_id)
+                VALUES (?, ?)
+            ''', (referrer_id, user_id))
+            cursor.execute('UPDATE users SET points = points + 20 WHERE user_id = ?', (referrer_id,))
+            conn.commit()
+            logger.info(f"Referral reward: {referrer_id} +20 points")
+        conn.close()
+
+    user = get_user(user_id)
+    referral_link = f"https://t.me/{OFFICIAL_BOT_USERNAME}/app?startapp=ref_{user_id}"
+    return jsonify({
+        "user_id": user['user_id'],
+        "points": user['points'],
+        "referral_link": referral_link,
+        "successful_invites": user['successful_invites'],
+        "stars_unlocks_remaining": user['stars_unlocks_remaining'],
+        "daily_analyses": user['daily_analyses'],
+        "total_analyses": user['total_analyses'],
+        "username": user['username'],
+        "first_name": user['first_name']
+    })
+
+@app.route('/api/user/<string:user_id_str>', methods=['GET'])
+def get_user_info(user_id_str):
+    try:
+        user_id = int(user_id_str)
+    except ValueError:
+        return jsonify({"error": "Invalid user_id format. Must be an integer."}), 400
+
     user = get_user(user_id)
     if not user:
-        create_or_update_user(user_id)
-        user = get_user(user_id)
+        return jsonify({"error": "User not found"}), 404
 
-    if not user:
-        return jsonify({"error": "Failed to create user"}), 500
-
-    referral_link = f"https://t.me/{OFFICIAL_BOT_USERNAME}?start={user_id}"
-
+    referral_link = f"https://t.me/{OFFICIAL_BOT_USERNAME}/app?startapp=ref_{user_id}"
     return jsonify({
         "user_id": user['user_id'],
         "username": user['username'],
@@ -403,7 +470,6 @@ def create_invoice():
         timestamp = int(datetime.now().timestamp())
         payload = f"unlock_analysis_{user_id}_{timestamp}"
 
-        # Αντικατάσταση του asyncio.run με background thread
         _run_async_in_thread(send_invoice_async(user_id, payload))
 
         return jsonify({
@@ -463,11 +529,9 @@ def analyze():
                 "reason": method
             }), 403
 
-        # Συμπίεση εικόνας
         compressed_image_b64, image_hash = compress_and_hash_image(image_base64)
         image_bytes = base64.b64decode(compressed_image_b64)
 
-        # Prompt
         gender_text = "γυναίκα" if gender == 'f' else "άντρα"
         prompt = (
             "Είσαι η Μαντάμ Ζαΐρα, μια έμπειρη και μυστηριώδης αναγνώστρια φλιτζανιών καφέ. "
@@ -482,7 +546,6 @@ def analyze():
             "Η απάντηση να είναι 3-4 παραγράφους."
         )
 
-        # ====== ΝΕΟ: google-genai API ======
         response = gemini_client.models.generate_content(
             model='gemini-1.5-flash',
             contents=[
@@ -492,15 +555,12 @@ def analyze():
         )
         result_text = response.text
 
-        # Χρέωση
         deduct_analysis_cost(user_id, method)
 
-        # Πρώτη ανάλυση -> referral reward
         user = get_user(user_id)
         if user and user['total_analyses'] == 0:
             grant_referral_reward(user_id)
 
-        # Ιστορικό
         add_analysis_to_history(user_id, image_hash, result_text, gender, method)
 
         return jsonify({
