@@ -434,6 +434,25 @@
             transform: scale(1.04) translateY(-3px);
             box-shadow: 0 0 70px rgba(241, 196, 15, 0.5);
         }
+        .consent-lang-bar {
+            display: flex; align-items: center; gap: 8px; justify-content: center;
+            margin: 15px 0; flex-wrap: wrap;
+        }
+        .consent-lang-bar select {
+            background: rgba(10, 5, 25, 0.9); color: #f7dc6f;
+            border: 1px solid rgba(241, 196, 15, 0.3); border-radius: 20px;
+            padding: 8px 30px 8px 12px; font-size: 0.8rem; font-weight: 600;
+            cursor: pointer; appearance: none; -webkit-appearance: none; -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23f7dc6f' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 10px center;
+            outline: none; font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
+        }
+        .consent-lang-bar button {
+            background: #f7dc6f; color: #1a0e1f; border: none;
+            border-radius: 50%; width: 36px; height: 36px;
+            font-weight: 700; cursor: pointer; font-size: 1rem;
+            display: flex; align-items: center; justify-content: center;
+        }
 
         /* FOOTER */
         #site-footer {
@@ -518,7 +537,7 @@
 </head>
 <body>
 
-    <!-- CONSENT OVERLAY -->
+    <!-- CONSENT OVERLAY (εμφανίζεται ΠΑΝΤΑ, με γλωσσικό πλαίσιο) -->
     <div id="consent-overlay">
         <div id="consent-modal">
             <div class="consent-icon">🔮</div>
@@ -531,6 +550,40 @@
             <div class="consent-links">
                 <button class="consent-link" onclick="showLegal('terms')" data-translate="true">📜 Όροι Χρήσης</button>
                 <button class="consent-link" onclick="showLegal('privacy')" data-translate="true">🔒 Πολιτική Απορρήτου</button>
+            </div>
+            <!-- ΓΛΩΣΣΙΚΟ ΠΛΑΙΣΙΟ ΜΕΣΑ ΣΤΟ CONSENT -->
+            <div class="consent-lang-bar">
+                <select id="consent-lang-select" onchange="changeConsentLang(this.value)">
+                    <option value="el">🇬🇷 Ελληνικά</option>
+                    <option value="en">🇬🇧 English</option>
+                    <option value="de">🇩🇪 Deutsch</option>
+                    <option value="fr">🇫🇷 Français</option>
+                    <option value="es">🇪🇸 Español</option>
+                    <option value="it">🇮🇹 Italiano</option>
+                    <option value="ar">🇸🇦 العربية</option>
+                    <option value="zh-CN">🇨🇳 中文</option>
+                    <option value="ja">🇯🇵 日本語</option>
+                    <option value="ru">🇷🇺 Русский</option>
+                    <option value="tr">🇹🇷 Türkçe</option>
+                    <option value="nl">🇳🇱 Nederlands</option>
+                    <option value="pt">🇵🇹 Português</option>
+                    <option value="sv">🇸🇪 Svenska</option>
+                    <option value="no">🇳🇴 Norsk</option>
+                    <option value="da">🇩🇰 Dansk</option>
+                    <option value="fi">🇫🇮 Suomi</option>
+                    <option value="pl">🇵🇱 Polski</option>
+                    <option value="cs">🇨🇿 Čeština</option>
+                    <option value="ro">🇷🇴 Română</option>
+                    <option value="bg">🇧🇬 Български</option>
+                    <option value="uk">🇺🇦 Українська</option>
+                    <option value="ko">🇰🇷 한국어</option>
+                    <option value="hi">🇮🇳 हिन्दी</option>
+                    <option value="vi">🇻🇳 Tiếng Việt</option>
+                    <option value="th">🇹🇭 ไทย</option>
+                    <option value="id">🇮🇩 Indonesia</option>
+                    <option value="iw">🇮🇱 עברית</option>
+                </select>
+                <button onclick="translateConsent()" title="Μετάφραση">▶</button>
             </div>
             <button id="consent-btn" onclick="acceptConsent()" data-translate="true">Συμφωνώ & Είμαι άνω των 18 ετών</button>
         </div>
@@ -675,9 +728,10 @@
             <p data-translate="true">Διάλεξε μια εικόνα ή τράβηξε φωτογραφία</p>
         </div>
 
-        <!-- Ενιαία γραμμή: κουμπί + διαμαντάκι πόντων -->
+        <!-- Κουμπιά κέρδους & πρόσκλησης φίλων -->
         <div style="display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; margin: 5px 0;">
             <button class="btn-earn" id="earnBtn" onclick="earnPoints()" data-translate="true">🎁 Κέρδισε 10 Πόντους</button>
+            <button class="btn-earn" onclick="shareReferralLink()" data-translate="true">👥 Πρόσκληση Φίλων</button>
             <span class="points-inline" id="points-inline">
                 <span class="points-icon">💎</span>
                 <span id="points-value">0</span>
@@ -706,7 +760,6 @@
             <img id="preview-img" src="" alt="Φλιτζάνι">
         </div>
 
-        <!-- Το κουμπί ανάλυσης έχει data-translate ώστε να μεταφράζεται και το δυναμικό κείμενο -->
         <button class="btn btn-green" id="scanBtn" onclick="performAnalysis()" disabled data-translate="true">🔮 Ανάλυση Φλιτζανιού (15 πόντοι)</button>
 
         <div id="loading-box">
@@ -731,6 +784,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=4"></script>
+    <script src="script.js?v=6"></script>
 </body>
 </html>
