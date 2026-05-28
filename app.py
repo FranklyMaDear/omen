@@ -15,7 +15,8 @@ from io import BytesIO
 from flask import Flask, request, jsonify, render_template_string
 from flask_cors import CORS
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
 from telegram import (
     Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup,
@@ -32,14 +33,13 @@ from PIL import Image
 
 # ====== CONFIGURATION ======
 TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")
-WEBHOOK_URL = os.environ.get("WEBHOOK_URL", "https://your-server.com/webhook")
+WEBHOOK_URL = os.environ.get("WEBHOOK_URL", "https://franklymadear-omenread.hf.space/webhook")
 ADMIN_USER_ID = int(os.environ.get("ADMIN_USER_ID", "123456789"))
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "your_gemini_api_key")
-MINI_APP_URL = os.environ.get("MINI_APP_URL", "https://your-server.com")
+MINI_APP_URL = os.environ.get("MINI_APP_URL", "https://omen.franklymadear.com")
 
 # Ρύθμιση Gemini
-genai.configure(api_key=GEMINI_API_KEY)
-GEMINI_MODEL = genai.GenerativeModel('gemini-1.5-flash')
+gemini_client = genai.Client(api_key=GEMINI_API_KEY)
 
 OFFICIAL_BOT_USERNAME = "omenread_bot"
 
@@ -310,7 +310,6 @@ def add_analysis_to_history(user_id, image_hash, result_text, gender, unlocked_v
 def compress_and_hash_image(base64_image):
     """Συμπιέζει την εικόνα και επιστρέφει το base64 string και το hash της."""
     try:
-        # Αφαίρεση του header αν υπάρχει
         if ',' in base64_image:
             base64_image = base64_image.split(',')[1]
 
@@ -325,14 +324,12 @@ def compress_and_hash_image(base64_image):
         img.save(img_bytes, format='JPEG', quality=70)
         image_hash = hashlib.md5(img_bytes.getvalue()).hexdigest()
 
-        # Επιστροφή του συμπιεσμένου base64
         img_bytes.seek(0)
         compressed_base64 = base64.b64encode(img_bytes.getvalue()).decode('utf-8')
 
         return compressed_base64, image_hash
     except Exception as e:
         logger.error(f"Image compression error: {e}")
-        # Επιστροφή της αρχικής εικόνας χωρίς header
         if ',' in base64_image:
             base64_image = base64_image.split(',')[1]
         return base64_image, None
@@ -450,13 +447,11 @@ def analyze():
                 "reason": method
             }), 403
 
-        # Συμπίεση εικόνας (επιστρέφει base64 string)
+        # Συμπίεση εικόνας
         compressed_image_b64, image_hash = compress_and_hash_image(image_base64)
-
-        # Αποκωδικοποίηση σε bytes για το Gemini
         image_bytes = base64.b64decode(compressed_image_b64)
 
-        # Προετοιμασία prompt
+        # Prompt
         gender_text = "γυναίκα" if gender == 'f' else "άντρα"
         prompt = (
             "Είσαι η Μαντάμ Ζαΐρα, μια έμπειρη και μυστηριώδης αναγνώστρια φλιτζανιών καφέ. "
@@ -471,11 +466,14 @@ def analyze():
             "Η απάντηση να είναι 3-4 παραγράφους."
         )
 
-        # Κλήση Gemini API με bytes
-        response = GEMINI_MODEL.generate_content([
-            {'mime_type': 'image/jpeg', 'data': image_bytes},
-            prompt
-        ])
+        # ====== ΝΕΟ: google-genai API ======
+        response = gemini_client.models.generate_content(
+            model='gemini-1.5-flash',
+            contents=[
+                types.Part.from_bytes(data=image_bytes, mime_type='image/jpeg'),
+                prompt
+            ]
+        )
         result_text = response.text
 
         # Χρέωση
@@ -672,6 +670,7 @@ def setup_telegram_handlers():
 
 async def setup_webhook():
     try:
+        await telegram_app.initialize()
         await telegram_app.bot.set_webhook(url=WEBHOOK_URL)
         logger.info(f"✅ Webhook set to: {WEBHOOK_URL}")
     except Exception as e:
@@ -681,4 +680,4 @@ if __name__ == '__main__':
     setup_telegram_handlers()
     asyncio.run(setup_webhook())
     logger.info("🚀 Starting Omen Mini App server...")
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 7860)), debug=False)
