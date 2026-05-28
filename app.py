@@ -16,8 +16,7 @@ from io import BytesIO
 from flask import Flask, request, jsonify, render_template_string, send_from_directory
 from flask_cors import CORS
 
-from google import genai
-from google.genai import types
+import google.generativeai as genai
 
 from telegram import (
     Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup,
@@ -40,7 +39,8 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "your_gemini_api_key")
 MINI_APP_URL = os.environ.get("MINI_APP_URL", "https://omen.franklymadear.com")
 
 # Ρύθμιση Gemini
-gemini_client = genai.Client(api_key=GEMINI_API_KEY)
+genai.configure(api_key=GEMINI_API_KEY)
+gemini_model = genai.GenerativeModel('gemini-1.5-flash')
 
 OFFICIAL_BOT_USERNAME = "omenread_bot"
 
@@ -142,10 +142,11 @@ def init_database():
         )
     ''')
 
+    # Προσθήκη του πεδίου welcome_bonus_granted σε υπάρχουσες βάσεις
     try:
         cursor.execute("ALTER TABLE users ADD COLUMN welcome_bonus_granted INTEGER DEFAULT 0")
     except sqlite3.OperationalError:
-        pass
+        pass  # Το πεδίο υπάρχει ήδη
 
     conn.commit()
     conn.close()
@@ -548,12 +549,9 @@ def analyze():
             "Η απάντηση να είναι 3-4 παραγράφους."
         )
 
-        response = gemini_client.models.generate_content(
-            model='gemini-1.5-flash',
-            contents=[
-                types.Part.from_bytes(data=image_bytes, mime_type='image/jpeg'),
-                prompt
-            ]
+        # Χρήση google-generativeai (παλιά βιβλιοθήκη)
+        response = gemini_model.generate_content(
+            [image_bytes, prompt]
         )
         result_text = response.text
 
