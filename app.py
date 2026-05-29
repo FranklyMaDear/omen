@@ -2,7 +2,7 @@
 Omen - Καφεμαντεία Mini App
 Backend: Flask + python-telegram-bot v20+
 Telegram Stars Payments via createInvoiceLink + openInvoice
-One-Shot Analysis & Translation via Gemini 1.5 Flash
+One-Shot Analysis & Translation via Gemini 2.0 Flash
 Νέο σύστημα πόντων, Shop, Referral System
 """
 
@@ -41,8 +41,8 @@ MINI_APP_URL = os.environ.get("MINI_APP_URL", "https://omen.franklymadear.com")
 
 genai.configure(api_key=GEMINI_API_KEY)
 
-# ΣΩΣΤΟ ΜΟΝΤΕΛΟ ΓΙΑ google-generativeai==0.8.3
-gemini_model = genai.GenerativeModel('gemini-1.5-flash')
+# ΝΕΟ ΜΟΝΤΕΛΟ: gemini-2.0-flash (υποστηρίζεται στη βιβλιοθήκη google-generativeai>=0.8.0)
+gemini_model = genai.GenerativeModel('gemini-2.0-flash')
 
 OFFICIAL_BOT_USERNAME = "omenread_bot"
 
