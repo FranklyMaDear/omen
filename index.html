@@ -67,6 +67,7 @@
         .shop-modal-overlay.active { display: flex; }
         .shop-modal { background: #1a0e2a; border-radius: 30px 30px 0 0; padding: 30px 20px; width: 100%; max-width: 500px; animation: slideUp 0.3s ease; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 480px) { .splash-title { font-size: 2.4rem; } .splash-icon { width: 140px; height: 140px; } }
     </style>
 </head>
@@ -120,63 +121,53 @@
 
     <!-- LEGAL OVERLAYS -->
     <div id="terms-overlay" class="legal-overlay">
-    <div class="legal-modal">
-        <button class="legal-close-btn" onclick="closeLegal('terms')">✕</button>
-        <h2 data-translate="true">📜 Όροι Χρήσης Omen</h2>
-        <p data-translate="true"><strong>Τελευταία ενημέρωση: Μάιος 2026</strong></p>
-
-        <h3 data-translate="true">1. Όριο Ηλικίας (Αυστηρά 18+)</h3>
-        <p data-translate="true">Η χρήση της εφαρμογής <strong>Omen</strong> επιτρέπεται αποκλειστικά και μόνο σε άτομα που έχουν συμπληρώσει το 18ο έτος της ηλικίας τους (ενήλικες).</p>
-        <p data-translate="true">Με την αποδοχή των όρων και την επιλογή του σχετικού πλαισίου, ο χρήστης δηλώνει υπεύθυνα ότι είναι ενήλικος.</p>
-        <p data-translate="true">Οι διαχειριστές του Omen δεν φέρουν καμία ευθύνη για ψευδείς δηλώσεις ηλικίας από πλευράς των επισκεπτών.</p>
-
-        <h3 data-translate="true">2. Ψυχαγωγικός, Μη Κατευθυντικός και Χιουμοριστικός Χαρακτήρας</h3>
-        <p data-translate="true">Το Omen είναι μια ψηφιακή εφαρμογή που χρησιμοποιεί αλγόριθμους τεχνητής νοημοσύνης (AI) για να αναλύει εικόνες φλιτζανιών του καφέ και να παράγει κείμενα βασισμένα σε ένα παραδοσιακό λεξικό συμβόλων.</p>
-        <p data-translate="true">Η υπηρεσία παρέχεται αποκλειστικά και μόνο για σκοπούς χιούμορ, διασκέδασης και ψυχαγωγίας.</p>
-        <p data-translate="true">Τα αποτελέσματα της ανάλυσης <strong>δεν αποτελούν σε καμία περίπτωση</strong> πραγματικές, επιστημονικές, ιατρικές, ψυχολογικές, νομικές ή χρηματοοικονομικές προβλέψεις και συμβουλές.</p>
-        <p data-translate="true">Οι παραγόμενες απαντήσεις δεν έχουν σκοπό, πρόθεση ή ικανότητα να καθοδηγήσουν, να επηρεάσουν ή να κατευθύνουν τις αποφάσεις, τις πράξεις, την προσωπική ή την επαγγελματική ζωή των χρηστών.</p>
-
-        <h3 data-translate="true">3. Περιορισμός Ευθύνης (Disclaimer)</h3>
-        <p data-translate="true">Ο χρήστης συμφωνεί ότι χρησιμοποιεί την εφαρμογή με δική του αποκλειστική ευθύνη.</p>
-        <p data-translate="true">Οι δημιουργοί, οι ιδιοκτήτες και οι συνεργάτες του Omen δεν φέρουν καμία απολύτως αστική ή ποινική ευθύνη για οποιαδήποτε πράξη, απόφαση, απώλεια, ζημία (άμεση ή έμμεση) ή ψυχική αναστάτωση προκύψει από την ανάγνωση, την παρερμηνεία ή την εφαρμογή των χιουμοριστικών αποτελεσμάτων της καφεμαντείας στην πραγματική ζωή.</p>
-
-        <h3 data-translate="true">4. Πνευματική Ιδιοκτησία</h3>
-        <p data-translate="true">Όλο το περιεχόμενο του ιστοτόπου (συμπεριλαμβανομένων των κειμένων, του λογότυπου, των γραφικών, των κωδίκων της εφαρμογής και του λεξικού συμβόλων) αποτελεί πνευματική ιδιοκτησία του Omen και προστατεύεται από τις σχετικές διατάξεις του ελληνικού και ευρωπαϊκού δικαίου.</p>
-        <p data-translate="true">Απαγορεύεται αυστηρά η αντιγραφή, αναπαραγωγή, αναδημοσίευση ή εμπορική εκμετάλλευση μέρους ή του συνόλου του κώδικα και των κειμένων χωρίς την έγγραφη άδεια των ιδιοκτητών.</p>
-
-        <p style="text-align:center;margin-top:18px;" data-translate="true">📧 <strong>info.franklydear@gmail.com</strong></p>
-        <p style="text-align:center;font-size:0.75rem;color:#c9a0dc;" data-translate="true">Τελευταία ενημέρωση: Μάιος 2026</p>
+        <div class="legal-modal">
+            <button class="legal-close-btn" onclick="closeLegal('terms')">✕</button>
+            <h2 data-translate="true">📜 Όροι Χρήσης Omen</h2>
+            <p data-translate="true"><strong>Τελευταία ενημέρωση: Μάιος 2026</strong></p>
+            <h3 data-translate="true">1. Όριο Ηλικίας (Αυστηρά 18+)</h3>
+            <p data-translate="true">Η χρήση της εφαρμογής <strong>Omen</strong> επιτρέπεται αποκλειστικά και μόνο σε άτομα που έχουν συμπληρώσει το 18ο έτος της ηλικίας τους (ενήλικες).</p>
+            <p data-translate="true">Με την αποδοχή των όρων και την επιλογή του σχετικού πλαισίου, ο χρήστης δηλώνει υπεύθυνα ότι είναι ενήλικος.</p>
+            <p data-translate="true">Οι διαχειριστές του Omen δεν φέρουν καμία ευθύνη για ψευδείς δηλώσεις ηλικίας από πλευράς των επισκεπτών.</p>
+            <h3 data-translate="true">2. Ψυχαγωγικός, Μη Κατευθυντικός και Χιουμοριστικός Χαρακτήρας</h3>
+            <p data-translate="true">Το Omen είναι μια ψηφιακή εφαρμογή που χρησιμοποιεί αλγόριθμους τεχνητής νοημοσύνης (AI) για να αναλύει εικόνες φλιτζανιών του καφέ και να παράγει κείμενα βασισμένα σε ένα παραδοσιακό λεξικό συμβόλων.</p>
+            <p data-translate="true">Η υπηρεσία παρέχεται αποκλειστικά και μόνο για σκοπούς χιούμορ, διασκέδασης και ψυχαγωγίας.</p>
+            <p data-translate="true">Τα αποτελέσματα της ανάλυσης <strong>δεν αποτελούν σε καμία περίπτωση</strong> πραγματικές, επιστημονικές, ιατρικές, ψυχολογικές, νομικές ή χρηματοοικονομικές προβλέψεις και συμβουλές.</p>
+            <p data-translate="true">Οι παραγόμενες απαντήσεις δεν έχουν σκοπό, πρόθεση ή ικανότητα να καθοδηγήσουν, να επηρεάσουν ή να κατευθύνουν τις αποφάσεις, τις πράξεις, την προσωπική ή την επαγγελματική ζωή των χρηστών.</p>
+            <h3 data-translate="true">3. Περιορισμός Ευθύνης (Disclaimer)</h3>
+            <p data-translate="true">Ο χρήστης συμφωνεί ότι χρησιμοποιεί την εφαρμογή με δική του αποκλειστική ευθύνη.</p>
+            <p data-translate="true">Οι δημιουργοί, οι ιδιοκτήτες και οι συνεργάτες του Omen δεν φέρουν καμία απολύτως αστική ή ποινική ευθύνη για οποιαδήποτε πράξη, απόφαση, απώλεια, ζημία (άμεση ή έμμεση) ή ψυχική αναστάτωση προκύψει από την ανάγνωση, την παρερμηνεία ή την εφαρμογή των χιουμοριστικών αποτελεσμάτων της καφεμαντείας στην πραγματική ζωή.</p>
+            <h3 data-translate="true">4. Πνευματική Ιδιοκτησία</h3>
+            <p data-translate="true">Όλο το περιεχόμενο του ιστοτόπου (συμπεριλαμβανομένων των κειμένων, του λογότυπου, των γραφικών, των κωδίκων της εφαρμογής και του λεξικού συμβόλων) αποτελεί πνευματική ιδιοκτησία του Omen και προστατεύεται από τις σχετικές διατάξεις του ελληνικού και ευρωπαϊκού δικαίου.</p>
+            <p data-translate="true">Απαγορεύεται αυστηρά η αντιγραφή, αναπαραγωγή, αναδημοσίευση ή εμπορική εκμετάλλευση μέρους ή του συνόλου του κώδικα και των κειμένων χωρίς την έγγραφη άδεια των ιδιοκτητών.</p>
+            <p style="text-align:center;margin-top:18px;" data-translate="true">📧 <strong>info.franklydear@gmail.com</strong></p>
+            <p style="text-align:center;font-size:0.75rem;color:#c9a0dc;" data-translate="true">Τελευταία ενημέρωση: Μάιος 2026</p>
+        </div>
     </div>
-</div>
     <div id="privacy-overlay" class="legal-overlay">
-    <div class="legal-modal">
-        <button class="legal-close-btn" onclick="closeLegal('privacy')">✕</button>
-        <h2 data-translate="true">🔒 Πολιτική Απορρήτου Omen</h2>
-        <p data-translate="true"><strong>Τελευταία ενημέρωση: Μάιος 2026</strong></p>
-
-        <h3 data-translate="true">1. Πώς Διαχειριζόμαστε τις Φωτογραφίες του Φλιτζανιού σας</h3>
-        <p data-translate="true"><strong>Δεν Αποθηκεύουμε τις Εικόνες:</strong> Όταν ανεβάζετε ή τραβάτε μια φωτογραφία του φλιτζανιού σας, η εικόνα μετατρέπεται σε προσωρινή μορφή (Base64) στη συσκευή σας και αποστέλλεται στον server μας αποκλειστικά για να μεταφερθεί στο Gemini API της Google για οπτική ανάλυση.</p>
-        <p data-translate="true"><strong>Καμία Μόνιμη Αποθήκευση:</strong> Οι φωτογραφίες του φλιτζανιού ΔΕΝ αποθηκεύονται σε καμία βάση δεδομένων, ΔΕΝ κρατούνται στον server μας και διαγράφονται οριστικά από τη μνήμη αμέσως μόλις ολοκληρωθεί η ανάλυση.</p>
-        <p data-translate="true">Δεν χρησιμοποιούμε τις φωτογραφίες για διαφημιστικούς σκοπούς, ούτε τις μοιραζόμαστε με τρίτους, εκτός από την ασφαλή, αυτοματοποιημένη αποστολή στο API της Google για την παραγωγή της περιγραφής.</p>
-
-        <h3 data-translate="true">2. Δεδομένα που Συλλέγουμε Αυτόματα (Cookies & Διαφημίσεις)</h3>
-        <p data-translate="true">Για τη σωστή λειτουργία της ιστοσελίδας και τη χρηματοδότησή της, συνεργαζόμαστε με τρίτες διαφημιστικές εταιρείες (όπως η Google AdSense και η Monetag). Αυτές οι εταιρείες ενδέχεται να συλλέγουν ανώνυμα τεχνικά δεδομένα:</p>
-        <p data-translate="true">• <strong>Cookies:</strong> Χρησιμοποιούμε cookies για να θυμόμαστε τις προτιμήσεις σας (π.χ. αν έχετε πατήσει το checkbox ηλικίας) και για να αναλύουμε την επισκεψιμότητα (μέσω Google Analytics).</p>
-        <p data-translate="true">• <strong>Διαφημίσεις Τρίτων (AdSense / Monetag):</strong> Οι διαφημιστές ενδέχεται να χρησιμοποιούν cookies για να προβάλλουν διαφημίσεις που σχετίζονται με τα ενδιαφέροντά σας. Μπορείτε να απενεργοποιήσετε τα εξατομικευμένα cookies μέσα από τις ρυθμίσεις του προγράμματος περιήγησής σας (browser).</p>
-        <p data-translate="true">• <strong>Τοπική Αποθήκευση (Local Storage):</strong> Η εφαρμογή χρησιμοποιεί τοπική μνήμη στη συσκευή σας για να μετράει τις ημερήσιες προσπάθειές σας, ώστε να τηρούνται τα όρια χρήσης χωρίς να χρειάζεται να κάνετε εγγραφή (login).</p>
-
-        <h3 data-translate="true">3. Δικαιώματα των Χρηστών (GDPR)</h3>
-        <p data-translate="true">Σύμφωνα με τον ευρωπαϊκό νόμο, έχετε τα εξής δικαιώματα:</p>
-        <p data-translate="true">• Το δικαίωμα να γνωρίζετε ποια δεδομένα σας επεξεργαζόμαστε (όπως εξηγείται στην παρούσα πολιτική, δεν κρατάμε προσωπικά σας στοιχεία ή φωτογραφίες φλιτζανιών).</p>
-        <p data-translate="true">• Το δικαίωμα να διαγράψετε τα cookies και το ιστορικό του Omen από τον browser σας ανά πάσα στιγμή.</p>
-
-        <h3 data-translate="true">4. Αλλαγές στους Όρους και την Πολιτική Απορρήτου</h3>
-        <p data-translate="true">Το Omen διατηρεί το δικαίωμα να αλλάξει ή να επικαιροποιήσει αυτούς τους όρους και την πολιτική απορρήτου οποιαδήποτε στιγμή, προκειμένου να συμμορφώνεται με νέους νόμους ή τεχνικές αναβαθμίσεις. Οι αλλαγές θα εμφανίζονται σε αυτή τη σελίδα.</p>
-
-        <p style="text-align:center;margin-top:18px;" data-translate="true">📧 <strong>info.franklydear@gmail.com</strong></p>
-        <p style="text-align:center;font-size:0.75rem;color:#c9a0dc;" data-translate="true">Τελευταία ενημέρωση: Μάιος 2026</p>
+        <div class="legal-modal">
+            <button class="legal-close-btn" onclick="closeLegal('privacy')">✕</button>
+            <h2 data-translate="true">🔒 Πολιτική Απορρήτου Omen</h2>
+            <p data-translate="true"><strong>Τελευταία ενημέρωση: Μάιος 2026</strong></p>
+            <h3 data-translate="true">1. Πώς Διαχειριζόμαστε τις Φωτογραφίες του Φλιτζανιού σας</h3>
+            <p data-translate="true"><strong>Δεν Αποθηκεύουμε τις Εικόνες:</strong> Όταν ανεβάζετε ή τραβάτε μια φωτογραφία του φλιτζανιού σας, η εικόνα μετατρέπεται σε προσωρινή μορφή (Base64) στη συσκευή σας και αποστέλλεται στον server μας αποκλειστικά για να μεταφερθεί στο Gemini API της Google για οπτική ανάλυση.</p>
+            <p data-translate="true"><strong>Καμία Μόνιμη Αποθήκευση:</strong> Οι φωτογραφίες του φλιτζανιού ΔΕΝ αποθηκεύονται σε καμία βάση δεδομένων, ΔΕΝ κρατούνται στον server μας και διαγράφονται οριστικά από τη μνήμη αμέσως μόλις ολοκληρωθεί η ανάλυση.</p>
+            <p data-translate="true">Δεν χρησιμοποιούμε τις φωτογραφίες για διαφημιστικούς σκοπούς, ούτε τις μοιραζόμαστε με τρίτους, εκτός από την ασφαλή, αυτοματοποιημένη αποστολή στο API της Google για την παραγωγή της περιγραφής.</p>
+            <h3 data-translate="true">2. Δεδομένα που Συλλέγουμε Αυτόματα (Cookies & Διαφημίσεις)</h3>
+            <p data-translate="true">Για τη σωστή λειτουργία της ιστοσελίδας και τη χρηματοδότησή της, συνεργαζόμαστε με τρίτες διαφημιστικές εταιρείες (όπως η Google AdSense και η Monetag). Αυτές οι εταιρείες ενδέχεται να συλλέγουν ανώνυμα τεχνικά δεδομένα:</p>
+            <p data-translate="true">• <strong>Cookies:</strong> Χρησιμοποιούμε cookies για να θυμόμαστε τις προτιμήσεις σας (π.χ. αν έχετε πατήσει το checkbox ηλικίας) και για να αναλύουμε την επισκεψιμότητα (μέσω Google Analytics).</p>
+            <p data-translate="true">• <strong>Διαφημίσεις Τρίτων (AdSense / Monetag):</strong> Οι διαφημιστές ενδέχεται να χρησιμοποιούν cookies για να προβάλλουν διαφημίσεις που σχετίζονται με τα ενδιαφέροντά σας. Μπορείτε να απενεργοποιήσετε τα εξατομικευμένα cookies μέσα από τις ρυθμίσεις του προγράμματος περιήγησής σας (browser).</p>
+            <p data-translate="true">• <strong>Τοπική Αποθήκευση (Local Storage):</strong> Η εφαρμογή χρησιμοποιεί τοπική μνήμη στη συσκευή σας για να μετράει τις ημερήσιες προσπάθειές σας, ώστε να τηρούνται τα όρια χρήσης χωρίς να χρειάζεται να κάνετε εγγραφή (login).</p>
+            <h3 data-translate="true">3. Δικαιώματα των Χρηστών (GDPR)</h3>
+            <p data-translate="true">Σύμφωνα με τον ευρωπαϊκό νόμο, έχετε τα εξής δικαιώματα:</p>
+            <p data-translate="true">• Το δικαίωμα να γνωρίζετε ποια δεδομένα σας επεξεργαζόμαστε (όπως εξηγείται στην παρούσα πολιτική, δεν κρατάμε προσωπικά σας στοιχεία ή φωτογραφίες φλιτζανιών).</p>
+            <p data-translate="true">• Το δικαίωμα να διαγράψετε τα cookies και το ιστορικό του Omen από τον browser σας ανά πάσα στιγμή.</p>
+            <h3 data-translate="true">4. Αλλαγές στους Όρους και την Πολιτική Απορρήτου</h3>
+            <p data-translate="true">Το Omen διατηρεί το δικαίωμα να αλλάξει ή να επικαιροποιήσει αυτούς τους όρους και την πολιτική απορρήτου οποιαδήποτε στιγμή, προκειμένου να συμμορφώνεται με νέους νόμους ή τεχνικές αναβαθμίσεις. Οι αλλαγές θα εμφανίζονται σε αυτή τη σελίδα.</p>
+            <p style="text-align:center;margin-top:18px;" data-translate="true">📧 <strong>info.franklydear@gmail.com</strong></p>
+            <p style="text-align:center;font-size:0.75rem;color:#c9a0dc;" data-translate="true">Τελευταία ενημέρωση: Μάιος 2026</p>
+        </div>
     </div>
-</div>
 
     <canvas id="bg-canvas"></canvas>
 
@@ -211,9 +202,14 @@
             <p style="color:#b8a0d0;" data-translate="true">Ανέβασε μια φωτογραφία του φλιτζανιού σου</p>
         </div>
 
+        <!-- PHOTO UPLOAD SLOT -->
         <div class="photo-slot" id="photo-slot" onclick="triggerUpload()">📸 Ανέβασε φωτογραφία</div>
 
-        <button id="analyze-btn" class="btn-green" onclick="performAnalysis()" data-translate="true">🔮 Ανάλυση (15 πόντοι)</button>
+        <!-- ΑΝΑΛΥΣΗ ΚΟΥΜΠΙ (ΜΕ SPINNER) -->
+        <button id="analyze-btn" class="btn-green" onclick="performAnalysis()" disabled>
+            <span id="analyze-btn-text" data-translate="true">🔮 Ανάλυση (15 πόντοι)</span>
+            <span id="analyze-spinner" style="display:none; margin-left:8px; animation: spin 1s linear infinite;">⏳</span>
+        </button>
 
         <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:15px 0;">
             <button class="btn-earn" onclick="earnPoints()" data-translate="true">🎁 Κέρδισε 10 Πόντους</button>
@@ -246,12 +242,10 @@
     <div class="shop-modal-overlay" id="referral-overlay" onclick="closeReferralPopup(event)">
         <div class="shop-modal" onclick="event.stopPropagation()" style="text-align: center;">
             <h2 style="color: #f7dc6f; margin-bottom: 15px;" data-translate="true">👥 Πρόσκληση Φίλων</h2>
-            
             <div style="background: rgba(20,10,40,0.9); border: 1px solid rgba(241,196,15,0.4); border-radius: 15px; padding: 15px; margin: 15px 0;">
                 <p style="color: #d5c8e8; font-size: 0.9rem; margin-bottom: 8px;" data-translate="true">Το κλειδί σου:</p>
                 <code id="referral-key-display" style="color: #f7dc6f; font-size: 1rem; word-break: break-all; background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 10px; display: block;">OmenRef_...</code>
             </div>
-            
             <p style="color: #d5c8e8; font-size: 0.9rem; line-height: 1.6; margin: 15px 0;" data-translate="true">
                 Μοιράσου αυτό το κλειδί με φίλους.<br>
                 Όταν ο φίλος σου εγγραφεί χρησιμοποιώντας αυτό το κλειδί, κερδίζεις:
@@ -267,7 +261,6 @@
                     <p style="color: #b9a6d4; font-size: 0.75rem;">για τον φίλο σου</p>
                 </div>
             </div>
-            
             <button class="btn-green" style="margin-bottom: 10px;" onclick="copyReferralKey()">
                 📋 <span data-translate="true">Αντιγραφή Κλειδιού</span>
             </button>
@@ -280,6 +273,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=13"></script>
+    <script src="script.js?v=14"></script>
 </body>
 </html>
