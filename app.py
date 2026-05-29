@@ -1,7 +1,7 @@
 """
 Omen - Καφεμαντεία Mini App
-Πλήρες Backend: Flask + Telegram Bot + Gemini
-Νέο σύστημα πόντων, 3-Photo Analysis, Shop
+Backend: Flask + python-telegram-bot v20+
+Νέο σύστημα πόντων, 1-Photo Analysis, Shop
 """
 
 import logging, os, json, asyncio, base64, threading
@@ -17,9 +17,9 @@ import sqlite3
 from PIL import Image
 
 # ====== CONFIGURATION ======
-TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
-WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "YOUR_TOKEN")
+WEBHOOK_URL = os.environ.get("WEBHOOK_URL", "https://franklymadear-omenread.hf.space/webhook")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "your_key")
 MINI_APP_URL = os.environ.get("MINI_APP_URL", "https://omen.franklymadear.com")
 
 genai.configure(api_key=GEMINI_API_KEY)
@@ -33,7 +33,6 @@ REFERRAL_SENDER_REWARD = 30
 REFERRAL_RECEIVER_BONUS = 20
 MAX_INVITES_FOR_MILESTONE = 10
 MILESTONE_BONUS = 100
-DAILY_LIMIT = 5
 
 STAR_PACKAGES = {
     "starter": {"points": 45, "stars": 1, "label": "Starter (3 αναλύσεις) - 1€"},
@@ -57,7 +56,6 @@ def get_db():
     conn = sqlite3.connect(DATABASE_PATH)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
-    conn.execute("PRAGMA foreign_keys=ON")
     return conn
 
 def init_db():
@@ -95,36 +93,23 @@ def create_or_update_user(uid, username=None, first_name=None, referrer_id=None)
     cur = conn.cursor()
     exist = cur.execute("SELECT user_id, welcome_bonus_granted FROM users WHERE user_id=?", (uid,)).fetchone()
     
-    # Καθορισμός αρχικών πόντων
-    if referrer_id and referrer_id != 0:
-        base_points = REFERRAL_RECEIVER_BONUS
-    else:
-        base_points = WELCOME_BONUS
+    base_points = REFERRAL_RECEIVER_BONUS if (referrer_id and referrer_id != 0) else WELCOME_BONUS
 
     if not exist:
         cur.execute('''INSERT INTO users (user_id, username, first_name, referrer_id, points, welcome_bonus_granted)
                        VALUES (?,?,?,?,?,1)''', (uid, username, first_name, referrer_id, base_points))
-        # Αν έχει referral
         if referrer_id and referrer_id != uid and referrer_id != 0:
             try:
-                cur.execute("INSERT OR IGNORE INTO referrals (referrer_id, referred_user_id) VALUES (?,?)",
-                            (referrer_id, uid))
-                # Πόντοι στον referrer
-                cur.execute("UPDATE users SET points=points+?, successful_invites=successful_invites+1 WHERE user_id=?",
-                            (REFERRAL_SENDER_REWARD, referrer_id))
-                # Milestone check
-                ref = cur.execute("SELECT successful_invites, milestone_bonus_granted FROM users WHERE user_id=?",
-                                  (referrer_id,)).fetchone()
+                cur.execute("INSERT OR IGNORE INTO referrals (referrer_id, referred_user_id) VALUES (?,?)", (referrer_id, uid))
+                cur.execute("UPDATE users SET points=points+?, successful_invites=successful_invites+1 WHERE user_id=?", (REFERRAL_SENDER_REWARD, referrer_id))
+                ref = cur.execute("SELECT successful_invites, milestone_bonus_granted FROM users WHERE user_id=?", (referrer_id,)).fetchone()
                 if ref and ref['successful_invites'] >= MAX_INVITES_FOR_MILESTONE and not ref['milestone_bonus_granted']:
-                    cur.execute("UPDATE users SET points=points+?, milestone_bonus_granted=1 WHERE user_id=?",
-                                (MILESTONE_BONUS, referrer_id))
+                    cur.execute("UPDATE users SET points=points+?, milestone_bonus_granted=1 WHERE user_id=?", (MILESTONE_BONUS, referrer_id))
             except: pass
     else:
         if not exist['welcome_bonus_granted']:
-            cur.execute("UPDATE users SET points=points+?, welcome_bonus_granted=1 WHERE user_id=?",
-                        (base_points, uid))
-        cur.execute("UPDATE users SET username=COALESCE(?,username), first_name=COALESCE(?,first_name) WHERE user_id=?",
-                    (username, first_name, uid))
+            cur.execute("UPDATE users SET points=points+?, welcome_bonus_granted=1 WHERE user_id=?", (base_points, uid))
+        cur.execute("UPDATE users SET username=COALESCE(?,username), first_name=COALESCE(?,first_name) WHERE user_id=?", (username, first_name, uid))
     conn.commit()
     conn.close()
 
@@ -136,9 +121,9 @@ def _run_async(coro):
         finally: loop.close()
     threading.Thread(target=run, daemon=True).start()
 
-# ====== PROMPT ΓΙΑ ΤΙΣ 3 ΦΩΤΟ ======
+# ====== PROMPT ΓΙΑ ΤΗ ΑΝΑΛΥΣΗ ======
 ANALYSIS_PROMPT = """Είσαι η Μαντάμ Ζαΐρα, μια μυστικιστική αναγνώστρια φλιτζανιών καφέ.
-Ανάλυσε τις 3 φωτογραφίες που σου δίνω (από διαφορετικές γωνίες του ίδιου φλιτζανιού).
+Ανάλυσε τη φωτογραφία του φλιτζανιού που σου δίνω.
 Αναγνώρισε σχήματα και σύμβολα από τα κατακάθια:
 - Γραμμές (ευθείες = ξεκάθαρη πορεία, καμπύλες = εμπόδια)
 - Κύκλοι (ολοκληρωμένοι = επιτυχία, σπασμένοι = διαφωνίες)
@@ -177,11 +162,8 @@ def register():
         except: pass
     create_or_update_user(uid, data.get('first_name',''), data.get('last_name',''), ref)
     user = get_user(uid)
-    return jsonify({
-        "user_id": user['user_id'],
-        "points": user['points'],
-        "referral_link": f"https://t.me/{OFFICIAL_BOT_USERNAME}?start=ref_{uid}"
-    })
+    return jsonify({"user_id": user['user_id'], "points": user['points'],
+                    "referral_link": f"https://t.me/{OFFICIAL_BOT_USERNAME}?start=ref_{uid}"})
 
 @app.route('/api/user/<string:uid>')
 def user_info(uid):
@@ -211,32 +193,29 @@ async def send_invoice(uid, info, payload):
         need_name=False, need_phone_number=False, need_email=False,
         need_shipping_address=False, is_flexible=False, protect_content=True)
 
-@app.route('/api/analyze-multi', methods=['POST'])
+@app.route('/api/analyze', methods=['POST'])
 def analyze():
     data = request.json
     uid = data.get('user_id')
-    images = data.get('images', [])
+    image = data.get('image')
     gender = data.get('gender','f')
-    if not uid or len(images) != 3:
-        return jsonify({"success":False, "error":"Χρειάζονται ακριβώς 3 φωτογραφίες"}), 400
+    if not uid or not image:
+        return jsonify({"success":False, "error":"Λείπουν δεδομένα"}), 400
     
     user = get_user(uid)
     if not user or user['points'] < ANALYSIS_COST:
         return jsonify({"success":False, "error":"Δεν έχετε αρκετούς πόντους"}), 403
     
     try:
-        compressed = []
-        for img in images:
-            if ',' in img: img = img.split(',')[1]
-            img_bytes = base64.b64decode(img)
-            pic = Image.open(BytesIO(img_bytes)).convert('RGB')
-            pic.thumbnail((800,800))
-            buf = BytesIO()
-            pic.save(buf, format='JPEG', quality=70)
-            compressed.append(buf.getvalue())
+        if ',' in image: image = image.split(',')[1]
+        img_bytes = base64.b64decode(image)
+        pic = Image.open(BytesIO(img_bytes)).convert('RGB')
+        pic.thumbnail((800,800))
+        buf = BytesIO()
+        pic.save(buf, format='JPEG', quality=70)
         
         prompt = ANALYSIS_PROMPT + f"\n\n(Η ανάλυση απευθύνεται σε {'γυναίκα' if gender=='f' else 'άντρα'}.)"
-        response = gemini_model.generate_content(compressed + [prompt])
+        response = gemini_model.generate_content([buf.getvalue(), prompt])
         
         conn = get_db()
         conn.execute("UPDATE users SET points=points-? WHERE user_id=?", (ANALYSIS_COST, uid))
@@ -257,7 +236,7 @@ async def start(update, context):
         try: ref = int(args[0][4:])
         except: pass
     create_or_update_user(user.id, user.username, user.first_name, ref)
-    text = "☕ *Καλωσόρισες στο Omen!* Σου κάναμε δώρο 15 πόντους. Ανέβασε 3 φωτογραφίες για ανάλυση!"
+    text = "☕ *Καλωσόρισες στο Omen!* Σου κάναμε δώρο 15 πόντους. Πάτα 'Ανάλυση' για να ξεκινήσουμε!"
     if ref: text += f"\n🎁 Μπήκες μέσω πρόσκλησης! Κέρδισες 20 πόντους!"
     await update.message.reply_text(text,
         reply_markup=InlineKeyboardMarkup([[
@@ -288,7 +267,7 @@ async def webhook():
             await telegram_app.process_update(update)
             return 'ok', 200
         except Exception as e:
-            logger.error(f"Webhook error: {e}")
+            logger.error(f"Webhook: {e}")
             return 'error', 500
 
 def setup_handlers():
@@ -300,9 +279,9 @@ async def setup_webhook():
     try:
         await telegram_app.initialize()
         await telegram_app.bot.set_webhook(url=WEBHOOK_URL)
-        logger.info("Webhook set successfully")
+        logger.info("Webhook set")
     except Exception as e:
-        logger.error(f"Webhook setup failed: {e}")
+        logger.error(f"Webhook failed: {e}")
 
 if __name__ == '__main__':
     setup_handlers()
