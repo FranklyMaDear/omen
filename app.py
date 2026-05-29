@@ -12,6 +12,7 @@ import json
 import asyncio
 import base64
 import threading
+import io
 from datetime import datetime, date
 from io import BytesIO
 
@@ -301,33 +302,56 @@ def analyze():
         if user['points'] < ANALYSIS_COST:
             return jsonify({"success": False, "error": "Δεν έχετε αρκετούς πόντους"}), 402
 
-        # Επεξεργασία εικόνας
+        # ====== ΕΠΕΞΕΡΓΑΣΙΑ ΕΙΚΟΝΑΣ (ΔΙΟΡΘΩΜΕΝΟ) ======
         if ',' in image_b64:
             image_b64 = image_b64.split(',', 1)[1]
-        img_bytes = base64.b64decode(image_b64)
-        img = Image.open(BytesIO(img_bytes)).convert('RGB')
-        img.thumbnail((800, 800), Image.LANCZOS)
-        buf = BytesIO()
-        img.save(buf, format='JPEG', quality=75)
-        processed_image = buf.getvalue()
 
+        decoded_bytes = base64.b64decode(image_b64)
+        logger.info(f"Decoded image bytes: {len(decoded_bytes)} bytes")
+
+        # Άνοιγμα με PIL και μετατροπή σε RGB JPEG bytes
+        pil_image = Image.open(BytesIO(decoded_bytes)).convert('RGB')
+        pil_image.thumbnail((800, 800), Image.LANCZOS)
+        
+        # Αποθήκευση σε buffer ως JPEG
+        buf = BytesIO()
+        pil_image.save(buf, format='JPEG', quality=75)
+        processed_bytes = buf.getvalue()
+        
+        logger.info(f"Processed image size: {len(processed_bytes)} bytes")
+
+        # ====== ΚΛΗΣΗ GEMINI ΜΕ ΤΟ ΣΩΣΤΟ FORMAT ======
         prompt = build_analysis_prompt(user_lang, gender)
+        
+        # Χρήση PIL Image απευθείας (το Gemini υποστηρίζει PIL Image objects)
+        # Ή χρήση dict format
         response = gemini_model.generate_content(
-            [processed_image, prompt],
+            [
+                {
+                    'mime_type': 'image/jpeg',
+                    'data': processed_bytes
+                },
+                prompt
+            ],
             generation_config=genai.types.GenerationConfig(
                 temperature=0.9,
                 max_output_tokens=300,
             )
         )
-        if not response.text:
-            return jsonify({"success": False, "error": "Το AI δεν επέστρεψε κείμενο"}), 500
-        result_text = response.text.strip()
 
-        # Αφαίρεση πόντων
+        if not response.text:
+            logger.error("Gemini returned empty response")
+            return jsonify({"success": False, "error": "Το AI δεν επέστρεψε κείμενο"}), 500
+
+        result_text = response.text.strip()
+        logger.info(f"Gemini response length: {len(result_text)} chars")
+
+        # ====== ΑΦΑΙΡΕΣΗ ΠΟΝΤΩΝ ======
         conn = get_db()
         conn.execute("UPDATE users SET points = points - ? WHERE user_id = ?", (ANALYSIS_COST, uid))
         conn.commit()
         conn.close()
+        logger.info(f"Deducted {ANALYSIS_COST} points from user {uid}")
 
         return jsonify({
             "success": True,
