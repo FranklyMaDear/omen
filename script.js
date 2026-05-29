@@ -4,8 +4,8 @@ const ADS_BLOCK = '32708';
 const COST = 15;
 
 let tg = null, uid = null, lang = localStorage.getItem('omen_lang') || 'el';
-let currentImage = null;      // base64 της επιλεγμένης εικόνας
-let isAnalyzing = false;      // αποτρέπει double submit
+let currentImage = null;
+let isAnalyzing = false;
 let adReady = false;
 let AdController = null;
 
@@ -17,7 +17,7 @@ function initAds() {
     } else setTimeout(initAds, 1000);
 }
 
-// ====== ΓΛΩΣΣΑ ======
+// ====== ΓΛΩΣΣΑ (ΜΟΝΟ ΑΠΟ CONSENT) ======
 function setLang(l) { lang = l; localStorage.setItem('omen_lang', l); }
 
 async function applyTranslation() {
@@ -74,30 +74,21 @@ function handleFileSelect(file) {
     reader.onload = (ev) => {
         const img = new Image();
         img.onload = () => {
-            // Συμπίεση εικόνας
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             let w = img.width, h = img.height;
-            const maxDim = 800;
-            if (w > maxDim || h > maxDim) {
-                const ratio = Math.min(maxDim / w, maxDim / h);
-                w = Math.round(w * ratio);
-                h = Math.round(h * ratio);
-            }
-            canvas.width = w;
-            canvas.height = h;
+            if (w > 800) { h = h * (800/w); w = 800; }
+            canvas.width = w; canvas.height = h;
             ctx.drawImage(img, 0, 0, w, h);
 
             currentImage = canvas.toDataURL('image/jpeg', 0.7);
 
-            // Εμφάνιση preview
             const slot = document.getElementById('photo-slot');
             slot.style.backgroundImage = `url(${currentImage})`;
             slot.style.backgroundSize = 'cover';
             slot.style.backgroundPosition = 'center';
-            slot.innerHTML = '';   // αφαιρούμε το κείμενο "Ανέβασε φωτογραφία"
+            slot.innerHTML = '';
 
-            // Ενεργοποίηση κουμπιού
             updateAnalyzeButton();
         };
         img.src = ev.target.result;
@@ -143,12 +134,11 @@ async function performAnalysis() {
             document.getElementById('result-text').textContent = data.symbols;
             document.getElementById('result-area').style.display = 'block';
 
-            // Καθαρισμός για επόμενη ανάλυση
             currentImage = null;
             const slot = document.getElementById('photo-slot');
             slot.style.backgroundImage = '';
             slot.innerHTML = '📸 Ανέβασε φωτογραφία';
-            document.getElementById('file-input').value = '';   // επιτρέπει επανεπιλογή της ίδιας φωτογραφίας
+            document.getElementById('file-input').value = '';
             updateAnalyzeButton();
         } else {
             alert(data.error || 'Σφάλμα ανάλυσης');
@@ -202,22 +192,48 @@ function shareReferralLink() {
     closeReferralPopup();
 }
 
-// ====== SHOP ======
+// ====== SHOP (ΝΕΟ: openInvoice) ======
 function openShop() { document.getElementById('shop-modal-overlay').classList.add('active'); }
 function closeShop(e) {
-    if (!e || e.target === document.getElementById('shop-modal-overlay') || e.target.classList.contains('btn-green') || e.target.tagName === 'BUTTON') {
+    if (!e || e.target === document.getElementById('shop-modal-overlay') || e.target.tagName === 'BUTTON') {
         document.getElementById('shop-modal-overlay').classList.remove('active');
     }
 }
 async function buyPackage(pkg) {
-    if (!uid) return;
-    await fetch(`${API}/api/shop/buy`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: uid, package: pkg })
-    });
-    alert('Ελέγξτε το chat σας στο bot!');
-    closeShop();
+    if (!uid) { alert('Περιμένετε...'); return; }
+    if (!tg) { alert('Ανοίξτε την εφαρμογή μέσα από το Telegram.'); return; }
+
+    try {
+        const res = await fetch(`${API}/api/shop/buy`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: uid, package: pkg })
+        });
+        const data = await res.json();
+        if (data.success && data.invoice_link) {
+            tg.openInvoice(data.invoice_link, (status) => {
+                if (status === 'paid') {
+                    alert('✅ Πληρωμή επιτυχής! Οι πόντοι θα προστεθούν σύντομα.');
+                    closeShop();
+                    setTimeout(async () => {
+                        const userRes = await fetch(`${API}/api/user/${uid}`);
+                        if (userRes.ok) {
+                            const userData = await userRes.json();
+                            setP(userData.points);
+                        }
+                    }, 2000);
+                } else if (status === 'cancelled') {
+                    alert('Η πληρωμή ακυρώθηκε.');
+                } else {
+                    alert('Η πληρωμή απέτυχε ή είναι σε εκκρεμότητα.');
+                }
+            });
+        } else {
+            alert('Σφάλμα δημιουργίας πληρωμής: ' + (data.error || ''));
+        }
+    } catch (e) {
+        alert('Σφάλμα δικτύου.');
+    }
 }
 
 // ====== NAVIGATION ======
@@ -232,9 +248,8 @@ function goToSplash() {
 }
 function resetScan() {
     currentImage = null;
-    const slot = document.getElementById('photo-slot');
-    slot.style.backgroundImage = '';
-    slot.innerHTML = '📸 Ανέβασε φωτογραφία';
+    document.getElementById('photo-slot').style.backgroundImage = '';
+    document.getElementById('photo-slot').innerHTML = '📸 Ανέβασε φωτογραφία';
     document.getElementById('result-area').style.display = 'none';
     document.getElementById('file-input').value = '';
     updateAnalyzeButton();
@@ -296,7 +311,6 @@ async function init() {
     } catch (e) {}
     document.getElementById('consent-overlay').classList.remove('hidden');
     if (lang !== 'el') await applyTranslation();
-    updateAnalyzeButton();   // αρχική κατάσταση κουμπιού
+    updateAnalyzeButton();
 }
-
 document.addEventListener('DOMContentLoaded', init);
