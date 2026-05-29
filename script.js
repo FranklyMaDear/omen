@@ -32,7 +32,7 @@ let isAdsReady = false;
 let isUserReady = false;
 
 // ====== ADSGRAM ======
-const ADSGRAM_BLOCK_ID = '32221';
+const ADSGRAM_BLOCK_ID = '32708';
 
 function initAdsgram() {
     if (typeof window.Adsgram !== 'undefined') {
