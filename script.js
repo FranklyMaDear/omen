@@ -1,6 +1,6 @@
 /**
  * Omen - Καφεμαντεία Mini App
- * Frontend Logic: Referral System (with milestone & ads), Telegram Stars, AI Analysis, Translations, Lifeline Rollup
+ * Frontend Logic: Referral System, Telegram Stars, AI Analysis, Translations, Lifeline Rollup
  * Επίσημο Bot: @omenread_bot
  */
 
@@ -11,7 +11,10 @@ let currentLang = 'el';
 let originalTexts = {};
 let originalResultText = '';
 
-const API_URL = '/api/analyze';
+// ⚡ ΡΥΘΜΙΣΗ: Το Hugging Face Space URL (backend)
+const API_BASE = 'https://franklymadear-omenread.hf.space';
+const API_URL = API_BASE + '/api/analyze';
+
 const ANALYSIS_COST = 15;
 const DAILY_LIMIT = 5;
 const REFERRAL_REWARD = 20;
@@ -685,7 +688,7 @@ function showPreview(imageSrc) {
     }, 200);
 }
 
-// ====== MAIN ANALYSIS ======
+// ====== MAIN ANALYSIS (με Gemini) ======
 async function performAnalysis() {
     if (!currentImageBase64 || isAnalyzing) return;
     if (!canAnalyze()) {
@@ -708,7 +711,8 @@ async function performAnalysis() {
     document.getElementById('loading-box').scrollIntoView({ behavior: 'smooth' });
 
     try {
-        const response = await fetch(API_URL, {
+        // Χρησιμοποιούμε το απόλυτο URL του Space
+        const response = await fetch(API_BASE + '/api/analyze', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -766,14 +770,14 @@ function addStarsToResult() {
     }
 }
 
-// ====== REGISTRATION & REFERRAL ======
+// ====== REGISTRATION & REFERRAL (με απόλυτα URLs) ======
 async function registerUser() {
     if (!currentUserId) return;
     const startParam = tgWebApp?.initDataUnsafe?.start_param || '';
     const user = tgWebApp?.initDataUnsafe?.user || {};
 
     try {
-        const response = await fetch('/api/register', {
+        const response = await fetch(API_BASE + '/api/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -828,7 +832,7 @@ async function shareReferralLink() {
 async function updateReferralCountDisplay() {
     if (!currentUserId) return;
     try {
-        const res = await fetch(`/api/referral-count/${currentUserId}`);
+        const res = await fetch(API_BASE + '/api/referral-count/' + currentUserId);
         if (res.ok) {
             const data = await res.json();
             const count = data.successful_invites;
@@ -844,10 +848,29 @@ async function updateReferralCountDisplay() {
     } catch (e) {}
 }
 
+async function loadUserData() {
+    if (!currentUserId) return;
+    try {
+        const res = await fetch(API_BASE + '/api/user/' + currentUserId);
+        if (res.ok) {
+            const data = await res.json();
+            localStorage.setItem('omen_user_data', JSON.stringify(data));
+            updateUIWithUserData(data);
+            updateReferralCountDisplay();
+        }
+    } catch (e) {}
+}
+
+function updateUIWithUserData(data) {
+    if (data.points !== undefined) setPoints(data.points);
+    userStarsUnlocks = data.stars_unlocks_remaining || 0;
+    updateScanButton();
+}
+
 // ====== SHARE STORY ======
 async function shareStory() {
     try {
-        const response = await fetch('/api/share-story', {
+        const response = await fetch(API_BASE + '/api/share-story', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ user_id: currentUserId })
@@ -898,25 +921,7 @@ async function initTelegramWebApp() {
     enableButtonsWhenReady();
 }
 
-async function loadUserData() {
-    if (!currentUserId) return;
-    try {
-        const res = await fetch(`/api/user/${currentUserId}`);
-        if (res.ok) {
-            const data = await res.json();
-            localStorage.setItem('omen_user_data', JSON.stringify(data));
-            updateUIWithUserData(data);
-            updateReferralCountDisplay();
-        }
-    } catch (e) {}
-}
-
-function updateUIWithUserData(data) {
-    if (data.points !== undefined) setPoints(data.points);
-    userStarsUnlocks = data.stars_unlocks_remaining || 0;
-    updateScanButton();
-}
-
+// ====== TOAST ======
 function showToast(message) {
     const existingToast = document.getElementById('toast-message');
     if (existingToast) existingToast.remove();
@@ -928,7 +933,7 @@ function showToast(message) {
     setTimeout(() => toast.remove(), 3000);
 }
 
-// ====== ΑΡΧΙΚΟΠΟΙΗΣΗ ΣΕΛΙΔΑΣ ======
+// ====== ΕΚΚΙΝΗΣΗ ======
 updatePointsDisplay();
 checkConsent();
 updateScanButton();
