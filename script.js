@@ -16,8 +16,9 @@ function initAds() {
     } else setTimeout(initAds, 1000);
 }
 
-// ====== ΓΛΩΣΣΑ ======
+// ====== ΓΛΩΣΣΑ (ΜΟΝΟ ΑΠΟ CONSENT) ======
 function setLang(l) { lang = l; localStorage.setItem('omen_lang', l); }
+
 async function applyTranslation() {
     if (lang === 'el') { restoreOriginals(); return; }
     const els = document.querySelectorAll('[data-translate="true"]');
@@ -41,12 +42,14 @@ async function applyTranslation() {
         } catch (e) {}
     }
 }
+
 function restoreOriginals() {
     document.querySelectorAll('[data-translate="true"]').forEach(el => {
         const orig = el.getAttribute('data-original');
         if (orig) el.textContent = orig;
     });
 }
+
 (function() {
     document.querySelectorAll('[data-translate="true"]').forEach(el => el.setAttribute('data-original', el.textContent.trim()));
     const devLang = (navigator.language || 'el').split('-')[0];
@@ -115,19 +118,64 @@ async function performAnalysis() {
     finally { btn.disabled = false; btn.textContent = '🔮 Ανάλυση (15 πόντοι)'; }
 }
 
-// ====== EARN / REFERRAL / SHOP ======
+// ====== EARN POINTS (AD) ======
 async function earnPoints() {
     if (!adReady) { alert('Οι διαφημίσεις δεν είναι έτοιμες'); return; }
     try { await AdController.show(); setP(getP() + 10); } catch (e) { alert('Η διαφήμιση δεν ολοκληρώθηκε'); }
 }
-async function shareReferral() {
-    if (!adReady || !uid) { alert('Περιμένετε...'); return; }
-    try {
-        await AdController.show();
-        const link = `https://t.me/${BOT}?start=ref_${uid}`;
-        const url = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent('☕ Ανακάλυψε το μέλλον σου με την καφεμαντεία!')}`;
-        if (tg) tg.openTelegramLink(url); else window.open(url, '_blank');
-    } catch (e) { alert('Πρέπει να δείτε τη διαφήμιση'); }
+
+// ====== REFERRAL POPUP ======
+function openReferralPopup() {
+    if (!uid) {
+        alert('Η εφαρμογή ακόμα αρχικοποιείται. Δοκίμασε σε λίγο.');
+        return;
+    }
+    document.getElementById('referral-key-display').textContent = `OmenRef_${uid}`;
+    document.getElementById('referral-overlay').classList.add('active');
+}
+
+function closeReferralPopup(e) {
+    if (!e || e.target === document.getElementById('referral-overlay') || e.target.tagName === 'BUTTON') {
+        document.getElementById('referral-overlay').classList.remove('active');
+    }
+}
+
+function copyReferralKey() {
+    const key = `OmenRef_${uid}`;
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(key).then(() => {
+            alert('✅ Το κλειδί αντιγράφηκε!');
+        }).catch(() => fallbackCopy(key));
+    } else fallbackCopy(key);
+}
+
+function fallbackCopy(text) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    alert('✅ Το κλειδί αντιγράφηκε!');
+}
+
+function shareReferralLink() {
+    if (!uid) return;
+    const key = `OmenRef_${uid}`;
+    const link = `https://t.me/${BOT}?start=ref_${uid}`;
+    const message = `🎁 Μπες στο Omen και κέρδισε 20 Πόντους (💎)! Χρησιμοποίησε το κλειδί μου: ${key} 🔮\n${link}`;
+    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(message)}`;
+    if (tg) tg.openTelegramLink(shareUrl);
+    else window.open(shareUrl, '_blank');
+    closeReferralPopup();
+}
+
+// ====== SHOP ======
+function openShop() { document.getElementById('shop-modal-overlay').classList.add('active'); }
+function closeShop(e) {
+    if (!e || e.target === document.getElementById('shop-modal-overlay') || e.target.classList.contains('btn-green') || e.target.tagName === 'BUTTON') {
+        document.getElementById('shop-modal-overlay').classList.remove('active');
+    }
 }
 async function buyPackage(pkg) {
     if (!uid) return;
@@ -138,13 +186,6 @@ async function buyPackage(pkg) {
     });
     alert('Ελέγξτε το chat σας στο bot για την πληρωμή!');
     closeShop();
-}
-
-function openShop() { document.getElementById('shop-modal-overlay').classList.add('active'); }
-function closeShop(e) {
-    if (!e || e.target === document.getElementById('shop-modal-overlay') || e.target.classList.contains('btn-green') || e.target.tagName === 'BUTTON') {
-        document.getElementById('shop-modal-overlay').classList.remove('active');
-    }
 }
 
 // ====== NAVIGATION ======
