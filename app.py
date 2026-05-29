@@ -123,20 +123,17 @@ def create_or_update_user(uid, username=None, first_name=None, referrer_id=None)
         "SELECT user_id, welcome_bonus_granted FROM users WHERE user_id=?", (uid,)
     ).fetchone()
 
-    # Καθορισμός αρχικών πόντων
     base_points = REFERRAL_RECEIVER_BONUS if (referrer_id and referrer_id != 0) else WELCOME_BONUS
 
     if not exist:
         cur.execute('''INSERT INTO users (user_id, username, first_name, referrer_id, points, welcome_bonus_granted)
                        VALUES (?,?,?,?,?,1)''', (uid, username, first_name, referrer_id, base_points))
-        # Πόντοι στον referrer
         if referrer_id and referrer_id != uid and referrer_id != 0:
             try:
                 cur.execute("INSERT OR IGNORE INTO referrals (referrer_id, referred_user_id) VALUES (?,?)",
                             (referrer_id, uid))
                 cur.execute("UPDATE users SET points=points+?, successful_invites=successful_invites+1 WHERE user_id=?",
                             (REFERRAL_SENDER_REWARD, referrer_id))
-                # Milestone check
                 ref = cur.execute(
                     "SELECT successful_invites, milestone_bonus_granted FROM users WHERE user_id=?",
                     (referrer_id,)
@@ -158,7 +155,6 @@ def create_or_update_user(uid, username=None, first_name=None, referrer_id=None)
     conn.close()
 
 def _run_async(coro):
-    """Εκτελεί async κορουτίνα σε ξεχωριστό thread."""
     def run():
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
@@ -168,48 +164,22 @@ def _run_async(coro):
             loop.close()
     threading.Thread(target=run, daemon=True).start()
 
-# ====== ΓΛΩΣΣΙΚΟΣ ΧΑΡΤΗΣ (για το prompt του Gemini) ======
+# ====== ΓΛΩΣΣΙΚΟΣ ΧΑΡΤΗΣ ======
 LANG_MAP = {
-    "el": "Ελληνικά",
-    "en": "English",
-    "de": "Deutsch",
-    "fr": "Français",
-    "es": "Español",
-    "it": "Italiano",
-    "ar": "العربية",
-    "zh-CN": "中文 (Simplified)",
-    "ja": "日本語",
-    "ru": "Русский",
-    "tr": "Türkçe",
-    "nl": "Nederlands",
-    "pt": "Português",
-    "sv": "Svenska",
-    "no": "Norsk",
-    "da": "Dansk",
-    "fi": "Suomi",
-    "pl": "Polski",
-    "cs": "Čeština",
-    "ro": "Română",
-    "bg": "Български",
-    "uk": "Українська",
-    "ko": "한국어",
-    "hi": "हिन्दी",
-    "vi": "Tiếng Việt",
-    "th": "ไทย",
-    "id": "Bahasa Indonesia",
-    "iw": "עברית"
+    "el": "Ελληνικά", "en": "English", "de": "Deutsch", "fr": "Français", "es": "Español",
+    "it": "Italiano", "ar": "العربية", "zh-CN": "中文 (Simplified)", "ja": "日本語",
+    "ru": "Русский", "tr": "Türkçe", "nl": "Nederlands", "pt": "Português",
+    "sv": "Svenska", "no": "Norsk", "da": "Dansk", "fi": "Suomi", "pl": "Polski",
+    "cs": "Čeština", "ro": "Română", "bg": "Български", "uk": "Українська",
+    "ko": "한국어", "hi": "हिन्दी", "vi": "Tiếng Việt", "th": "ไทย",
+    "id": "Bahasa Indonesia", "iw": "עברית"
 }
 
 def get_lang_name(code):
-    """Επιστρέφει το όνομα της γλώσσας για το prompt."""
     return LANG_MAP.get(code, code)
 
 # ====== ONE-SHOT ANALYSIS PROMPT ======
 def build_analysis_prompt(user_lang, gender='f'):
-    """
-    Χτίζει το prompt για το Gemini.
-    Το Gemini θα παράγει την ανάλυση ΑΠΕΥΘΕΙΑΣ στη γλώσσα του χρήστη.
-    """
     lang_name = get_lang_name(user_lang)
     gender_text = "γυναίκα" if gender == 'f' else "άντρα"
 
@@ -327,94 +297,125 @@ async def send_invoice(uid, info, payload):
         need_shipping_address=False, is_flexible=False, protect_content=True
     )
 
-# ====== ONE-SHOT ANALYSIS & TRANSLATION ======
+# ====== ONE-SHOT ANALYSIS & TRANSLATION (IMPROVED ERROR HANDLING) ======
 @app.route('/api/analyze', methods=['POST'])
 def analyze():
     """
     Δέχεται: image (base64), user_id (int), language_code (str), gender (str, optional)
     Επιστρέφει: {"success": true, "symbols": "..."} ή {"success": false, "error": "..."}
     """
-    data = request.json
-    uid = data.get('user_id')
-    image_b64 = data.get('image')
-    gender = data.get('gender', 'f')
-    user_lang = data.get('language_code', 'el')  # Προεπιλογή Ελληνικά
-
-    # ====== VALIDATION ======
-    if not uid:
-        return jsonify({"success": False, "error": "Λείπει το user_id"}), 400
-    if not image_b64:
-        return jsonify({"success": False, "error": "Λείπει η εικόνα"}), 400
-
-    # Έλεγχος υπολοίπου πόντων
-    user = get_user(uid)
-    if not user:
-        return jsonify({"success": False, "error": "Ο χρήστης δεν βρέθηκε"}), 404
-    if user['points'] < ANALYSIS_COST:
-        return jsonify({
-            "success": False,
-            "error": "Δεν έχετε αρκετούς πόντους. Κερδίστε ή αγοράστε!"
-        }), 402
-
-    # ====== ΕΠΕΞΕΡΓΑΣΙΑ ΕΙΚΟΝΑΣ ======
     try:
-        # Αφαίρεση του data URL prefix αν υπάρχει
-        if ',' in image_b64:
-            image_b64 = image_b64.split(',')[1]
+        data = request.get_json(force=True)
+        if not data:
+            logger.error("❌ No JSON data received")
+            return jsonify({"success": False, "error": "Δεν ελήφθησαν δεδομένα JSON"}), 400
 
-        # Αποκωδικοποίηση & συμπίεση
-        img_bytes = base64.b64decode(image_b64)
-        img = Image.open(BytesIO(img_bytes)).convert('RGB')
-        img.thumbnail((800, 800), Image.LANCZOS)
-        buf = BytesIO()
-        img.save(buf, format='JPEG', quality=75)
-        image_data = buf.getvalue()
+        uid = data.get('user_id')
+        image_b64 = data.get('image')
+        user_lang = data.get('language_code', 'el')
+        gender = data.get('gender', 'f')
 
-    except Exception as e:
-        logger.error(f"Image processing error: {e}")
-        return jsonify({"success": False, "error": "Σφάλμα επεξεργασίας εικόνας"}), 400
+        # Validation
+        if not uid:
+            logger.error("❌ Missing user_id")
+            return jsonify({"success": False, "error": "Λείπει το user_id"}), 400
+        if not image_b64:
+            logger.error("❌ Missing image")
+            return jsonify({"success": False, "error": "Λείπει η εικόνα"}), 400
 
-    # ====== ΚΛΗΣΗ GEMINI ======
-    try:
-        prompt = build_analysis_prompt(user_lang, gender)
-        response = gemini_model.generate_content(
-            [image_data, prompt],
-            generation_config=genai.types.GenerationConfig(
-                temperature=0.9,
-                max_output_tokens=300,
+        # Έλεγχος πόντων
+        user = get_user(uid)
+        if not user:
+            logger.error(f"❌ User {uid} not found")
+            return jsonify({"success": False, "error": "Ο χρήστης δεν βρέθηκε"}), 404
+        if user['points'] < ANALYSIS_COST:
+            logger.error(f"❌ User {uid} has insufficient points ({user['points']})")
+            return jsonify({"success": False, "error": "Δεν έχετε αρκετούς πόντους"}), 402
+
+        # ====== ΕΠΕΞΕΡΓΑΣΙΑ ΕΙΚΟΝΑΣ ======
+        try:
+            # Αφαίρεση header αν υπάρχει (π.χ. data:image/jpeg;base64,)
+            if ',' in image_b64:
+                header, image_b64 = image_b64.split(',', 1)
+                logger.info(f"📸 Αφαιρέθηκε header: {header[:50]}...")
+            
+            # Αποκωδικοποίηση base64
+            image_bytes = base64.b64decode(image_b64)
+            logger.info(f"📸 Decoded image: {len(image_bytes)} bytes")
+
+            # Άνοιγμα με PIL
+            img = Image.open(BytesIO(image_bytes))
+            logger.info(f"📸 Original format: {img.format}, size: {img.size}, mode: {img.mode}")
+
+            # Μετατροπή σε RGB αν χρειάζεται
+            if img.mode not in ('RGB', 'RGBA'):
+                img = img.convert('RGB')
+                logger.info("📸 Converted to RGB")
+
+            # Συμπίεση
+            img.thumbnail((800, 800), Image.LANCZOS)
+            buf = BytesIO()
+            img.save(buf, format='JPEG', quality=75)
+            processed_image = buf.getvalue()
+            logger.info(f"📸 Processed image: {len(processed_image)} bytes")
+
+        except Exception as img_error:
+            logger.error(f"❌ Image processing error: {img_error}", exc_info=True)
+            return jsonify({
+                "success": False,
+                "error": f"Σφάλμα επεξεργασίας εικόνας: {str(img_error)}"
+            }), 400
+
+        # ====== ΚΛΗΣΗ GEMINI ======
+        try:
+            prompt = build_analysis_prompt(user_lang, gender)
+            logger.info(f"🤖 Calling Gemini with prompt length {len(prompt)}")
+
+            response = gemini_model.generate_content(
+                [processed_image, prompt],
+                generation_config=genai.types.GenerationConfig(
+                    temperature=0.9,
+                    max_output_tokens=300,
+                )
             )
-        )
-        result_text = response.text.strip()
 
-        # Επιπλέον validation: αν το Gemini επέστρεψε κενό
-        if not result_text:
-            return jsonify({"success": False, "error": "Το AI δεν επέστρεψε αποτέλεσμα"}), 500
+            if not response.text:
+                logger.error("❌ Gemini returned empty response")
+                return jsonify({"success": False, "error": "Το AI δεν επέστρεψε κείμενο"}), 500
+
+            result_text = response.text.strip()
+            logger.info(f"✅ Gemini response: {len(result_text)} chars")
+
+        except Exception as gemini_error:
+            logger.error(f"❌ Gemini API error: {gemini_error}", exc_info=True)
+            return jsonify({
+                "success": False,
+                "error": f"Σφάλμα AI: {str(gemini_error)[:200]}"
+            }), 500
+
+        # ====== ΑΦΑΙΡΕΣΗ ΠΟΝΤΩΝ ======
+        try:
+            conn = get_db()
+            conn.execute("UPDATE users SET points = points - ? WHERE user_id = ?", (ANALYSIS_COST, uid))
+            conn.commit()
+            conn.close()
+            logger.info(f"💰 Deducted {ANALYSIS_COST} points from user {uid}")
+        except Exception as db_error:
+            logger.error(f"❌ Database error during point deduction: {db_error}", exc_info=True)
+
+        # ====== ΕΠΙΣΤΡΟΦΗ ======
+        return jsonify({
+            "success": True,
+            "symbols": result_text,
+            "language": user_lang
+        })
 
     except Exception as e:
-        logger.error(f"Gemini API error: {e}")
+        logger.error(f"❌ Unexpected error in /api/analyze: {e}", exc_info=True)
         return jsonify({
             "success": False,
-            "error": "Σφάλμα κατά την ανάλυση. Δοκιμάστε ξανά σε λίγο."
+            "error": f"Απρόσμενο σφάλμα: {str(e)[:200]}"
         }), 500
-
-    # ====== ΑΦΑΙΡΕΣΗ ΠΟΝΤΩΝ ======
-    try:
-        conn = get_db()
-        conn.execute("UPDATE users SET points = points - ? WHERE user_id = ?", (ANALYSIS_COST, uid))
-        conn.commit()
-        conn.close()
-        logger.info(f"💰 {ANALYSIS_COST} points deducted from user {uid}")
-    except Exception as e:
-        logger.error(f"Points deduction error: {e}")
-        # Δεν επιστρέφουμε error εδώ – η ανάλυση έγινε, απλά οι πόντοι δεν αφαιρέθηκαν
-        # (μπορείς να προσθέσεις retry logic)
-
-    # ====== ΕΠΙΣΤΡΟΦΗ ======
-    return jsonify({
-        "success": True,
-        "symbols": result_text,
-        "language": user_lang
-    })
 
 # ====== TELEGRAM BOT HANDLERS ======
 async def start_command(update: Update, context: CallbackContext):
