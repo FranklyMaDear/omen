@@ -1,42 +1,29 @@
 /**
  * Omen - Καφεμαντεία Mini App
- * Frontend Logic: Referral System, Telegram Stars, AI Analysis, Translations, Lifeline Rollup
- * Επίσημο Bot: @omenread_bot
+ * Full Frontend Logic v2.0
+ * Περιλαμβάνει: 3-Photo Analysis, Shop, Adsgram, Referral, Translation, Points System
  */
 
-// ====== GLOBAL VARIABLES ======
+// ====== CONFIGURATION ======
+const API_BASE = 'https://franklymadear-omenread.hf.space';
+const OFFICIAL_BOT_USERNAME = 'omenread_bot';
+const ADSGRAM_BLOCK_ID = '32708';
+const ANALYSIS_COST = 15;
+
+// ====== GLOBAL STATE ======
 let tgWebApp = null;
 let currentUserId = null;
-let currentLang = 'el';
+let currentLang = localStorage.getItem('omen_lang') || 'el';
 let originalTexts = {};
 let originalResultText = '';
-
-// ⚡ ΡΥΘΜΙΣΗ: Το Hugging Face Space URL (backend)
-const API_BASE = 'https://franklymadear-omenread.hf.space';
-const API_URL = API_BASE + '/api/analyze';
-
-const ANALYSIS_COST = 15;
-const DAILY_LIMIT = 5;
-const REFERRAL_REWARD = 20;
-const OFFICIAL_BOT_USERNAME = 'omenread_bot';
-
-let isWatchingAds = false;
-let isAnalyzing = false;
-let currentImageBase64 = null;
+let currentImages = [];          // Αποθήκευση έως 3 base64 εικόνες
 let selectedGender = 'f';
-let currentStream = null;
 let AdController = null;
-let userStarsUnlocks = 0;
-
-let lifelineShowTimer = null;
-let lifelineHideTimer = null;
-
 let isAdsReady = false;
 let isUserReady = false;
+let isWatchingAds = false;
 
-// ====== ADSGRAM ======
-const ADSGRAM_BLOCK_ID = '32708';
-
+// ====== ADSGRAM INIT ======
 function initAdsgram() {
     if (typeof window.Adsgram !== 'undefined') {
         AdController = window.Adsgram.init({ blockId: ADSGRAM_BLOCK_ID });
@@ -50,221 +37,59 @@ function initAdsgram() {
 }
 
 function showRewardedAd() {
-    if (!AdController) {
-        return Promise.reject('not_ready');
-    }
-    return AdController.show()
-        .then((result) => {
-            console.log('✅ Ad finished:', result);
-            return result;
-        })
-        .catch((result) => {
-            console.warn('⚠️ Ad error or skipped:', result);
-            throw result;
-        });
+    if (!AdController) return Promise.reject('not_ready');
+    return AdController.show().then(res => {
+        console.log('✅ Ad finished');
+        return res;
+    }).catch(err => {
+        console.warn('⚠️ Ad skipped/error', err);
+        throw err;
+    });
 }
 
-// ====== CONSENT ======
-function checkConsent() {
-    const consentOverlay = document.getElementById('consent-overlay');
-    if (consentOverlay) consentOverlay.classList.remove('hidden');
-    const storedLang = getStoredLanguage();
-    document.getElementById('language-select').value = storedLang;
-    document.getElementById('consent-lang-select').value = storedLang;
-    if (storedLang !== 'el') {
-        startTranslation();
-    }
-    startLifelineCycle();
-}
-
-function acceptConsent() {
-    document.getElementById('consent-overlay').classList.add('hidden');
-}
-
-// ====== CONSENT TRANSLATION ======
-function changeConsentLang(lang) {
-    setLanguage(lang);
-    document.getElementById('language-select').value = lang;
-}
-
-async function translateConsent() {
-    const lang = document.getElementById('consent-lang-select').value;
-    if (lang === 'el') {
-        restoreOriginalTexts();
-        document.getElementById('reset-lang-btn').style.display = 'none';
-        return;
-    }
-    const btn = document.querySelector('#consent-modal .consent-lang-bar button');
-    btn.textContent = '⟳';
-    btn.disabled = true;
-    
-    setLanguage(lang);
-    await translatePage(lang);
-    
-    btn.textContent = '▶';
-    btn.disabled = false;
-    document.getElementById('reset-lang-btn').style.display = 'flex';
-}
-
-// ====== LEGAL ======
-function showLegal(type) {
-    if (type === 'terms') document.getElementById('terms-overlay').classList.add('active');
-    else document.getElementById('privacy-overlay').classList.add('active');
-}
-
-function closeLegal(type) {
-    if (type === 'terms') document.getElementById('terms-overlay').classList.remove('active');
-    else document.getElementById('privacy-overlay').classList.remove('active');
-}
-
-document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('legal-overlay')) {
-        e.target.classList.remove('active');
-    }
-});
-
-// ====== TRANSLATION ======
-var correctionMap = {
+// ====== LANGUAGE / TRANSLATION (πλήρες) ======
+const correctionMap = {
     'en': {
-        'Coffee schop': 'Coffee Reading', 'coffee schop': 'Coffee Reading',
-        'Coffee shop': 'Coffee Reading', 'coffee shop': 'Coffee Reading',
-        'Καφεμαντεία': 'Coffee Reading', 'καφεμαντεία': 'Coffee Reading',
-        'Καφεμαντεία με AI': 'Coffee Reading with AI', 'καφεμαντεία με AI': 'Coffee Reading with AI',
-        'Ανάλυση Φλιτζανιού': 'Cup Analysis', 'ανάλυση φλιτζανιού': 'Cup Analysis',
-        'Η Ετυμηγορία του Καφέ': 'The Coffee Verdict', 'η ετυμηγορία του καφέ': 'The Coffee Verdict',
-        'Μαντάμ Ζαΐρα': 'Madame Zaira', 'μαντάμ ζαΐρα': 'Madame Zaira',
-        'Χρειάζεσαι': 'You need', 'χρειάζεσαι': 'You need',
-        'πόντους': 'points', 'πόντοι': 'points',
-        'Ημερήσιο όριο': 'Daily limit', 'ημερήσιο όριο': 'Daily limit',
-        'αναλύσεις': 'analyses',
-        'Κέρδισε με διαφήμιση': 'Earn with ad', 'κέρδισε με διαφήμιση': 'Earn with ad'
+        'Καφεμαντεία': 'Coffee Reading', 'Ανάλυση Φλιτζανιού': 'Cup Analysis',
+        'Η Ετυμηγορία του Καφέ': 'The Coffee Verdict', 'Μαντάμ Ζαΐρα': 'Madame Zaira',
+        'Χρειάζεσαι': 'You need', 'πόντους': 'points', 'Ημερήσιο όριο': 'Daily limit',
+        'αναλύσεις': 'analyses', 'Κέρδισε με διαφήμιση': 'Earn with ad'
     }
 };
 
 function saveOriginalTexts() {
-    document.querySelectorAll('[data-translate="true"]').forEach(function(el) {
-        var key = el.outerHTML;
-        if (!originalTexts[key]) {
-            originalTexts[key] = el.innerHTML.trim();
-        }
+    document.querySelectorAll('[data-translate="true"]').forEach(el => {
+        const key = el.outerHTML;
+        if (!originalTexts[key]) originalTexts[key] = el.innerHTML.trim();
     });
 }
 saveOriginalTexts();
 
-function applyCorrections(text, targetLang) {
-    if (correctionMap[targetLang]) {
-        var corrections = correctionMap[targetLang];
-        for (var wrong in corrections) {
-            var regex = new RegExp(wrong.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'gi');
-            text = text.replace(regex, corrections[wrong]);
-        }
+function applyCorrections(text, lang) {
+    if (!correctionMap[lang]) return text;
+    for (const [wrong, correct] of Object.entries(correctionMap[lang])) {
+        const regex = new RegExp(wrong.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'gi');
+        text = text.replace(regex, correct);
     }
     return text;
 }
 
-function startTranslation() {
-    var lang = document.getElementById('language-select').value;
-    if (lang === 'el') {
-        restoreOriginalTexts();
-        setLanguage('el');
-        document.getElementById('reset-lang-btn').style.display = 'none';
-        updateScanButton();
-        if (originalResultText && document.getElementById('result-area').style.display !== 'none') {
-            document.getElementById('result-text').textContent = originalResultText;
-        }
-        return;
-    }
-    var btn = document.getElementById('translate-btn');
-    btn.classList.add('translating');
-    btn.textContent = '⟳';
-    btn.disabled = true;
-    setLanguage(lang);
-    translatePage(lang).then(() => {
-        updateScanButton();
-        if (originalResultText && document.getElementById('result-area').style.display !== 'none') {
-            translateResult(originalResultText, lang);
-        }
-    });
-}
-
-async function translateSingleElement(el, text, targetLang) {
-    try {
-        var translated = await translateText(text, targetLang);
-        var corrected = applyCorrections(translated, targetLang);
-        el.textContent = corrected;
-    } catch (e) { console.log('Translation error for element:', e); }
-}
-
-async function translatePage(targetLang) {
-    var elements = document.querySelectorAll('[data-translate="true"]');
-    var textsToTranslate = [];
-    var elementsToUpdate = [];
-    elements.forEach(function(el) {
-        var text = el.textContent.trim();
-        if (text.length > 0 && text.length < 1500) {
-            textsToTranslate.push(text);
-            elementsToUpdate.push(el);
-        }
-    });
-    if (textsToTranslate.length === 0) {
-        finishTranslation();
-        return;
-    }
-    var batchSize = 10;
-    for (var i = 0; i < textsToTranslate.length; i += batchSize) {
-        var batch = textsToTranslate.slice(i, i + batchSize);
-        var batchElements = elementsToUpdate.slice(i, i + batchSize);
-        try {
-            var translatedTexts = await translateBatch(batch, targetLang);
-            for (var j = 0; j < batchElements.length; j++) {
-                if (translatedTexts[j]) {
-                    var correctedText = applyCorrections(translatedTexts[j], targetLang);
-                    batchElements[j].textContent = correctedText;
-                }
-            }
-        } catch (e) { console.log('Translation error:', e); }
-    }
-    finishTranslation();
-}
-
-function finishTranslation() {
-    var btn = document.getElementById('translate-btn');
-    if (btn) {
-        btn.classList.remove('translating');
-        btn.textContent = '▶';
-        btn.disabled = false;
-    }
-    document.getElementById('reset-lang-btn').style.display = 'flex';
-}
-
-async function translateBatch(texts, targetLang) {
-    var url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=el&tl=' + targetLang + '&dt=t&q=' + encodeURIComponent(texts.join('|||'));
-    var response = await fetch(url);
-    var data = await response.json();
-    var translations = [];
-    if (data && data[0]) {
-        var translatedText = '';
-        for (var i = 0; i < data[0].length; i++) {
-            if (data[0][i][0]) translatedText += data[0][i][0];
-        }
-        translations = translatedText.split('|||');
-    }
-    return translations;
+function setLanguage(lang) {
+    currentLang = lang;
+    localStorage.setItem('omen_lang', lang);
 }
 
 async function translateText(text, targetLang) {
-    var url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=' + targetLang + '&dt=t&q=' + encodeURIComponent(text);
     try {
-        var response = await fetch(url);
-        var data = await response.json();
-        if (data && data[0]) {
-            var translated = '';
-            for (var i = 0; i < data[0].length; i++) {
-                if (data[0][i][0]) translated += data[0][i][0];
-            }
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data?.[0]) {
+            let translated = '';
+            for (const part of data[0]) if (part[0]) translated += part[0];
             return translated;
         }
-    } catch (e) { console.error('Translation failed', e); }
+    } catch (e) { console.error('Translation error', e); }
     return text;
 }
 
@@ -273,189 +98,59 @@ async function translateResult(original, targetLang) {
         document.getElementById('result-text').textContent = original;
         return;
     }
-    var translated = await translateText(original, targetLang);
-    var corrected = applyCorrections(translated, targetLang);
-    document.getElementById('result-text').textContent = corrected;
+    const translated = await translateText(original, targetLang);
+    document.getElementById('result-text').textContent = applyCorrections(translated, targetLang);
+}
+
+async function translatePage(targetLang) {
+    const elements = document.querySelectorAll('[data-translate="true"]');
+    for (const el of elements) {
+        const text = el.textContent.trim();
+        if (text.length > 0 && text.length < 1500) {
+            const translated = await translateText(text, targetLang);
+            el.textContent = applyCorrections(translated, targetLang);
+        }
+    }
 }
 
 function restoreOriginalTexts() {
-    document.querySelectorAll('[data-translate="true"]').forEach(function(el) {
-        var key = el.outerHTML;
-        if (originalTexts[key]) {
-            el.innerHTML = originalTexts[key];
-        }
+    document.querySelectorAll('[data-translate="true"]').forEach(el => {
+        const key = el.outerHTML;
+        if (originalTexts[key]) el.innerHTML = originalTexts[key];
     });
 }
 
-function resetToGreek() {
-    restoreOriginalTexts();
-    setLanguage('el');
-    document.getElementById('language-select').value = 'el';
-    document.getElementById('reset-lang-btn').style.display = 'none';
-    updateScanButton();
-    if (originalResultText && document.getElementById('result-area').style.display !== 'none') {
-        document.getElementById('result-text').textContent = originalResultText;
+function startTranslation() {
+    const lang = document.getElementById('language-select').value;
+    if (lang === 'el') {
+        restoreOriginalTexts();
+        document.getElementById('reset-lang-btn').style.display = 'none';
+        return;
     }
-}
-
-function setLanguage(lang) {
-    localStorage.setItem('omen_lang', lang);
-    currentLang = lang;
-}
-
-function getStoredLanguage() {
-    return localStorage.getItem('omen_lang') || 'el';
-}
-
-function detectLanguage() {
-    var userLang = navigator.language || navigator.userLanguage;
-    var langCode = userLang.split('-')[0];
-    var langMap = {
-        'el': 'el', 'en': 'en', 'de': 'de', 'fr': 'fr', 'es': 'es',
-        'it': 'it', 'ar': 'ar', 'zh': 'zh-CN', 'ja': 'ja', 'ru': 'ru',
-        'tr': 'tr', 'nl': 'nl', 'pt': 'pt', 'sv': 'sv', 'no': 'no',
-        'da': 'da', 'fi': 'fi', 'pl': 'pl', 'cs': 'cs', 'ro': 'ro',
-        'bg': 'bg', 'uk': 'uk', 'ko': 'ko', 'hi': 'hi', 'vi': 'vi',
-        'th': 'th', 'id': 'id', 'he': 'iw', 'iw': 'iw'
-    };
-    var mappedLang = langMap[langCode] || 'el';
-    if (!localStorage.getItem('omen_lang')) {
-        setLanguage(mappedLang);
-    }
-    var langSelect = document.getElementById('language-select');
-    if (langSelect) { langSelect.value = getStoredLanguage(); }
-    var consentLangSelect = document.getElementById('consent-lang-select');
-    if (consentLangSelect) { consentLangSelect.value = getStoredLanguage(); }
-    
-    var labelMap = {
-        'el': '🌐 Γλώσσα', 'en': '🌐 Language', 'de': '🌐 Sprache',
-        'fr': '🌐 Langue', 'es': '🌐 Idioma', 'it': '🌐 Lingua',
-        'ar': '🌐 اللغة', 'zh-CN': '🌐 语言', 'ja': '🌐 言語',
-        'ru': '🌐 Язык', 'tr': '🌐 Dil', 'nl': '🌐 Taal',
-        'pt': '🌐 Idioma', 'sv': '🌐 Språk', 'no': '🌐 Språk',
-        'da': '🌐 Sprog', 'fi': '🌐 Kieli', 'pl': '🌐 Język',
-        'cs': '🌐 Jazyk', 'ro': '🌐 Limbă', 'bg': '🌐 Език',
-        'uk': '🌐 Мова', 'ko': '🌐 언어', 'hi': '🌐 भाषा',
-        'vi': '🌐 Ngôn ngữ', 'th': '🌐 ภาษา', 'id': '🌐 Bahasa',
-        'iw': '🌐 שפה'
-    };
-    var label = document.getElementById('lang-label');
-    if (label) { label.textContent = labelMap[getStoredLanguage()] || '🌐 Language'; }
-    
-    if (getStoredLanguage() !== 'el') {
-        setTimeout(function() { startTranslation(); }, 500);
-    }
-}
-detectLanguage();
-
-// ====== BACKGROUND STARS ======
-const canvas = document.getElementById('bg-canvas');
-const ctx = canvas.getContext('2d');
-let stars = [];
-
-function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-}
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
-
-function createStars(count = 150) {
-    stars = [];
-    for (let i = 0; i < count; i++) {
-        stars.push({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
-            r: Math.random() * 1.5 + 0.5,
-            dx: (Math.random() - 0.5) * 0.4,
-            dy: (Math.random() - 0.5) * 0.4,
-            alpha: Math.random() * 0.8 + 0.2
-        });
-    }
-}
-createStars();
-
-function drawStars() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    stars.forEach(s => {
-        s.x += s.dx;
-        s.y += s.dy;
-        if (s.x < 0 || s.x > canvas.width) s.dx *= -1;
-        if (s.y < 0 || s.y > canvas.height) s.dy *= -1;
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 215, 150, ${s.alpha * 0.7})`;
-        ctx.fill();
+    setLanguage(lang);
+    translatePage(lang).then(() => {
+        document.getElementById('reset-lang-btn').style.display = 'flex';
     });
-    requestAnimationFrame(drawStars);
-}
-drawStars();
-
-// ====== PAGE NAVIGATION ======
-function goToScan() {
-    hideLifelineRollup();
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById('scan').classList.add('active');
-    resetScanUI();
-    updateScanButton();
-}
-
-function goToSplash() {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById('splash').classList.add('active');
-    updateScanButton();
-}
-
-// ====== GENDER SELECTION ======
-function selectGender(gender, btn) {
-    selectedGender = gender;
-    document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
 }
 
 // ====== POINTS SYSTEM ======
 function getPoints() {
-    const userData = JSON.parse(localStorage.getItem('omen_user_data') || '{}');
-    return parseInt(userData.points || localStorage.getItem('omen_points') || '0');
+    return parseInt(localStorage.getItem('omen_points') || '0');
 }
-
 function setPoints(val) {
-    const userData = JSON.parse(localStorage.getItem('omen_user_data') || '{}');
-    userData.points = val;
-    localStorage.setItem('omen_user_data', JSON.stringify(userData));
     localStorage.setItem('omen_points', val);
-    updatePointsDisplay();
+    document.getElementById('points-value').textContent = val;
 }
-
 function addPoints(amount) {
-    const current = getPoints();
-    setPoints(current + amount);
+    setPoints(getPoints() + amount);
     showFloatingPoints(amount);
-    const inline = document.getElementById('points-inline');
-    if (inline) {
-        inline.classList.add('pop');
-        setTimeout(() => inline.classList.remove('pop'), 600);
-    }
 }
-
-function deductPoints(amount) {
-    const current = getPoints();
-    if (current >= amount) {
-        setPoints(current - amount);
-        return true;
-    }
-    return false;
-}
-
-function updatePointsDisplay() {
-    document.getElementById('points-value').textContent = getPoints();
-}
-
 function showFloatingPoints(amount) {
     const el = document.createElement('div');
     el.className = 'floating-points';
     el.textContent = '+' + amount;
     const badge = document.getElementById('points-inline');
+    if (!badge) return;
     const rect = badge.getBoundingClientRect();
     el.style.left = rect.left + 'px';
     el.style.top = rect.top + 'px';
@@ -463,65 +158,117 @@ function showFloatingPoints(amount) {
     setTimeout(() => el.remove(), 1500);
 }
 
-// ====== DAILY LIMIT ======
-function getToday() {
-    return new Date().toISOString().split('T')[0];
-}
-
-function getDailyAnalyses() {
-    const today = getToday();
-    const saved = localStorage.getItem('omen_daily_date');
-    if (saved !== today) {
-        localStorage.setItem('omen_daily_date', today);
-        localStorage.setItem('omen_daily_count', '0');
-        return 0;
+// ====== 3-PHOTO UI ======
+function setupPhotoSlots() {
+    const container = document.getElementById('photo-slots');
+    if (!container) return;
+    container.innerHTML = '';
+    for (let i = 0; i < 3; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'photo-slot';
+        slot.id = `slot-${i}`;
+        slot.innerHTML = `<span>📸 ${i+1}/3</span>`;
+        slot.onclick = () => triggerUpload(i);
+        container.appendChild(slot);
     }
-    return parseInt(localStorage.getItem('omen_daily_count') || '0');
 }
 
-function incrementDailyAnalyses() {
-    const count = getDailyAnalyses() + 1;
-    localStorage.setItem('omen_daily_count', count);
+function triggerUpload(index) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            currentImages[index] = ev.target.result;
+            const slot = document.getElementById(`slot-${index}`);
+            slot.style.backgroundImage = `url(${ev.target.result})`;
+            slot.innerHTML = '';
+            checkAllPhotosReady();
+        };
+        reader.readAsDataURL(file);
+    };
+    input.click();
 }
 
-function canAnalyze() {
+function checkAllPhotosReady() {
+    const ready = currentImages.filter(img => img !== undefined).length === 3;
+    const btn = document.getElementById('analyze-multi-btn');
+    if (btn) btn.disabled = !ready;
+}
+
+// ====== MAIN ANALYSIS ======
+async function performMultiAnalysis() {
+    if (!currentUserId || currentImages.filter(img => img).length < 3) {
+        alert('Ανέβασε και τις 3 φωτογραφίες πρώτα.');
+        return;
+    }
     const points = getPoints();
-    const analyses = getDailyAnalyses();
-    return points >= ANALYSIS_COST && analyses < DAILY_LIMIT;
-}
+    if (points < ANALYSIS_COST) {
+        alert('Δεν έχεις αρκετούς πόντους! Κέρδισε πόντους ή αγόρασε πακέτο.');
+        return;
+    }
 
-function getScanButtonText() {
-    const points = getPoints();
-    const analyses = getDailyAnalyses();
-    const canDo = points >= ANALYSIS_COST && analyses < DAILY_LIMIT;
+    const btn = document.getElementById('analyze-multi-btn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Η Ζαΐρα διαβάζει...';
 
-    if (!canDo) {
-        if (points < ANALYSIS_COST) {
-            return '🔒 Χρειάζεσαι 15 πόντους (Κέρδισε με διαφήμιση)';
+    try {
+        const res = await fetch(`${API_BASE}/api/analyze-multi`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: currentUserId,
+                images: currentImages.filter(img => img),
+                gender: selectedGender
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            setPoints(points - ANALYSIS_COST);
+            originalResultText = data.symbols;
+            document.getElementById('result-text').textContent = data.symbols;
+            document.getElementById('result-area').style.display = 'block';
+
+            if (currentLang !== 'el') {
+                translateResult(originalResultText, currentLang);
+            }
+
+            // Reset
+            currentImages = [];
+            setupPhotoSlots();
         } else {
-            return '🔒 Ημερήσιο όριο (5/5 αναλύσεις)';
+            alert('Σφάλμα: ' + (data.error || 'Άγνωστο σφάλμα'));
         }
-    } else {
-        return '🔮 Ανάλυση Φλιτζανιού (15 πόντοι)';
+    } catch (e) {
+        alert('Σφάλμα δικτύου. Προσπάθησε ξανά.');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '🔮 Ανάλυση (3 φωτ.) - 15 πόντοι';
     }
 }
 
-function updateScanButton() {
-    const btn = document.getElementById('scanBtn');
-    const canDo = canAnalyze();
-    btn.disabled = !canDo;
-    btn.textContent = getScanButtonText();
-    if (currentLang !== 'el') {
-        translateSingleElement(btn, btn.textContent, currentLang);
+// ====== SHOP ======
+async function buyPackage(pkg) {
+    if (!currentUserId) {
+        alert('Συνδέσου μέσω Telegram πρώτα.');
+        return;
     }
-}
-
-// ====== ENABLE BUTTONS WHEN READY ======
-function enableButtonsWhenReady() {
-    if (isAdsReady && isUserReady) {
-        document.getElementById('earnBtn').disabled = false;
-        const inviteBtn = document.querySelector('button[onclick="shareReferralLink()"]');
-        if (inviteBtn) inviteBtn.disabled = false;
+    try {
+        const res = await fetch(`${API_BASE}/api/shop/buy`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: currentUserId, package: pkg })
+        });
+        if (res.ok) {
+            alert('✅ Έλεγξε το chat σου στο bot για την πληρωμή!');
+        } else {
+            alert('Σφάλμα κατά την αγορά.');
+        }
+    } catch (e) {
+        alert('Σφάλμα δικτύου.');
     }
 }
 
@@ -533,416 +280,114 @@ async function earnPoints() {
     }
     if (isWatchingAds) return;
     isWatchingAds = true;
-
-    const earnBtn = document.getElementById('earnBtn');
-    const originalText = earnBtn.textContent;
-    earnBtn.disabled = true;
-    earnBtn.textContent = '⏳ Φόρτωση διαφήμισης...';
-
     try {
         await showRewardedAd();
         addPoints(10);
-        alert('Συγχαρητήρια! Κέρδισες 10 πόντους!');
-    } catch (error) {
-        if (error === 'not_ready') {
-            alert('Οι διαφημίσεις δεν είναι ακόμα διαθέσιμες. Δοκίμασε ξανά σε λίγο.');
-        } else {
-            alert('Η διαφήμιση δεν ολοκληρώθηκε. Δοκίμασε ξανά.');
-        }
+    } catch (e) {
+        alert('Η διαφήμιση δεν ολοκληρώθηκε.');
     } finally {
         isWatchingAds = false;
-        earnBtn.disabled = false;
-        earnBtn.textContent = originalText;
-        updateScanButton();
     }
 }
 
-// ====== LIFELINE ROLLUP ======
-function startLifelineCycle() {
-    stopLifelineCycle();
-    function showBanner() {
-        const splashPage = document.getElementById('splash');
-        if (!splashPage.classList.contains('active')) {
-            lifelineShowTimer = setTimeout(showBanner, 1000);
-            return;
-        }
-        const rollup = document.getElementById('lifeline-rollup');
-        rollup.classList.add('visible');
-        lifelineHideTimer = setTimeout(() => {
-            rollup.classList.remove('visible');
-            lifelineShowTimer = setTimeout(showBanner, 5000);
-        }, 5000);
-    }
-    lifelineShowTimer = setTimeout(showBanner, 5000);
-}
-function stopLifelineCycle() {
-    if (lifelineShowTimer) { clearTimeout(lifelineShowTimer); lifelineShowTimer = null; }
-    if (lifelineHideTimer) { clearTimeout(lifelineHideTimer); lifelineHideTimer = null; }
-    const rollup = document.getElementById('lifeline-rollup');
-    if (rollup) { rollup.classList.remove('visible'); }
-}
-function hideLifelineRollup() { stopLifelineCycle(); }
-
-// ====== CAMERA & IMAGE HANDLING ======
-const video = document.getElementById('webcam');
-
-function resetScanUI() {
-    document.getElementById('result-area').style.display = 'none';
-    document.getElementById('camera-wrapper').style.display = 'none';
-    document.getElementById('captureBtn').style.display = 'none';
-    document.getElementById('preview-wrapper').style.display = 'none';
-    document.getElementById('scanBtn').disabled = true;
-    document.getElementById('loading-box').style.display = 'none';
-    document.querySelectorAll('.result-star').forEach(s => s.remove());
-    if (currentStream) {
-        currentStream.getTracks().forEach(track => track.stop());
-        currentStream = null;
-    }
-    originalResultText = '';
-}
-
-function resetScan() {
-    resetScanUI();
-    currentImageBase64 = null;
-    isAnalyzing = false;
-    document.getElementById('inputControls').style.display = 'flex';
-    document.getElementById('gender-select').style.display = 'flex';
-    document.getElementById('scanBtn').style.display = 'block';
-    document.getElementById('fileInput').value = "";
-    updateScanButton();
-}
-
-async function openCamera(facingMode) {
-    resetScanUI();
-    try {
-        if (currentStream) {
-            currentStream.getTracks().forEach(track => track.stop());
-        }
-        currentStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: { ideal: facingMode } }
-        });
-        video.srcObject = currentStream;
-        document.getElementById('camera-wrapper').style.display = 'block';
-        document.getElementById('captureBtn').style.display = 'flex';
-        setTimeout(() => {
-            document.getElementById('captureBtn').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }, 300);
-    } catch (err) {
-        alert("Δεν μπόρεσα να ανοίξω την κάμερα. Δοκίμασε το 'Ανέβασμα'.");
-    }
-}
-
-function takePhoto() {
-    if (!currentStream) return;
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    currentImageBase64 = canvas.toDataURL('image/jpeg', 0.7);
-    currentStream.getTracks().forEach(track => track.stop());
-    document.getElementById('camera-wrapper').style.display = 'none';
-    document.getElementById('captureBtn').style.display = 'none';
-    showPreview(currentImageBase64);
-}
-
-function handleUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    resetScanUI();
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const img = new Image();
-        img.onload = function() {
-            const compressed = compressImage(img, 800, 0.7);
-            currentImageBase64 = compressed;
-            showPreview(currentImageBase64);
-        };
-        img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-}
-
-function compressImage(image, maxWidth, quality) {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    let width = image.width;
-    let height = image.height;
-    if (width > maxWidth) {
-        const ratio = maxWidth / width;
-        width = maxWidth;
-        height = height * ratio;
-    }
-    canvas.width = width;
-    canvas.height = height;
-    ctx.drawImage(image, 0, 0, width, height);
-    return canvas.toDataURL('image/jpeg', quality);
-}
-
-function showPreview(imageSrc) {
-    document.getElementById('preview-img').src = imageSrc;
-    document.getElementById('preview-wrapper').style.display = 'block';
-    updateScanButton();
-    setTimeout(() => {
-        document.getElementById('scanBtn').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }, 200);
-}
-
-// ====== MAIN ANALYSIS (με Gemini) ======
-async function performAnalysis() {
-    if (!currentImageBase64 || isAnalyzing) return;
-    if (!canAnalyze()) {
-        alert('Δεν έχετε αρκετούς πόντους ή έχετε φτάσει το ημερήσιο όριο.');
-        return;
-    }
-    if (!currentUserId) {
-        alert('Σφάλμα ταυτοποίησης χρήστη. Παρακαλώ φορτώστε ξανά.');
-        return;
-    }
-
-    const scanBtn = document.getElementById('scanBtn');
-    isAnalyzing = true;
-    scanBtn.disabled = true;
-    document.getElementById('inputControls').style.display = 'none';
-    document.getElementById('gender-select').style.display = 'none';
-    document.getElementById('preview-wrapper').style.display = 'none';
-
-    document.getElementById('loading-box').style.display = 'block';
-    document.getElementById('loading-box').scrollIntoView({ behavior: 'smooth' });
-
-    try {
-        // Χρησιμοποιούμε το απόλυτο URL του Space
-        const response = await fetch(API_BASE + '/api/analyze', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                user_id: currentUserId,
-                image: currentImageBase64,
-                gender: selectedGender
-            })
-        });
-
-        if (!response.ok) throw new Error(`Server error: ${response.status}`);
-        const data = await response.json();
-        if (data.success && data.symbols) {
-            deductPoints(ANALYSIS_COST);
-            incrementDailyAnalyses();
-            originalResultText = data.symbols;
-            document.getElementById('result-text').textContent = data.symbols;
-            document.getElementById('result-area').style.display = 'block';
-            addStarsToResult();
-
-            const lang = getStoredLanguage();
-            if (lang !== 'el') {
-                try {
-                    await translateResult(originalResultText, lang);
-                } catch (e) {
-                    console.warn('Η μετάφραση του αποτελέσματος απέτυχε, εμφανίζεται στα ελληνικά.');
-                }
-            }
-            document.getElementById('result-area').scrollIntoView({ behavior: 'smooth' });
-        } else {
-            throw new Error(data.error || "Άγνωστο σφάλμα");
-        }
-    } catch (error) {
-        alert("🔮 Η Μαντάμ Ζαΐρα συνάντησε ένα πνευματικό εμπόδιο. Δοκίμασε ξανά.");
-        resetScan();
-    } finally {
-        document.getElementById('loading-box').style.display = 'none';
-        isAnalyzing = false;
-        updateScanButton();
-    }
-}
-
-function addStarsToResult() {
-    const resultArea = document.getElementById('result-area');
-    document.querySelectorAll('.result-star').forEach(s => s.remove());
-    const emojis = ['✨', '⭐', '💫', '🌟', '✨', '🔮', '💖', '🌙', '☽', '✧'];
-    for (let i = 0; i < 15; i++) {
-        const star = document.createElement('span');
-        star.className = 'result-star';
-        star.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-        star.style.left = Math.random() * 90 + '%';
-        star.style.top = Math.random() * 90 + '%';
-        star.style.animationDelay = Math.random() * 3 + 's';
-        star.style.fontSize = (Math.random() * 1.5 + 0.8) + 'rem';
-        resultArea.appendChild(star);
-    }
-}
-
-// ====== REGISTRATION & REFERRAL (με απόλυτα URLs) ======
-async function registerUser() {
-    if (!currentUserId) return;
-    const startParam = tgWebApp?.initDataUnsafe?.start_param || '';
-    const user = tgWebApp?.initDataUnsafe?.user || {};
-
-    try {
-        const response = await fetch(API_BASE + '/api/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                user_id: currentUserId,
-                start_param: startParam,
-                first_name: user.first_name || '',
-                last_name: user.last_name || '',
-                username: user.username || '',
-                language_code: user.language_code || ''
-            })
-        });
-        if (response.ok) {
-            const data = await response.json();
-            localStorage.setItem('omen_user_data', JSON.stringify(data));
-            updateUIWithUserData(data);
-            updateReferralCountDisplay();
-            if (data.points >= 50 && !localStorage.getItem('welcome_shown')) {
-                showToast('🎁 Καλωσόρισες! Έλαβες 50 πόντους δώρο!');
-                localStorage.setItem('welcome_shown', 'true');
-            }
-        }
-    } catch (e) {
-        console.error('Registration error:', e);
-    }
-}
-
+// ====== REFERRAL ======
 async function shareReferralLink() {
     if (!currentUserId) {
-        alert('Η εφαρμογή ακόμα αρχικοποιείται. Δοκίμασε σε λίγο.');
+        alert('Η εφαρμογή ακόμα αρχικοποιείται.');
         return;
     }
     if (!isAdsReady) {
-        alert('Η διαφήμιση δεν είναι ακόμα έτοιμη. Περίμενε λίγο.');
+        alert('Η διαφήμιση δεν είναι ακόμα έτοιμη.');
         return;
     }
     try {
         await showRewardedAd();
-        const referralLink = `https://t.me/${OFFICIAL_BOT_USERNAME}/app?startapp=ref_${currentUserId}`;
-        const shareText = encodeURIComponent('🔮 Ανακάλυψε το μέλλον σου με την καφεμαντεία! Μπες στο Omen και κέρδισε 50 πόντους! ✨\n' + referralLink);
-        const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${shareText}`;
-
-        if (tgWebApp) {
-            tgWebApp.openTelegramLink(shareUrl);
-        } else {
-            window.open(shareUrl, '_blank');
-        }
-    } catch (error) {
+        const link = `https://t.me/${OFFICIAL_BOT_USERNAME}?start=ref_${currentUserId}`;
+        const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent('☕ Ανακάλυψε το μέλλον σου με την καφεμαντεία! Μπες στο Omen!')}`;
+        if (tgWebApp) tgWebApp.openTelegramLink(shareUrl);
+        else window.open(shareUrl, '_blank');
+    } catch (e) {
         alert('Πρέπει να ολοκληρώσεις τη διαφήμιση για να μοιραστείς το link.');
-    }
-}
-
-async function updateReferralCountDisplay() {
-    if (!currentUserId) return;
-    try {
-        const res = await fetch(API_BASE + '/api/referral-count/' + currentUserId);
-        if (res.ok) {
-            const data = await res.json();
-            const count = data.successful_invites;
-            const max = data.max_invites;
-            const inviteBtn = document.querySelector('button[onclick="shareReferralLink()"]');
-            if (inviteBtn) {
-                inviteBtn.textContent = `👥 Πρόσκληση Φίλων (${count}/${max})`;
-                if (currentLang !== 'el') {
-                    translateSingleElement(inviteBtn, inviteBtn.textContent, currentLang);
-                }
-            }
-        }
-    } catch (e) {}
-}
-
-async function loadUserData() {
-    if (!currentUserId) return;
-    try {
-        const res = await fetch(API_BASE + '/api/user/' + currentUserId);
-        if (res.ok) {
-            const data = await res.json();
-            localStorage.setItem('omen_user_data', JSON.stringify(data));
-            updateUIWithUserData(data);
-            updateReferralCountDisplay();
-        }
-    } catch (e) {}
-}
-
-function updateUIWithUserData(data) {
-    if (data.points !== undefined) setPoints(data.points);
-    userStarsUnlocks = data.stars_unlocks_remaining || 0;
-    updateScanButton();
-}
-
-// ====== SHARE STORY ======
-async function shareStory() {
-    try {
-        const response = await fetch(API_BASE + '/api/share-story', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: currentUserId })
-        });
-        if (response.ok) {
-            const data = await response.json();
-            if (data.success) {
-                addPoints(data.bonus_points);
-                showToast(`📸 Κέρδισες ${data.bonus_points} πόντους για το story!`);
-            }
-        }
-    } catch (e) {}
-    if (navigator.share) {
-        try { await navigator.share({ title: 'Omen - Καφεμαντεία', text: 'Ανακάλυψε τι λέει το φλιτζάνι σου! 🔮', url: window.location.href }); } catch (e) {}
     }
 }
 
 // ====== INIT ======
 async function initTelegramWebApp() {
-    if (window.Telegram && window.Telegram.WebApp) {
+    if (window.Telegram?.WebApp) {
         tgWebApp = window.Telegram.WebApp;
         tgWebApp.ready();
         tgWebApp.expand();
         tgWebApp.setHeaderColor('#0a0a12');
         tgWebApp.setBackgroundColor('#0a0a12');
-        if (tgWebApp.initDataUnsafe && tgWebApp.initDataUnsafe.user) {
+
+        if (tgWebApp.initDataUnsafe?.user) {
             currentUserId = tgWebApp.initDataUnsafe.user.id;
-            console.log('✅ Telegram user ID:', currentUserId);
         } else {
             let id = localStorage.getItem('omen_test_user_id');
-            if (!id) {
-                id = Date.now();
-                localStorage.setItem('omen_test_user_id', id);
-            }
+            if (!id) { id = Date.now(); localStorage.setItem('omen_test_user_id', id); }
             currentUserId = parseInt(id);
         }
     } else {
         let id = localStorage.getItem('omen_test_user_id');
-        if (!id) {
-            id = Date.now();
-            localStorage.setItem('omen_test_user_id', id);
-        }
+        if (!id) { id = Date.now(); localStorage.setItem('omen_test_user_id', id); }
         currentUserId = parseInt(id);
-        console.log('⚠️ Not in Telegram, using test ID:', currentUserId);
     }
-    await registerUser();
+
+    // Register user & get points
+    try {
+        const res = await fetch(`${API_BASE}/api/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: currentUserId,
+                start_param: tgWebApp?.initDataUnsafe?.start_param || '',
+                first_name: tgWebApp?.initDataUnsafe?.user?.first_name || '',
+                username: tgWebApp?.initDataUnsafe?.user?.username || ''
+            })
+        });
+        if (res.ok) {
+            const data = await res.json();
+            setPoints(data.points);
+            if (data.points >= 15 && !localStorage.getItem('welcome_shown')) {
+                showToast('🎁 Καλωσόρισες! Έλαβες πόντους δώρο!');
+                localStorage.setItem('welcome_shown', 'true');
+            }
+        }
+    } catch (e) {
+        console.error('Registration error', e);
+    }
+
     isUserReady = true;
     enableButtonsWhenReady();
 }
 
-// ====== TOAST ======
-function showToast(message) {
-    const existingToast = document.getElementById('toast-message');
-    if (existingToast) existingToast.remove();
+function enableButtonsWhenReady() {
+    if (isAdsReady && isUserReady) {
+        const btn = document.getElementById('analyze-multi-btn');
+        if (btn) btn.disabled = false;
+    }
+}
+
+function showToast(msg) {
     const toast = document.createElement('div');
-    toast.id = 'toast-message';
-    toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(20,10,40,0.95);backdrop-filter:blur(10px);border:2px solid rgba(241,196,15,0.5);color:#f7dc6f;padding:12px 24px;border-radius:30px;z-index:10000;font-weight:600;text-align:center;max-width:90%;';
-    toast.textContent = message;
+    toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(20,10,40,0.95);color:#f7dc6f;padding:12px 24px;border-radius:30px;z-index:10000;font-weight:600;';
+    toast.textContent = msg;
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 3000);
 }
 
-// ====== ΕΚΚΙΝΗΣΗ ======
-updatePointsDisplay();
-checkConsent();
-updateScanButton();
+// ====== PAGE INIT ======
+document.addEventListener('DOMContentLoaded', () => {
+    setupPhotoSlots();
+    initAdsgram();
+    initTelegramWebApp();
+    document.getElementById('points-value').textContent = getPoints();
 
-document.getElementById('earnBtn').disabled = true;
-const inviteBtn = document.querySelector('button[onclick="shareReferralLink()"]');
-if (inviteBtn) inviteBtn.disabled = true;
+    // Consent overlay (εμφάνιση πάντα)
+    const consent = document.getElementById('consent-overlay');
+    if (consent) consent.classList.remove('hidden');
+});
 
-initAdsgram();
-initTelegramWebApp().then(() => {
-    loadUserData();
-}).catch(err => console.error('Initialization failed:', err));
+function acceptConsent() {
+    document.getElementById('consent-overlay').classList.add('hidden');
+}
