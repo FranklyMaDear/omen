@@ -47,13 +47,18 @@ function showRewardedAd() {
     });
 }
 
-// ====== LANGUAGE / TRANSLATION (πλήρες) ======
+// ====== LANGUAGE / TRANSLATION ======
 const correctionMap = {
     'en': {
-        'Καφεμαντεία': 'Coffee Reading', 'Ανάλυση Φλιτζανιού': 'Cup Analysis',
-        'Η Ετυμηγορία του Καφέ': 'The Coffee Verdict', 'Μαντάμ Ζαΐρα': 'Madame Zaira',
-        'Χρειάζεσαι': 'You need', 'πόντους': 'points', 'Ημερήσιο όριο': 'Daily limit',
-        'αναλύσεις': 'analyses', 'Κέρδισε με διαφήμιση': 'Earn with ad'
+        'Καφεμαντεία': 'Coffee Reading',
+        'Ανάλυση Φλιτζανιού': 'Cup Analysis',
+        'Η Ετυμηγορία του Καφέ': 'The Coffee Verdict',
+        'Μαντάμ Ζαΐρα': 'Madame Zaira',
+        'Χρειάζεσαι': 'You need',
+        'πόντους': 'points',
+        'Ημερήσιο όριο': 'Daily limit',
+        'αναλύσεις': 'analyses',
+        'Κέρδισε με διαφήμιση': 'Earn with ad'
     }
 };
 
@@ -77,6 +82,10 @@ function applyCorrections(text, lang) {
 function setLanguage(lang) {
     currentLang = lang;
     localStorage.setItem('omen_lang', lang);
+}
+
+function getStoredLanguage() {
+    return localStorage.getItem('omen_lang') || 'el';
 }
 
 async function translateText(text, targetLang) {
@@ -111,6 +120,8 @@ async function translatePage(targetLang) {
             el.textContent = applyCorrections(translated, targetLang);
         }
     }
+    // Μετάφραση δυναμικών κουμπιών
+    updateScanButtonText();
 }
 
 function restoreOriginalTexts() {
@@ -118,6 +129,7 @@ function restoreOriginalTexts() {
         const key = el.outerHTML;
         if (originalTexts[key]) el.innerHTML = originalTexts[key];
     });
+    updateScanButtonText();
 }
 
 function startTranslation() {
@@ -133,6 +145,13 @@ function startTranslation() {
     });
 }
 
+function resetToGreek() {
+    restoreOriginalTexts();
+    setLanguage('el');
+    document.getElementById('language-select').value = 'el';
+    document.getElementById('reset-lang-btn').style.display = 'none';
+}
+
 // ====== POINTS SYSTEM ======
 function getPoints() {
     return parseInt(localStorage.getItem('omen_points') || '0');
@@ -145,6 +164,14 @@ function addPoints(amount) {
     setPoints(getPoints() + amount);
     showFloatingPoints(amount);
 }
+function deductPoints(amount) {
+    const current = getPoints();
+    if (current >= amount) {
+        setPoints(current - amount);
+        return true;
+    }
+    return false;
+}
 function showFloatingPoints(amount) {
     const el = document.createElement('div');
     el.className = 'floating-points';
@@ -156,6 +183,25 @@ function showFloatingPoints(amount) {
     el.style.top = rect.top + 'px';
     document.body.appendChild(el);
     setTimeout(() => el.remove(), 1500);
+}
+
+// ====== DAILY LIMIT (τοπικό) ======
+function getToday() {
+    return new Date().toISOString().split('T')[0];
+}
+function getDailyAnalyses() {
+    const today = getToday();
+    const saved = localStorage.getItem('omen_daily_date');
+    if (saved !== today) {
+        localStorage.setItem('omen_daily_date', today);
+        localStorage.setItem('omen_daily_count', '0');
+        return 0;
+    }
+    return parseInt(localStorage.getItem('omen_daily_count') || '0');
+}
+function incrementDailyAnalyses() {
+    const count = getDailyAnalyses() + 1;
+    localStorage.setItem('omen_daily_count', count);
 }
 
 // ====== 3-PHOTO UI ======
@@ -182,26 +228,53 @@ function triggerUpload(index) {
         if (!file) return;
         const reader = new FileReader();
         reader.onload = (ev) => {
-            currentImages[index] = ev.target.result;
-            const slot = document.getElementById(`slot-${index}`);
-            slot.style.backgroundImage = `url(${ev.target.result})`;
-            slot.innerHTML = '';
-            checkAllPhotosReady();
+            // Συμπίεση εικόνας πριν αποθήκευση
+            const img = new Image();
+            img.onload = () => {
+                const compressed = compressImage(img, 800, 0.7);
+                currentImages[index] = compressed;
+                const slot = document.getElementById(`slot-${index}`);
+                slot.style.backgroundImage = `url(${compressed})`;
+                slot.innerHTML = '';
+                checkAllPhotosReady();
+            };
+            img.src = ev.target.result;
         };
         reader.readAsDataURL(file);
     };
     input.click();
 }
 
+function compressImage(image, maxWidth, quality) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    let width = image.width;
+    let height = image.height;
+    if (width > maxWidth) {
+        const ratio = maxWidth / width;
+        width = maxWidth;
+        height = height * ratio;
+    }
+    canvas.width = width;
+    canvas.height = height;
+    ctx.drawImage(image, 0, 0, width, height);
+    return canvas.toDataURL('image/jpeg', quality);
+}
+
 function checkAllPhotosReady() {
-    const ready = currentImages.filter(img => img !== undefined).length === 3;
+    const ready = currentImages.filter(img => img !== undefined && img !== null).length === 3;
     const btn = document.getElementById('analyze-multi-btn');
     if (btn) btn.disabled = !ready;
 }
 
 // ====== MAIN ANALYSIS ======
 async function performMultiAnalysis() {
-    if (!currentUserId || currentImages.filter(img => img).length < 3) {
+    if (!currentUserId) {
+        alert('Σφάλμα ταυτοποίησης χρήστη. Φόρτωσε ξανά.');
+        return;
+    }
+    const validImages = currentImages.filter(img => img !== undefined && img !== null);
+    if (validImages.length !== 3) {
         alert('Ανέβασε και τις 3 φωτογραφίες πρώτα.');
         return;
     }
@@ -221,24 +294,27 @@ async function performMultiAnalysis() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 user_id: currentUserId,
-                images: currentImages.filter(img => img),
+                images: validImages,
                 gender: selectedGender
             })
         });
         const data = await res.json();
         if (data.success) {
-            setPoints(points - ANALYSIS_COST);
+            deductPoints(ANALYSIS_COST);
+            incrementDailyAnalyses();
             originalResultText = data.symbols;
             document.getElementById('result-text').textContent = data.symbols;
             document.getElementById('result-area').style.display = 'block';
+            addStarsToResult();
 
             if (currentLang !== 'el') {
-                translateResult(originalResultText, currentLang);
+                await translateResult(originalResultText, currentLang);
             }
 
             // Reset
             currentImages = [];
             setupPhotoSlots();
+            btn.textContent = '🔮 Ανάλυση (3 φωτ.) - 15 πόντοι';
         } else {
             alert('Σφάλμα: ' + (data.error || 'Άγνωστο σφάλμα'));
         }
@@ -246,7 +322,22 @@ async function performMultiAnalysis() {
         alert('Σφάλμα δικτύου. Προσπάθησε ξανά.');
     } finally {
         btn.disabled = false;
-        btn.textContent = '🔮 Ανάλυση (3 φωτ.) - 15 πόντοι';
+    }
+}
+
+function addStarsToResult() {
+    const resultArea = document.getElementById('result-area');
+    document.querySelectorAll('.result-star').forEach(s => s.remove());
+    const emojis = ['✨', '⭐', '💫', '🌟', '✨', '🔮', '💖', '🌙', '☽', '✧'];
+    for (let i = 0; i < 15; i++) {
+        const star = document.createElement('span');
+        star.className = 'result-star';
+        star.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        star.style.left = Math.random() * 90 + '%';
+        star.style.top = Math.random() * 90 + '%';
+        star.style.animationDelay = Math.random() * 3 + 's';
+        star.style.fontSize = (Math.random() * 1.5 + 0.8) + 'rem';
+        resultArea.appendChild(star);
     }
 }
 
@@ -283,6 +374,7 @@ async function earnPoints() {
     try {
         await showRewardedAd();
         addPoints(10);
+        updateScanButtonText();
     } catch (e) {
         alert('Η διαφήμιση δεν ολοκληρώθηκε.');
     } finally {
@@ -311,6 +403,52 @@ async function shareReferralLink() {
     }
 }
 
+// ====== UI HELPERS ======
+function updateScanButtonText() {
+    const btn = document.getElementById('analyze-multi-btn');
+    if (!btn) return;
+    const points = getPoints();
+    const analyses = getDailyAnalyses();
+    const canDo = points >= ANALYSIS_COST && analyses < 5;
+    if (!canDo) {
+        if (points < ANALYSIS_COST) {
+            btn.textContent = '🔒 Χρειάζεσαι 15 πόντους (Κέρδισε με διαφήμιση)';
+        } else {
+            btn.textContent = '🔒 Ημερήσιο όριο (5/5 αναλύσεις)';
+        }
+    } else {
+        btn.textContent = '🔮 Ανάλυση (3 φωτ.) - 15 πόντοι';
+    }
+    if (currentLang !== 'el') {
+        translateText(btn.textContent, currentLang).then(t => btn.textContent = t);
+    }
+}
+
+// ====== CONSENT & LANGUAGE DETECTION ======
+function detectLanguage() {
+    const userLang = navigator.language || navigator.userLanguage;
+    const langCode = userLang.split('-')[0];
+    const langMap = {
+        'el': 'el', 'en': 'en', 'de': 'de', 'fr': 'fr', 'es': 'es',
+        'it': 'it', 'ar': 'ar', 'zh': 'zh-CN', 'ja': 'ja', 'ru': 'ru',
+        'tr': 'tr', 'nl': 'nl', 'pt': 'pt', 'sv': 'sv', 'no': 'no',
+        'da': 'da', 'fi': 'fi', 'pl': 'pl', 'cs': 'cs', 'ro': 'ro',
+        'bg': 'bg', 'uk': 'uk', 'ko': 'ko', 'hi': 'hi', 'vi': 'vi',
+        'th': 'th', 'id': 'id', 'he': 'iw', 'iw': 'iw'
+    };
+    const mapped = langMap[langCode] || 'el';
+    if (!localStorage.getItem('omen_lang')) {
+        setLanguage(mapped);
+    }
+    document.getElementById('language-select').value = getStoredLanguage();
+    const consentLang = document.getElementById('consent-lang-select');
+    if (consentLang) consentLang.value = getStoredLanguage();
+}
+
+function acceptConsent() {
+    document.getElementById('consent-overlay').classList.add('hidden');
+}
+
 // ====== INIT ======
 async function initTelegramWebApp() {
     if (window.Telegram?.WebApp) {
@@ -333,7 +471,6 @@ async function initTelegramWebApp() {
         currentUserId = parseInt(id);
     }
 
-    // Register user & get points
     try {
         const res = await fetch(`${API_BASE}/api/register`, {
             method: 'POST',
@@ -357,6 +494,17 @@ async function initTelegramWebApp() {
         console.error('Registration error', e);
     }
 
+    // Φόρτωση δεδομένων χρήστη από backend
+    try {
+        const userRes = await fetch(`${API_BASE}/api/user/${currentUserId}`);
+        if (userRes.ok) {
+            const userData = await userRes.json();
+            setPoints(userData.points);
+            // Αποθήκευση για χρήση στο UI
+            localStorage.setItem('omen_user_data', JSON.stringify(userData));
+        }
+    } catch (e) {}
+
     isUserReady = true;
     enableButtonsWhenReady();
 }
@@ -376,18 +524,62 @@ function showToast(msg) {
     setTimeout(() => toast.remove(), 3000);
 }
 
-// ====== PAGE INIT ======
+// ====== BACKGROUND STARS ======
+(function() {
+    const canvas = document.getElementById('bg-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let stars = [];
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+    for (let i = 0; i < 150; i++) {
+        stars.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            r: Math.random() * 1.5 + 0.5,
+            dx: (Math.random() - 0.5) * 0.4,
+            dy: (Math.random() - 0.5) * 0.4,
+            alpha: Math.random() * 0.8 + 0.2
+        });
+    }
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        stars.forEach(s => {
+            s.x += s.dx;
+            s.y += s.dy;
+            if (s.x < 0 || s.x > canvas.width) s.dx *= -1;
+            if (s.y < 0 || s.y > canvas.height) s.dy *= -1;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 215, 150, ${s.alpha * 0.7})`;
+            ctx.fill();
+        });
+        requestAnimationFrame(draw);
+    }
+    draw();
+})();
+
+// ====== EVENT LISTENERS & STARTUP ======
 document.addEventListener('DOMContentLoaded', () => {
+    detectLanguage();
     setupPhotoSlots();
     initAdsgram();
     initTelegramWebApp();
     document.getElementById('points-value').textContent = getPoints();
+    updateScanButtonText();
 
-    // Consent overlay (εμφάνιση πάντα)
+    // Consent εμφάνιση πάντα (δεν αποθηκεύεται τίποτα)
     const consent = document.getElementById('consent-overlay');
     if (consent) consent.classList.remove('hidden');
-});
 
-function acceptConsent() {
-    document.getElementById('consent-overlay').classList.add('hidden');
-}
+    // Language bar listeners
+    document.getElementById('translate-btn')?.addEventListener('click', startTranslation);
+    document.getElementById('reset-lang-btn')?.addEventListener('click', resetToGreek);
+    document.getElementById('language-select')?.addEventListener('change', function() {
+        setLanguage(this.value);
+    });
+});
