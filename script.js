@@ -66,15 +66,7 @@ function updateAnalyzeButton() {
     btn.disabled = !(points >= COST && hasImage);
 }
 
-// ====== UPLOAD & PREVIEW ======
-function triggerUpload() {
-    const inp = document.createElement('input');
-    inp.type = 'file';
-    inp.accept = 'image/*';
-    inp.onchange = (e) => handleFileSelect(e.target.files[0]);
-    inp.click();
-}
-
+// ====== UPLOAD (λειτουργεί σε Telegram WebView χάρη στο μόνιμο input) ======
 function handleFileSelect(file) {
     if (!file) return;
 
@@ -103,9 +95,9 @@ function handleFileSelect(file) {
             slot.style.backgroundImage = `url(${currentImage})`;
             slot.style.backgroundSize = 'cover';
             slot.style.backgroundPosition = 'center';
-            slot.innerHTML = '';
+            slot.innerHTML = '';   // αφαιρούμε το κείμενο "Ανέβασε φωτογραφία"
 
-            // Ενεργοποίηση κουμπιού αν έχουμε πόντους
+            // Ενεργοποίηση κουμπιού
             updateAnalyzeButton();
         };
         img.src = ev.target.result;
@@ -123,7 +115,7 @@ async function performAnalysis() {
         alert('Δεν έχετε αρκετούς πόντους. Κερδίστε ή αγοράστε!');
         return;
     }
-    if (isAnalyzing) return;   // αποτροπή double click
+    if (isAnalyzing) return;
 
     const btn = document.getElementById('analyze-btn');
     const btnText = document.getElementById('analyze-btn-text');
@@ -156,6 +148,7 @@ async function performAnalysis() {
             const slot = document.getElementById('photo-slot');
             slot.style.backgroundImage = '';
             slot.innerHTML = '📸 Ανέβασε φωτογραφία';
+            document.getElementById('file-input').value = '';   // επιτρέπει επανεπιλογή της ίδιας φωτογραφίας
             updateAnalyzeButton();
         } else {
             alert(data.error || 'Σφάλμα ανάλυσης');
@@ -243,6 +236,7 @@ function resetScan() {
     slot.style.backgroundImage = '';
     slot.innerHTML = '📸 Ανέβασε φωτογραφία';
     document.getElementById('result-area').style.display = 'none';
+    document.getElementById('file-input').value = '';
     updateAnalyzeButton();
 }
 function acceptConsent() {
