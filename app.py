@@ -40,7 +40,9 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 MINI_APP_URL = os.environ.get("MINI_APP_URL", "https://omen.franklymadear.com")
 
 genai.configure(api_key=GEMINI_API_KEY)
-gemini_model = genai.GenerativeModel('gemini-1.5-flash')
+
+# ΔΙΟΡΘΩΣΗ: Χρήση του πλήρους, ενημερωμένου ονόματος μοντέλου
+gemini_model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
 OFFICIAL_BOT_USERNAME = "omenread_bot"
 
@@ -301,14 +303,13 @@ def analyze():
         if user['points'] < ANALYSIS_COST:
             return jsonify({"success": False, "error": "Δεν έχετε αρκετούς πόντους"}), 402
 
-        # ====== ΕΠΕΞΕΡΓΑΣΙΑ ΕΙΚΟΝΑΣ (ΔΙΟΡΘΩΜΕΝΗ) ======
+        # ====== ΕΠΕΞΕΡΓΑΣΙΑ ΕΙΚΟΝΑΣ ======
         if ',' in image_b64:
             image_b64 = image_b64.split(',', 1)[1]
 
         decoded_bytes = base64.b64decode(image_b64)
         logger.info(f"Decoded image bytes: {len(decoded_bytes)} bytes")
 
-        # Ανοίγουμε την εικόνα με PIL για να συμπιέσουμε και να πάρουμε JPEG bytes
         pil_image = Image.open(BytesIO(decoded_bytes)).convert('RGB')
         pil_image.thumbnail((800, 800), Image.LANCZOS)
         buf = BytesIO()
@@ -319,7 +320,6 @@ def analyze():
         # ====== ΚΛΗΣΗ GEMINI ΜΕ ΣΩΣΤΟ FORMAT ======
         prompt = build_analysis_prompt(user_lang, gender)
 
-        # Περνάμε την εικόνα ως dict με mime_type και data
         response = gemini_model.generate_content(
             [
                 {
