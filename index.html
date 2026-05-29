@@ -185,7 +185,7 @@
 
         <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:15px 0;">
             <button class="btn-earn" onclick="earnPoints()" data-translate="true">🎁 Κέρδισε 10 Πόντους</button>
-            <button class="btn-earn" onclick="shareReferral()" data-translate="true">👥 Πρόσκληση Φίλων</button>
+            <button class="btn-earn" onclick="openReferralPopup()" data-translate="true">👥 Πρόσκληση Φίλων</button>
             <button class="btn-earn" onclick="openShop()" data-translate="true">🛒 Αγόρασε Πόντους</button>
         </div>
 
@@ -206,10 +206,48 @@
             <button class="btn-green" style="margin-bottom:10px;" onclick="buyPackage('starter')">45 πόντοι (3 αναλύσεις) - 1€</button>
             <button class="btn-green" style="margin-bottom:10px;" onclick="buyPackage('value')">75 πόντοι (5 αναλύσεις) - 1.50€</button>
             <button class="btn-green" style="margin-bottom:10px;" onclick="buyPackage('pro')">150 πόντοι (10 αναλύσεις) - 2.99€</button>
-            <button style="background:transparent;color:#f7dc6f;border:none;margin-top:10px;width:100%;" onclick="closeShop()">Κλείσιμο</button>
+            <button style="background:transparent;color:#f7dc6f;border:none;margin-top:10px;width:100%;" onclick="closeShop()">✕ Κλείσιμο</button>
         </div>
     </div>
 
-    <script src="script.js?v=12"></script>
+    <!-- REFERRAL POPUP -->
+    <div class="shop-modal-overlay" id="referral-overlay" onclick="closeReferralPopup(event)">
+        <div class="shop-modal" onclick="event.stopPropagation()" style="text-align: center;">
+            <h2 style="color: #f7dc6f; margin-bottom: 15px;" data-translate="true">👥 Πρόσκληση Φίλων</h2>
+            
+            <div style="background: rgba(20,10,40,0.9); border: 1px solid rgba(241,196,15,0.4); border-radius: 15px; padding: 15px; margin: 15px 0;">
+                <p style="color: #d5c8e8; font-size: 0.9rem; margin-bottom: 8px;" data-translate="true">Το κλειδί σου:</p>
+                <code id="referral-key-display" style="color: #f7dc6f; font-size: 1rem; word-break: break-all; background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 10px; display: block;">OmenRef_...</code>
+            </div>
+            
+            <p style="color: #d5c8e8; font-size: 0.9rem; line-height: 1.6; margin: 15px 0;" data-translate="true">
+                Μοιράσου αυτό το κλειδί με φίλους.<br>
+                Όταν ο φίλος σου εγγραφεί χρησιμοποιώντας αυτό το κλειδί, κερδίζεις:
+            </p>
+            <div style="display: flex; justify-content: center; gap: 20px; margin: 15px 0;">
+                <div style="text-align: center;">
+                    <span style="font-size: 2rem;">🎁</span>
+                    <p style="color: #f7dc6f; font-weight: 700;">+30 Πόντοι</p>
+                </div>
+                <div style="text-align: center;">
+                    <span style="font-size: 2rem;">💎</span>
+                    <p style="color: #f7dc6f; font-weight: 700;">+20 Πόντοι</p>
+                    <p style="color: #b9a6d4; font-size: 0.75rem;">για τον φίλο σου</p>
+                </div>
+            </div>
+            
+            <button class="btn-green" style="margin-bottom: 10px;" onclick="copyReferralKey()">
+                📋 <span data-translate="true">Αντιγραφή Κλειδιού</span>
+            </button>
+            <button class="btn-green" style="margin-bottom: 10px; background: linear-gradient(145deg, #3498db, #2980b9);" onclick="shareReferralLink()">
+                ✈️ <span data-translate="true">Κοινοποίηση σε Telegram</span>
+            </button>
+            <button style="background: transparent; color: #f7dc6f; border: none; margin-top: 10px; width: 100%;" onclick="closeReferralPopup()">
+                ✕ Κλείσιμο
+            </button>
+        </div>
+    </div>
+
+    <script src="script.js?v=13"></script>
 </body>
 </html>
