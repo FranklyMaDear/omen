@@ -12,7 +12,6 @@ import json
 import asyncio
 import base64
 import threading
-import io
 from datetime import datetime, date
 from io import BytesIO
 
@@ -302,29 +301,25 @@ def analyze():
         if user['points'] < ANALYSIS_COST:
             return jsonify({"success": False, "error": "Δεν έχετε αρκετούς πόντους"}), 402
 
-        # ====== ΕΠΕΞΕΡΓΑΣΙΑ ΕΙΚΟΝΑΣ (ΔΙΟΡΘΩΜΕΝΟ) ======
+        # ====== ΕΠΕΞΕΡΓΑΣΙΑ ΕΙΚΟΝΑΣ (ΔΙΟΡΘΩΜΕΝΗ) ======
         if ',' in image_b64:
             image_b64 = image_b64.split(',', 1)[1]
 
         decoded_bytes = base64.b64decode(image_b64)
         logger.info(f"Decoded image bytes: {len(decoded_bytes)} bytes")
 
-        # Άνοιγμα με PIL και μετατροπή σε RGB JPEG bytes
+        # Ανοίγουμε την εικόνα με PIL για να συμπιέσουμε και να πάρουμε JPEG bytes
         pil_image = Image.open(BytesIO(decoded_bytes)).convert('RGB')
         pil_image.thumbnail((800, 800), Image.LANCZOS)
-        
-        # Αποθήκευση σε buffer ως JPEG
         buf = BytesIO()
         pil_image.save(buf, format='JPEG', quality=75)
         processed_bytes = buf.getvalue()
-        
         logger.info(f"Processed image size: {len(processed_bytes)} bytes")
 
-        # ====== ΚΛΗΣΗ GEMINI ΜΕ ΤΟ ΣΩΣΤΟ FORMAT ======
+        # ====== ΚΛΗΣΗ GEMINI ΜΕ ΣΩΣΤΟ FORMAT ======
         prompt = build_analysis_prompt(user_lang, gender)
-        
-        # Χρήση PIL Image απευθείας (το Gemini υποστηρίζει PIL Image objects)
-        # Ή χρήση dict format
+
+        # Περνάμε την εικόνα ως dict με mime_type και data
         response = gemini_model.generate_content(
             [
                 {
