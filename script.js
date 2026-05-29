@@ -33,14 +33,7 @@ async function applyTranslation() {
             } catch (e) {}
         }
     }
-    const rt = document.getElementById('result-text');
-    if (rt && rt.textContent.trim()) {
-        try {
-            const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${lang}&dt=t&q=${encodeURIComponent(rt.textContent.trim())}`);
-            const d = await res.json();
-            if (d?.[0]) { let t = ''; for (const p of d[0]) if (p[0]) t += p[0]; rt.textContent = t; }
-        } catch (e) {}
-    }
+    // Δεν μεταφράζουμε το αποτέλεσμα της ανάλυσης (το κάνει ήδη το backend)
 }
 
 function restoreOriginals() {
@@ -67,7 +60,8 @@ function setP(v) { localStorage.setItem('omen_points', v); document.getElementBy
 // ====== UPLOAD ======
 function triggerUpload() {
     const inp = document.createElement('input');
-    inp.type = 'file'; inp.accept = 'image/*';
+    inp.type = 'file';
+    inp.accept = 'image/*';
     inp.onchange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -82,8 +76,12 @@ function triggerUpload() {
                 canvas.width = w; canvas.height = h;
                 ctx.drawImage(img, 0, 0, w, h);
                 currentImage = canvas.toDataURL('image/jpeg', 0.7);
-                document.getElementById('photo-slot').style.backgroundImage = `url(${currentImage})`;
-                document.getElementById('photo-slot').innerHTML = '';
+                // Ενημέρωση του photo slot
+                const slot = document.getElementById('photo-slot');
+                slot.style.backgroundImage = `url(${currentImage})`;
+                slot.innerHTML = '';
+                // Ενεργοποίηση του κουμπιού ανάλυσης
+                document.getElementById('analyze-btn').disabled = false;
             };
             img.src = ev.target.result;
         };
@@ -92,30 +90,52 @@ function triggerUpload() {
     inp.click();
 }
 
-// ====== ΑΝΑΛΥΣΗ ======
+// ====== ΑΝΑΛΥΣΗ (One-Shot με Gemini) ======
 async function performAnalysis() {
-    if (!uid || !currentImage) { alert('Ανεβάστε μια φωτογραφία πρώτα'); return; }
-    if (getP() < COST) { alert('Δεν έχετε αρκετούς πόντους. Κερδίστε ή αγοράστε!'); return; }
+    if (!uid || !currentImage) {
+        alert('Ανεβάστε μια φωτογραφία πρώτα');
+        return;
+    }
+    if (getP() < COST) {
+        alert('Δεν έχετε αρκετούς πόντους. Κερδίστε ή αγοράστε!');
+        return;
+    }
+
     const btn = document.getElementById('analyze-btn');
-    btn.disabled = true; btn.textContent = '⏳ Η Ζαΐρα διαβάζει...';
+    btn.disabled = true;
+    btn.textContent = '⏳ Η Ζαΐρα διαβάζει...';
+
     try {
         const res = await fetch(`${API}/api/analyze`, {
             method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({ user_id: uid, image: currentImage, gender: 'f' })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: uid,
+                image: currentImage,
+                gender: 'f',
+                language_code: lang   // <-- στέλνουμε τη γλώσσα
+            })
         });
         const data = await res.json();
         if (data.success) {
             setP(getP() - COST);
             document.getElementById('result-text').textContent = data.symbols;
             document.getElementById('result-area').style.display = 'block';
-            if (lang !== 'el') await applyTranslation();
+            // Καθαρισμός για επόμενη ανάλυση
             currentImage = null;
-            document.getElementById('photo-slot').style.backgroundImage = '';
-            document.getElementById('photo-slot').innerHTML = '📸 Ανέβασε φωτογραφία';
-        } else alert(data.error || 'Σφάλμα ανάλυσης');
-    } catch (e) { alert('Σφάλμα δικτύου'); }
-    finally { btn.disabled = false; btn.textContent = '🔮 Ανάλυση (15 πόντοι)'; }
+            const slot = document.getElementById('photo-slot');
+            slot.style.backgroundImage = '';
+            slot.innerHTML = '📸 Ανέβασε φωτογραφία';
+            document.getElementById('analyze-btn').disabled = true;
+        } else {
+            alert(data.error || 'Σφάλμα ανάλυσης');
+        }
+    } catch (e) {
+        alert('Σφάλμα δικτύου');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '🔮 Ανάλυση (15 πόντοι)';
+    }
 }
 
 // ====== EARN POINTS (AD) ======
@@ -203,6 +223,7 @@ function resetScan() {
     document.getElementById('photo-slot').style.backgroundImage = '';
     document.getElementById('photo-slot').innerHTML = '📸 Ανέβασε φωτογραφία';
     document.getElementById('result-area').style.display = 'none';
+    document.getElementById('analyze-btn').disabled = true;
 }
 function acceptConsent() {
     document.getElementById('consent-overlay').classList.add('hidden');
@@ -261,6 +282,8 @@ async function init() {
     } catch (e) {}
     document.getElementById('consent-overlay').classList.remove('hidden');
     if (lang !== 'el') await applyTranslation();
+    // Αρχικά το κουμπί ανάλυσης είναι απενεργοποιημένο (θα ενεργοποιηθεί με το upload)
+    document.getElementById('analyze-btn').disabled = true;
 }
 
 document.addEventListener('DOMContentLoaded', init);
