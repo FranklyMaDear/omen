@@ -18,7 +18,10 @@ function initAds() {
 }
 
 // ====== ΓΛΩΣΣΑ (ΜΟΝΟ ΑΠΟ CONSENT) ======
-function setLang(l) { lang = l; localStorage.setItem('omen_lang', l); }
+function setLang(l) { 
+    lang = l;
+    localStorage.setItem('omen_lang', l); 
+}
 
 async function applyTranslation() {
     if (lang === 'el') { restoreOriginals(); return; }
@@ -30,7 +33,11 @@ async function applyTranslation() {
             try {
                 const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${lang}&dt=t&q=${encodeURIComponent(orig)}`);
                 const d = await res.json();
-                if (d?.[0]) { let t = ''; for (const p of d[0]) if (p[0]) t += p[0]; el.textContent = t; }
+                if (d?.[0]) { 
+                    let t = '';
+                    for (const p of d[0]) if (p[0]) t += p[0]; 
+                    el.textContent = t;
+                }
             } catch (e) {}
         }
     }
@@ -50,12 +57,18 @@ function restoreOriginals() {
     if (!localStorage.getItem('omen_lang') && supported.includes(devLang)) {
         lang = devLang; localStorage.setItem('omen_lang', lang);
     }
-    document.getElementById('consent-lang-select').value = lang;
+    const langSelect = document.getElementById('consent-lang-select');
+    if(langSelect) langSelect.value = lang;
 })();
 
 // ====== ΠΟΝΤΟΙ ======
 function getP() { return parseInt(localStorage.getItem('omen_points') || '0'); }
-function setP(v) { localStorage.setItem('omen_points', v); document.getElementById('points-display').textContent = v; updateAnalyzeButton(); }
+function setP(v) { 
+    localStorage.setItem('omen_points', v); 
+    const pointsDisplay = document.getElementById('points-display');
+    if (pointsDisplay) pointsDisplay.textContent = v; 
+    updateAnalyzeButton();
+}
 
 // ====== STATE MANAGER ΓΙΑ ΤΟ ΚΟΥΜΠΙ ΑΝΑΛΥΣΗΣ ======
 function updateAnalyzeButton() {
@@ -66,10 +79,9 @@ function updateAnalyzeButton() {
     btn.disabled = !(points >= COST && hasImage);
 }
 
-// ====== UPLOAD (λειτουργεί σε Telegram WebView χάρη στο μόνιμο input) ======
+// ====== UPLOAD ======
 function handleFileSelect(file) {
     if (!file) return;
-
     const reader = new FileReader();
     reader.onload = (ev) => {
         const img = new Image();
@@ -96,7 +108,7 @@ function handleFileSelect(file) {
     reader.readAsDataURL(file);
 }
 
-// ====== ΑΝΑΛΥΣΗ ΜΕ LOADING STATE ======
+// ====== ΑΝΑΛΥΣΗ ΜΕ LOADING STATE (ΔΙΟΡΘΩΜΕΝΟ) ======
 async function performAnalysis() {
     if (!uid || !currentImage) {
         alert('Ανεβάστε μια φωτογραφία πρώτα');
@@ -111,7 +123,6 @@ async function performAnalysis() {
     const btn = document.getElementById('analyze-btn');
     const btnText = document.getElementById('analyze-btn-text');
     const spinner = document.getElementById('analyze-spinner');
-
     isAnalyzing = true;
     btn.disabled = true;
     if (btnText) btnText.textContent = '⏳ Η Ζαΐρα διαβάζει...';
@@ -129,9 +140,16 @@ async function performAnalysis() {
             })
         });
         const data = await res.json();
-        if (data.success) {
-            setP(getP() - COST);
-            document.getElementById('result-text').textContent = data.symbols;
+        
+        // Το backend επιστρέφει πλέον data.analysis
+        if (data.analysis) {
+            if (data.remaining_points !== undefined) {
+                setP(data.remaining_points);
+            } else {
+                setP(getP() - COST);
+            }
+            
+            document.getElementById('result-text').textContent = data.analysis;
             document.getElementById('result-area').style.display = 'block';
 
             currentImage = null;
@@ -139,12 +157,12 @@ async function performAnalysis() {
             slot.style.backgroundImage = '';
             slot.innerHTML = '📸 Ανέβασε φωτογραφία';
             document.getElementById('file-input').value = '';
-            updateAnalyzeButton();
         } else {
-            alert(data.error || 'Σφάλμα ανάλυσης');
+            alert(data.error || 'Σφάλμα ανάλυσης από τον server');
+            if (data.remaining_points !== undefined) setP(data.remaining_points);
         }
     } catch (e) {
-        alert('Σφάλμα δικτύου');
+        alert('Σφάλμα δικτύου. Η Ζαΐρα δεν μπόρεσε να συνδεθεί.');
     } finally {
         isAnalyzing = false;
         if (btnText) btnText.textContent = '🔮 Ανάλυση (15 πόντοι)';
@@ -153,10 +171,27 @@ async function performAnalysis() {
     }
 }
 
-// ====== EARN POINTS (AD) ======
+// ====== EARN POINTS (AD) (ΔΙΟΡΘΩΜΕΝΟ) ======
 async function earnPoints() {
     if (!adReady) { alert('Οι διαφημίσεις δεν είναι έτοιμες'); return; }
-    try { await AdController.show(); setP(getP() + 10); } catch (e) { alert('Η διαφήμιση δεν ολοκληρώθηκε'); }
+    try { 
+        await AdController.show(); 
+        
+        if (uid) {
+            try {
+                await fetch(`${API}/api/earn`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: uid, points: 10 })
+                });
+            } catch(err) { console.log('Σφάλμα συγχρονισμού με server'); }
+        }
+        
+        setP(getP() + 10); 
+        alert('Συγχαρητήρια! Κέρδισες 10 πόντους! 🎁');
+    } catch (e) { 
+        alert('Η διαφήμιση δεν ολοκληρώθηκε'); 
+    }
 }
 
 // ====== REFERRAL POPUP ======
@@ -192,7 +227,7 @@ function shareReferralLink() {
     closeReferralPopup();
 }
 
-// ====== SHOP (ΝΕΟ: openInvoice) ======
+// ====== SHOP ======
 function openShop() { document.getElementById('shop-modal-overlay').classList.add('active'); }
 function closeShop(e) {
     if (!e || e.target === document.getElementById('shop-modal-overlay') || e.target.tagName === 'BUTTON') {
@@ -294,12 +329,15 @@ function closeLegal(type) { document.getElementById(type + '-overlay').classList
 async function init() {
     initAds();
     if (window.Telegram?.WebApp) {
-        tg = window.Telegram.WebApp; tg.ready(); tg.expand();
+        tg = window.Telegram.WebApp; 
+        tg.ready(); 
+        tg.expand();
         uid = tg.initDataUnsafe?.user?.id || parseInt(localStorage.getItem('tid') || Date.now());
     } else {
         uid = parseInt(localStorage.getItem('tid') || Date.now());
     }
     localStorage.setItem('tid', uid);
+    
     try {
         const res = await fetch(`${API}/api/register`, {
             method: 'POST',
@@ -309,8 +347,12 @@ async function init() {
         const data = await res.json();
         setP(data.points);
     } catch (e) {}
-    document.getElementById('consent-overlay').classList.remove('hidden');
+    
+    const consent = document.getElementById('consent-overlay');
+    if (consent) consent.classList.remove('hidden');
+    
     if (lang !== 'el') await applyTranslation();
     updateAnalyzeButton();
 }
+
 document.addEventListener('DOMContentLoaded', init);
