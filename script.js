@@ -23,11 +23,10 @@ function setLang(l) {
     localStorage.setItem('omen_lang', l); 
 }
 
-// Ενιαία συνάρτηση μετάφρασης (Υποστηρίζει ολόκληρη τη σελίδα ή μεμονωμένο element από το screenshot)
+// Ενιαία συνάρτηση μετάφρασης (Υποστηρίζει όλη τη σελίδα ή μεμονωμένο element από το screenshot)
 async function applyTranslation(targetElement = null) {
     if (lang === 'el') { restoreOriginals(); return; }
     
-    // Αν έχει οριστεί targetElement (π.χ. το modal text), μεταφράζει μόνο αυτό. Αλλιώς, όλη τη σελίδα.
     const els = targetElement ? [targetElement] : document.querySelectorAll('[data-translate="true"]');
     
     for (const el of els) {
@@ -65,7 +64,7 @@ function goToSplash() {
 function acceptConsent() {
     document.getElementById('consent-overlay').classList.add('hidden');
     localStorage.setItem('omen_consent', 'true');
-    applyTranslation(); // Μετάφραση όλης της σελίδας κατά την αποδοχή
+    applyTranslation();
 }
 
 async function updatePointsDisplay() {
@@ -121,9 +120,9 @@ async function performAnalysis() {
         } else if (data.analysis) {
             const modalText = document.getElementById('modal-result-text');
             modalText.textContent = data.analysis;
-            modalText.removeAttribute('data-original'); // Καθαρισμός παλιού cache μετάφρασης
+            modalText.removeAttribute('data-original');
             
-            // Αν ο χρήστης έχει επιλέξει άλλη γλώσσα, μεταφράζουμε ΜΟΝΟ το κείμενο του αποτελέσματος
+            // Αυτόματη μετάφραση της ανάλυσης αν η γλώσσα δεν είναι Ελληνικά
             if (lang !== 'el') {
                 await applyTranslation(modalText);
             }
@@ -159,7 +158,7 @@ function closeResultModal(shouldReset = false) {
     }
 }
 
-// ====== ΔΙΑΦΗΜΙΣΕΙΣ (ADSGRAM - ΔΙΟΡΘΩΜΕΝΟ ENDPOINT) ======
+// ====== ΔΙΑΦΗΜΙΣΕΙΣ (ADSGRAM - ΔΙΟΡΘΩΘΗΚΕ ΤΟ URL) ======
 function earnPoints() {
     if (!adReady || !AdController) {
         alert('Η διαφήμιση δεν είναι έτοιμη ακόμα. Δοκιμάστε ξανά σε λίγα δευτερόλεπτα.');
@@ -168,11 +167,10 @@ function earnPoints() {
     AdController.show().then(async (result) => {
         if (result.done) {
             try {
-                // Διόρθωση: Κλήση στο /api/adsgram αντί για /api/earn σύμφωνα με το backend
-                const res = await fetch(`${API}/api/adsgram`, {
+                // ΔΙΟΡΘΩΣΗ: Περνάμε το user_id στο URL ως query parameter, όπως το περιμένει το backend (app.py)
+                const res = await fetch(`${API}/api/adsgram?user_id=${uid}`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_id: uid })
+                    headers: { 'Content-Type': 'application/json' }
                 });
                 const d = await res.json();
                 alert(d.message || 'Κερδίσατε 10 πόντους!');
@@ -185,7 +183,7 @@ function earnPoints() {
     });
 }
 
-// ====== SHOP & REFERRALS ======
+// ====== SHOP (TELEGRAM STARS) ======
 function openShop() { document.getElementById('shop-modal-overlay').style.display = 'flex'; }
 function closeShop(e) {
     if (!e || e.target === document.getElementById('shop-modal-overlay') || e.target.tagName === 'BUTTON') {
@@ -214,10 +212,11 @@ async function buyPackage(pkgId) {
                     alert('Κατάσταση πληρωμής: ' + status);
                 }
             });
-        } else { alert('Σφάλμα κατά τη δημιουργία της τιμολόγησης.'); }
+        } else { alert('Σφάλμα κατά τη δημιουργία της τιμολόγησης. Βεβαιωθείτε ότι το Bot έχει ενεργό Payment Provider.'); }
     } catch(e) { console.error(e); }
 }
 
+// ====== REFERRALS ======
 function openReferralPopup() {
     if (uid) {
         document.getElementById('referral-key-display').textContent = `OmenRef_${uid}`;
@@ -279,7 +278,7 @@ function closeLegal(type) { document.getElementById(`${type}-overlay`).classList
     draw();
 })();
 
-// ====== INIT ======
+// ====== INIT (ΣΥΓΧΡΟΝΙΣΜΕΝΟ ΓΙΑ ΑΡΧΙΚΟΥΣ ΠΟΝΤΟΥΣ) ======
 async function init() {
     initAds();
     if (window.Telegram?.WebApp) {
@@ -292,26 +291,35 @@ async function init() {
     }
     localStorage.setItem('tid', uid);
     
+    // 1. Εμφάνιση του Καλώς Ορίσατε (Consent) πάντα στην αρχή
+    document.getElementById('consent-overlay').classList.remove('hidden');
+
     try {
+        // 2. Εκτελούμε πρώτα την εγγραφή (Register) στο Backend
+        const startParam = tg?.initDataUnsafe?.start_param || '';
+        const firstName = tg?.initDataUnsafe?.user?.first_name || '';
+        
         const res = await fetch(`${API}/api/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: uid, start_param: tg?.initDataUnsafe?.start_param || '', first_name: tg?.initDataUnsafe?.user?.first_name || '' })
+            body: JSON.stringify({ user_id: uid, start_param: startParam, first_name: firstName })
         });
+        
+        // 3. Μόλις γίνει η εγγραφή, ανανεώνουμε ΑΜΕΣΩΣ την οθόνη των πόντων (ώστε να φαίνονται οι 15 πόντοι)
+        await updatePointsDisplay();
+        
         const d = await res.json();
         if (d.show_lifeline) {
             document.getElementById('lifeline-rollup').classList.add('visible');
         }
-    } catch(e) { console.error(e); }
+    } catch(e) { 
+        console.error(e);
+        // Αν αποτύχει το register, τρέχουμε την updatePointsDisplay ως fallback
+        updatePointsDisplay();
+    }
 
-    // ΔΙΟΡΘΩΣΗ: Το Consent παράθυρο εμφανίζεται ΠΑΝΤΑ στην αρχή για κάθε επίσκεψη
-    document.getElementById('consent-overlay').classList.remove('hidden');
-    
-    // Αν υπάρχει ήδη επιλεγμένη γλώσσα, την εφαρμόζουμε στα σταθερά στοιχεία
     if (lang !== 'el') {
         applyTranslation(); 
     }
-    
-    updatePointsDisplay();
 }
 window.onload = init;
