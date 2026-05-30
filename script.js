@@ -70,7 +70,8 @@ function acceptConsent() {
 async function updatePointsDisplay() {
     if (!uid) return;
     try {
-        const res = await fetch(`${API}/api/points?user_id=${uid}`);
+        // ΔΙΟΡΘΩΣΗ: Χρήση του σωστού endpoint που επιστρέφει τους πραγματικούς πόντους
+        const res = await fetch(`${API}/api/user/${uid}`);
         const data = await res.json();
         const pts = data.points !== undefined ? data.points : 0;
         document.getElementById('points-display').textContent = pts;
@@ -120,9 +121,10 @@ async function performAnalysis() {
         } else if (data.analysis) {
             const modalText = document.getElementById('modal-result-text');
             modalText.textContent = data.analysis;
-            modalText.removeAttribute('data-original');
+            // Αποθήκευση του πρωτότυπου ελληνικού κειμένου πριν την όποια μετάφραση
+            modalText.setAttribute('data-original', data.analysis);
             
-            // Αυτόματη μετάφραση της ανάλυσης αν η γλώσσα δεν είναι Ελληνικά
+            // Αν η γλώσσα ΔΕΝ είναι Ελληνικά, μετάφρασε ΠΡΙΝ εμφανιστεί το modal
             if (lang !== 'el') {
                 await applyTranslation(modalText);
             }
@@ -158,7 +160,7 @@ function closeResultModal(shouldReset = false) {
     }
 }
 
-// ====== ΔΙΑΦΗΜΙΣΕΙΣ (ADSGRAM - ΔΙΟΡΘΩΘΗΚΕ ΤΟ URL) ======
+// ====== ΔΙΑΦΗΜΙΣΕΙΣ (ADSGRAM – ΔΙΟΡΘΩΜΕΝΟ ENDPOINT & BODY) ======
 function earnPoints() {
     if (!adReady || !AdController) {
         alert('Η διαφήμιση δεν είναι έτοιμη ακόμα. Δοκιμάστε ξανά σε λίγα δευτερόλεπτα.');
@@ -167,14 +169,15 @@ function earnPoints() {
     AdController.show().then(async (result) => {
         if (result.done) {
             try {
-                // ΔΙΟΡΘΩΣΗ: Περνάμε το user_id στο URL ως query parameter, όπως το περιμένει το backend (app.py)
-                const res = await fetch(`${API}/api/adsgram?user_id=${uid}`, {
+                // ΔΙΟΡΘΩΣΗ: POST στο /api/earn με σωστό JSON body
+                const res = await fetch(`${API}/api/earn`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: uid, points: 10 })
                 });
                 const d = await res.json();
                 alert(d.message || 'Κερδίσατε 10 πόντους!');
-                updatePointsDisplay();
+                updatePointsDisplay();   // Άμεση ανανέωση πόντων μετά την επιτυχία
             } catch(e) { console.error(e); }
         }
     }).catch((err) => {
@@ -305,7 +308,7 @@ async function init() {
             body: JSON.stringify({ user_id: uid, start_param: startParam, first_name: firstName })
         });
         
-        // 3. Μόλις γίνει η εγγραφή, ανανεώνουμε ΑΜΕΣΩΣ την οθόνη των πόντων (ώστε να φαίνονται οι 15 πόντοι)
+        // 3. Μόλις γίνει η εγγραφή, ανανεώνουμε ΑΜΕΣΩΣ την οθόνη των πόντων (με το σωστό endpoint)
         await updatePointsDisplay();
         
         const d = await res.json();
