@@ -32,13 +32,9 @@ async function applyTranslation() {
         if (orig.length > 0 && orig.length < 1500) {
             try {
                 const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${lang}&dt=t&q=${encodeURIComponent(orig)}`);
-                const d = await res.json();
-                if (d?.[0]) { 
-                    let t = '';
-                    for (const p of d[0]) if (p[0]) t += p[0]; 
-                    el.textContent = t;
-                }
-            } catch (e) {}
+                const data = await res.json();
+                if (data && data[0] && data[0][0]) el.textContent = data[0][0][0];
+            } catch(e) { console.error(e); }
         }
     }
 }
@@ -50,267 +46,238 @@ function restoreOriginals() {
     });
 }
 
-(function() {
-    document.querySelectorAll('[data-translate="true"]').forEach(el => el.setAttribute('data-original', el.textContent.trim()));
-    const devLang = (navigator.language || 'el').split('-')[0];
-    const supported = ['el','en','de','fr','es','it','ar','zh','ja','ru','tr','nl','pt','sv','no','da','fi','pl','cs','ro','bg','uk','ko','hi','vi','th','id','iw'];
-    if (!localStorage.getItem('omen_lang') && supported.includes(devLang)) {
-        lang = devLang; localStorage.setItem('omen_lang', lang);
-    }
-    const langSelect = document.getElementById('consent-lang-select');
-    if(langSelect) langSelect.value = lang;
-})();
-
-// ====== ΠΟΝΤΟΙ ======
-function getP() { return parseInt(localStorage.getItem('omen_points') || '0'); }
-function setP(v) { 
-    localStorage.setItem('omen_points', v); 
-    const pointsDisplay = document.getElementById('points-display');
-    if (pointsDisplay) pointsDisplay.textContent = v; 
-    updateAnalyzeButton();
-}
-
-// ====== STATE MANAGER ΓΙΑ ΤΟ ΚΟΥΜΠΙ ΑΝΑΛΥΣΗΣ ======
-function updateAnalyzeButton() {
-    const btn = document.getElementById('analyze-btn');
-    if (!btn) return;
-    const points = getP();
-    const hasImage = currentImage !== null;
-    btn.disabled = !(points >= COST && hasImage);
-}
-
-// ====== UPLOAD ======
-function handleFileSelect(file) {
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-        const img = new Image();
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            let w = img.width, h = img.height;
-            if (w > 800) { h = h * (800/w); w = 800; }
-            canvas.width = w; canvas.height = h;
-            ctx.drawImage(img, 0, 0, w, h);
-
-            currentImage = canvas.toDataURL('image/jpeg', 0.7);
-
-            const slot = document.getElementById('photo-slot');
-            slot.style.backgroundImage = `url(${currentImage})`;
-            slot.style.backgroundSize = 'cover';
-            slot.style.backgroundPosition = 'center';
-            slot.innerHTML = '';
-
-            updateAnalyzeButton();
-        };
-        img.src = ev.target.result;
-    };
-    reader.readAsDataURL(file);
-}
-
-// ====== ΑΝΑΛΥΣΗ ΜΕ LOADING STATE (ΔΙΟΡΘΩΜΕΝΟ) ======
-async function performAnalysis() {
-    if (!uid || !currentImage) {
-        alert('Ανεβάστε μια φωτογραφία πρώτα');
-        return;
-    }
-    if (getP() < COST) {
-        alert('Δεν έχετε αρκετούς πόντους. Κερδίστε ή αγοράστε!');
-        return;
-    }
-    if (isAnalyzing) return;
-
-    const btn = document.getElementById('analyze-btn');
-    const btnText = document.getElementById('analyze-btn-text');
-    const spinner = document.getElementById('analyze-spinner');
-    isAnalyzing = true;
-    btn.disabled = true;
-    if (btnText) btnText.textContent = '⏳ Η Ζαΐρα διαβάζει...';
-    if (spinner) spinner.style.display = 'inline-block';
-
-    try {
-        const res = await fetch(`${API}/api/analyze`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                user_id: uid,
-                image: currentImage,
-                gender: 'f',
-                language_code: lang
-            })
-        });
-        const data = await res.json();
-        
-        // Το backend επιστρέφει πλέον data.analysis
-        if (data.analysis) {
-            if (data.remaining_points !== undefined) {
-                setP(data.remaining_points);
-            } else {
-                setP(getP() - COST);
-            }
-            
-            document.getElementById('result-text').textContent = data.analysis;
-            document.getElementById('result-area').style.display = 'block';
-
-            currentImage = null;
-            const slot = document.getElementById('photo-slot');
-            slot.style.backgroundImage = '';
-            slot.innerHTML = '📸 Ανέβασε φωτογραφία';
-            document.getElementById('file-input').value = '';
-        } else {
-            alert(data.error || 'Σφάλμα ανάλυσης από τον server');
-            if (data.remaining_points !== undefined) setP(data.remaining_points);
-        }
-    } catch (e) {
-        alert('Σφάλμα δικτύου. Η Ζαΐρα δεν μπόρεσε να συνδεθεί.');
-    } finally {
-        isAnalyzing = false;
-        if (btnText) btnText.textContent = '🔮 Ανάλυση (15 πόντοι)';
-        if (spinner) spinner.style.display = 'none';
-        updateAnalyzeButton();
-    }
-}
-
-// ====== EARN POINTS (AD) (ΔΙΟΡΘΩΜΕΝΟ) ======
-async function earnPoints() {
-    if (!adReady) { alert('Οι διαφημίσεις δεν είναι έτοιμες'); return; }
-    try { 
-        await AdController.show(); 
-        
-        if (uid) {
-            try {
-                await fetch(`${API}/api/earn`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_id: uid, points: 10 })
-                });
-            } catch(err) { console.log('Σφάλμα συγχρονισμού με server'); }
-        }
-        
-        setP(getP() + 10); 
-        alert('Συγχαρητήρια! Κέρδισες 10 πόντους! 🎁');
-    } catch (e) { 
-        alert('Η διαφήμιση δεν ολοκληρώθηκε'); 
-    }
-}
-
-// ====== REFERRAL POPUP ======
-function openReferralPopup() {
-    if (!uid) { alert('Περιμένετε...'); return; }
-    document.getElementById('referral-key-display').textContent = `OmenRef_${uid}`;
-    document.getElementById('referral-overlay').classList.add('active');
-}
-function closeReferralPopup(e) {
-    if (!e || e.target === document.getElementById('referral-overlay') || e.target.tagName === 'BUTTON') {
-        document.getElementById('referral-overlay').classList.remove('active');
-    }
-}
-function copyReferralKey() {
-    const key = `OmenRef_${uid}`;
-    if (navigator.clipboard) {
-        navigator.clipboard.writeText(key).then(() => alert('✅ Αντιγράφηκε!')).catch(() => fallbackCopy(key));
-    } else fallbackCopy(key);
-}
-function fallbackCopy(text) {
-    const ta = document.createElement('textarea');
-    ta.value = text; document.body.appendChild(ta); ta.select();
-    document.execCommand('copy'); document.body.removeChild(ta);
-    alert('✅ Αντιγράφηκε!');
-}
-function shareReferralLink() {
-    if (!uid) return;
-    const key = `OmenRef_${uid}`;
-    const link = `https://t.me/${BOT}?start=ref_${uid}`;
-    const msg = `🎁 Μπες στο Omen και κέρδισε 20 Πόντους! Κλειδί: ${key} 🔮\n${link}`;
-    const url = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(msg)}`;
-    if (tg) tg.openTelegramLink(url); else window.open(url, '_blank');
-    closeReferralPopup();
-}
-
-// ====== SHOP ======
-function openShop() { document.getElementById('shop-modal-overlay').classList.add('active'); }
-function closeShop(e) {
-    if (!e || e.target === document.getElementById('shop-modal-overlay') || e.target.tagName === 'BUTTON') {
-        document.getElementById('shop-modal-overlay').classList.remove('active');
-    }
-}
-async function buyPackage(pkg) {
-    if (!uid) { alert('Περιμένετε...'); return; }
-    if (!tg) { alert('Ανοίξτε την εφαρμογή μέσα από το Telegram.'); return; }
-
-    try {
-        const res = await fetch(`${API}/api/shop/buy`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: uid, package: pkg })
-        });
-        const data = await res.json();
-        if (data.success && data.invoice_link) {
-            tg.openInvoice(data.invoice_link, (status) => {
-                if (status === 'paid') {
-                    alert('✅ Πληρωμή επιτυχής! Οι πόντοι θα προστεθούν σύντομα.');
-                    closeShop();
-                    setTimeout(async () => {
-                        const userRes = await fetch(`${API}/api/user/${uid}`);
-                        if (userRes.ok) {
-                            const userData = await userRes.json();
-                            setP(userData.points);
-                        }
-                    }, 2000);
-                } else if (status === 'cancelled') {
-                    alert('Η πληρωμή ακυρώθηκε.');
-                } else {
-                    alert('Η πληρωμή απέτυχε ή είναι σε εκκρεμότητα.');
-                }
-            });
-        } else {
-            alert('Σφάλμα δημιουργίας πληρωμής: ' + (data.error || ''));
-        }
-    } catch (e) {
-        alert('Σφάλμα δικτύου.');
+// Συναρτήση για τη μετάφραση μεμονωμένου στοιχείου (χρησιμοποιείται για το modal-result-text)
+async function translateSingleElement(el, targetLang) {
+    const orig = el.getAttribute('data-original') || el.textContent.trim();
+    if (!el.getAttribute('data-original')) el.setAttribute('data-original', orig);
+    if (orig.length > 0) {
+        try {
+            const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(orig)}`);
+            const data = await res.json();
+            if (data && data[0] && data[0][0]) el.textContent = data[0][0][0];
+        } catch(e) { console.error(e); }
     }
 }
 
 // ====== NAVIGATION ======
 function goToScan() {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('splash').classList.remove('active');
     document.getElementById('scan').classList.add('active');
-    document.getElementById('lifeline-rollup').classList.remove('visible');
+    updatePointsDisplay();
 }
 function goToSplash() {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('scan').classList.remove('active');
     document.getElementById('splash').classList.add('active');
 }
-function resetScan() {
-    currentImage = null;
-    document.getElementById('photo-slot').style.backgroundImage = '';
-    document.getElementById('photo-slot').innerHTML = '📸 Ανέβασε φωτογραφία';
-    document.getElementById('result-area').style.display = 'none';
-    document.getElementById('file-input').value = '';
-    updateAnalyzeButton();
-}
+
+// ====== ΠΟΝΤΟΙ & ΣΥΓΚΑΤΑΘΕΣΗ ======
 function acceptConsent() {
     document.getElementById('consent-overlay').classList.add('hidden');
     localStorage.setItem('omen_consent', 'true');
-    setTimeout(() => {
-        if (document.getElementById('splash').classList.contains('active')) {
-            document.getElementById('lifeline-rollup').classList.add('visible');
-            setTimeout(() => document.getElementById('lifeline-rollup').classList.remove('visible'), 5000);
-        }
-    }, 5000);
+    applyTranslation();
 }
-function showLegal(type) { document.getElementById(type + '-overlay').classList.add('active'); }
-function closeLegal(type) { document.getElementById(type + '-overlay').classList.remove('active'); }
 
-// ====== BACKGROUND STARS ======
+async function updatePointsDisplay() {
+    if (!uid) return;
+    try {
+        const res = await fetch(`${API}/api/points?user_id=${uid}`);
+        const data = await res.json();
+        const pts = data.points !== undefined ? data.points : 0;
+        document.getElementById('points-display').textContent = pts;
+        document.getElementById('analyze-btn').disabled = (pts < COST || !currentImage || isAnalyzing);
+    } catch(e) { console.error(e); }
+}
+
+// ====== ΔΙΑΧΕΙΡΙΣΗ ΦΩΤΟΓΡΑΦΙΑΣ (PHOTO SLOT) ======
+function handleFileSelect(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        currentImage = e.target.result;
+        const slot = document.getElementById('photo-slot');
+        
+        // Εφαρμογή της φωτογραφίας ως background cover
+        slot.style.backgroundImage = `url('${currentImage}')`;
+        slot.classList.add('loaded');
+        
+        updatePointsDisplay();
+    };
+    reader.readAsDataURL(file);
+}
+
+// ====== ΑΝΑΛΥΣΗ ΦΛΙΤΖΑΝΙΟΥ ======
+async function performAnalysis() {
+    if (!currentImage || isAnalyzing) return;
+    isAnalyzing = true;
+    
+    const btn = document.getElementById('analyze-btn');
+    const spinner = document.getElementById('analyze-spinner');
+    const btnText = document.getElementById('analyze-btn-text');
+    
+    btn.disabled = true;
+    spinner.style.display = 'inline-block';
+    if(btnText) btnText.style.display = 'none';
+
+    try {
+        const res = await fetch(`${API}/api/analyze`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: uid, image: currentImage })
+        });
+        const data = await res.json();
+        
+        if (data.error) {
+            alert(data.error);
+        } else if (data.analysis) {
+            const modalText = document.getElementById('modal-result-text');
+            modalText.textContent = data.analysis;
+            modalText.removeAttribute('data-original'); // Καθαρισμός παλιού cache μετάφρασης
+            
+            // Αν η γλώσσα δεν είναι Ελληνικά, μεταφράζουμε ΑΥΤΟΜΑΤΑ την πρόβλεψη πριν ανοίξει το Modal
+            if (lang !== 'el') {
+                modalText.textContent = "🔮 ..."; // Προσωρινό εφέ φόρτωσης μετάφρασης
+                modalText.textContent = data.analysis;
+                await translateSingleElement(modalText, lang);
+            }
+            
+            // Άνοιγμα του Modal Αποτελεσμάτων
+            openResultModal();
+        }
+    } catch(e) {
+        console.error(e);
+        alert('Σφάλμα σύνδεσης με τον διακομιστή.');
+    } finally {
+        isAnalyzing = false;
+        spinner.style.display = 'none';
+        if(btnText) btnText.style.display = 'inline-block';
+        updatePointsDisplay();
+    }
+}
+
+// ====== ΔΙΑΧΕΙΡΙΣΗ MODAL ΑΠΟΤΕΛΕΣΜΑΤΩΝ ======
+function openResultModal() {
+    document.getElementById('result-modal-overlay').classList.add('active');
+}
+
+function closeResultModal(shouldReset = false) {
+    document.getElementById('result-modal-overlay').classList.remove('active');
+    
+    // Αν πατηθεί το "Κλείσιμο & Νέα Ανάλυση", επαναφέρουμε το Photo Slot στην αρχική του μορφή
+    if (shouldReset) {
+        currentImage = null;
+        const slot = document.getElementById('photo-slot');
+        slot.style.backgroundImage = '';
+        slot.classList.remove('loaded');
+        document.getElementById('file-input').value = '';
+        updatePointsDisplay();
+    }
+}
+
+// ====== ΔΙΑΦΗΜΙΣΕΙΣ (ADSGRAM) ======
+function earnPoints() {
+    if (!adReady || !AdController) {
+        alert('Η διαφήμιση δεν είναι έτοιμη ακόμα. Δοκιμάστε ξανά σε λίγα δευτερόλεπτα.');
+        return;
+    }
+    AdController.show().then(async (result) => {
+        if (result.done) {
+            try {
+                const res = await fetch(`${API}/api/earn`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: uid })
+                });
+                const d = await res.json();
+                alert(d.message || 'Κερδίσατε 10 πόντους!');
+                updatePointsDisplay();
+            } catch(e) { console.error(e); }
+        }
+    }).catch((err) => {
+        console.error(err);
+        alert('Η διαφήμιση έκλεισε νωρίς ή προέκυψε σφάλμα.');
+    });
+}
+
+// ====== SHOP & REFERRALS ======
+function openShop() { document.getElementById('shop-modal-overlay').style.display = 'flex'; }
+function closeShop(e) {
+    if (!e || e.target === document.getElementById('shop-modal-overlay') || e.target.tagName === 'BUTTON') {
+        document.getElementById('shop-modal-overlay').style.display = 'none';
+    }
+}
+
+async function buyPackage(pkgId) {
+    if (!tg) { alert('Η αγορά είναι διαθέσιμη μόνο μέσα από το Telegram.'); return; }
+    try {
+        const res = await fetch(`${API}/api/invoice`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: uid, package_id: pkgId })
+        });
+        const data = await res.json();
+        if (data.invoice_link) {
+            tg.openInvoice(data.invoice_link, function(status) {
+                if (status === 'paid') {
+                    alert('Επιτυχής πληρωμή! Οι πόντοι σας προστέθηκαν.');
+                    closeShop();
+                    updatePointsDisplay();
+                } else if (status === 'cancelled') {
+                    alert('Η πληρωμή ακυρώθηκε.');
+                } else {
+                    alert('Κατάσταση πληρωμής: ' + status);
+                }
+            });
+        } else { alert('Σφάλμα κατά τη δημιουργία της τιμολόγησης.'); }
+    } catch(e) { console.error(e); }
+}
+
+function openReferralPopup() {
+    if (uid) {
+        document.getElementById('referral-key-display').textContent = `OmenRef_${uid}`;
+    }
+    document.getElementById('referral-overlay').style.display = 'flex';
+}
+function closeReferralPopup(e) {
+    if (!e || e.target === document.getElementById('referral-overlay') || e.target.tagName === 'BUTTON') {
+        document.getElementById('referral-overlay').style.display = 'none';
+    }
+}
+function copyReferralKey() {
+    const key = document.getElementById('referral-key-display').textContent;
+    navigator.clipboard.writeText(key).then(() => alert('Το κλειδί αντιγράφηκε!'));
+}
+function shareReferralLink() {
+    const key = `OmenRef_${uid}`;
+    const text = encodeURIComponent(`🔮 Μόλις χρησιμοποίησα το Omen για να διαβάσω το φλιτζάνι μου! Χρησιμοποίησε το κλειδί μου ${key} κατά την είσοδο για να πάρεις +20 δωρεάν πόντους! ✨`);
+    window.open(`https://t.me/share/url?url=https://t.me/${BOT}&text=${text}`);
+}
+
+// ====== LEGAL ======
+function showLegal(type) { document.getElementById(`${type}-overlay`).classList.add('active'); }
+function closeLegal(type) { document.getElementById(`${type}-overlay`).classList.remove('active'); }
+
+// ====== BACKGROUND ANIMATION (CANVAS) ======
 (function() {
     const canvas = document.getElementById('bg-canvas');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     let stars = [];
-    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-    window.addEventListener('resize', resize); resize();
-    for (let i = 0; i < 150; i++) stars.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*1.5+0.5, dx: (Math.random()-0.5)*0.4, dy: (Math.random()-0.5)*0.4, alpha: Math.random()*0.8+0.2 });
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+    for (let i = 0; i < 45; i++) {
+        stars.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            r: Math.random() * 1.5 + 0.5,
+            dx: (Math.random() - 0.5) * 0.2,
+            dy: (Math.random() - 0.5) * 0.2,
+            alpha: Math.random()
+        });
+    }
     function draw() {
         ctx.clearRect(0,0,canvas.width,canvas.height);
         stars.forEach(s => {
@@ -344,15 +311,16 @@ async function init() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ user_id: uid, start_param: tg?.initDataUnsafe?.start_param || '', first_name: tg?.initDataUnsafe?.user?.first_name || '' })
         });
-        const data = await res.json();
-        setP(data.points);
-    } catch (e) {}
-    
-    const consent = document.getElementById('consent-overlay');
-    if (consent) consent.classList.remove('hidden');
-    
-    if (lang !== 'el') await applyTranslation();
-    updateAnalyzeButton();
-}
+        const d = await res.json();
+        if (d.show_lifeline) {
+            document.getElementById('lifeline-rollup').classList.add('visible');
+        }
+    } catch(e) { console.error(e); }
 
-document.addEventListener('DOMContentLoaded', init);
+    if (localStorage.getItem('omen_consent') === 'true') {
+        document.getElementById('consent-overlay').classList.add('hidden');
+        applyTranslation();
+    }
+    updatePointsDisplay();
+}
+window.onload = init;
