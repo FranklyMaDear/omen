@@ -2,7 +2,7 @@
 Omen - Καφεμαντεία Mini App
 Backend: Flask + python-telegram-bot v20+
 Telegram Stars Payments via createInvoiceLink + openInvoice
-One-Shot Analysis & Translation via Gemini 2.0 Flash
+One-Shot Analysis & Translation via Gemini 1.5 Flash
 Νέο σύστημα πόντων, Shop, Referral System
 """
 
