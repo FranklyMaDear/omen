@@ -1,282 +1,326 @@
-<!DOCTYPE html>
-<html lang="el">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="mobile-web-app-capable" content="yes">
-    <title>Omen - Καφεμαντεία με AI</title>
-    <meta name="description" content="🔮 Η Μαντάμ Ζαΐρα διαβάζει το φλιτζάνι σου!">
-    <meta property="og:title" content="🔮 Omen - Καφεμαντεία">
-    <meta property="og:description" content="Ξεκίνησε το ταξίδι. Η Μαντάμ Ζαΐρα διαβάζει το φλιτζάνι σου!">
-    <meta property="og:image" content="https://omen.franklymadear.com/omen.png">
-    <meta name="theme-color" content="#0a0a12">
-    <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { width: 100%; height: 100%; overflow-x: hidden; position: fixed; top: 0; left: 0; touch-action: manipulation; -webkit-overflow-scrolling: touch; }
-        body { font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif; background: #0a0a12; height: 100%; color: #f0e6ff; overflow-y: auto; -webkit-font-smoothing: antialiased; }
-        #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
-        .page { position: relative; z-index: 1; display: none; flex-direction: column; align-items: center; min-height: 100vh; min-height: 100dvh; padding: 20px; width: 100%; max-width: 600px; margin: 0 auto; }
-        .page.active { display: flex; }
-        #splash { text-align: center; gap: 20px; animation: fadeIn 1.2s ease; padding-bottom: 20px; justify-content: center; }
-        @keyframes fadeIn { 0% { opacity: 0; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1); } }
-        .splash-icon { width: 180px; height: 180px; border-radius: 50%; box-shadow: 0 0 80px rgba(241,196,15,0.25); border: 3px solid rgba(255,215,0,0.3); transition: all 0.5s; animation: floatIcon 4s infinite ease-in-out; object-fit: cover; background: linear-gradient(135deg, #2a1a3a, #1a0e2a); display: flex; align-items: center; justify-content: center; font-size: 4rem; color: #f7dc6f; cursor: pointer; }
-        @keyframes floatIcon { 0% { transform: translateY(0px) scale(1); } 50% { transform: translateY(-12px) scale(1.02); box-shadow: 0 0 120px rgba(241,196,15,0.4); } 100% { transform: translateY(0px) scale(1); } }
-        .splash-title { font-size: 3.2rem; font-weight: 700; background: linear-gradient(135deg, #f9d976, #f39c12, #e67e22); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 4px; }
-        .splash-sub { color: #b9a6d4; font-size: 1.1rem; letter-spacing: 4px; border-top: 1px solid rgba(255,215,0,0.15); padding-top: 10px; margin-top: 5px; }
-        .splash-desc { color: #ccc; max-width: 320px; font-size: 0.8rem; line-height: 1.4; opacity: 0.8; text-align: center; }
-        .btn-mystic { background: linear-gradient(145deg, #f7dc6f, #d4ac0d); color: #1a0e1f; padding: 16px 48px; border: none; border-radius: 60px; font-size: 1.2rem; font-weight: 700; cursor: pointer; box-shadow: 0 0 40px rgba(241,196,15,0.2); transition: all 0.4s; letter-spacing: 3px; margin-top: 10px; }
-        .btn-mystic:hover { transform: scale(1.06) translateY(-4px); box-shadow: 0 0 70px rgba(241,196,15,0.5); }
-        .points-header { position: sticky; top: 0; z-index: 10; width: 100%; display: flex; justify-content: center; align-items: center; padding: 10px 0; background: rgba(10,10,18,0.9); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(241,196,15,0.2); }
-        .points-badge { display: flex; align-items: center; gap: 8px; background: rgba(20,10,40,0.9); border: 2px solid rgba(241,196,15,0.5); border-radius: 30px; padding: 6px 16px; color: #f7dc6f; font-weight: 700; font-size: 1rem; }
-        .btn-earn { background: linear-gradient(145deg, #f39c12, #e67e22); color: #1a0e1f; padding: 12px 24px; border-radius: 60px; font-weight: 700; font-size: 0.9rem; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 6px; margin: 5px; }
-        .btn-earn:disabled { background: #3a3a4a; color: #777; }
-        #lifeline-rollup { position: fixed; bottom: 0; left: 0; width: 100%; z-index: 20; display: flex; justify-content: center; pointer-events: none; transform: translateY(100%); transition: transform 0.6s; }
-        #lifeline-rollup.visible { transform: translateY(0); }
-        #lifeline-rollup .rollup-inner { pointer-events: auto; display: flex; align-items: center; gap: 10px; background: rgba(20,10,40,0.9); backdrop-filter: blur(12px); border: 2px solid rgba(241,196,15,0.4); border-bottom: none; border-radius: 20px 20px 0 0; padding: 14px 28px; box-shadow: 0 -5px 30px rgba(241,196,15,0.15); text-decoration: none; cursor: pointer; }
-        #scan { gap: 15px; padding-top: 20px; padding-bottom: 40px; justify-content: flex-start; }
-        .btn { padding: 14px 22px; border: none; border-radius: 60px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-gold { background: linear-gradient(145deg, #f7dc6f, #d4ac0d); color: #1a0e1f; }
-        .btn-purple { background: linear-gradient(145deg, #a569bd, #7d3c98); color: #fff; }
-        .btn-green { background: linear-gradient(145deg, #2ecc71, #1e8449); color: #fff; width: 100%; padding: 18px; font-size: 1.2rem; border-radius: 50px; }
-        .btn-green:disabled { background: #3a3a4a; color: #777; cursor: not-allowed; box-shadow: none; }
-        .photo-slot { width: 100%; max-width: 300px; height: 200px; border: 2px dashed rgba(241,196,15,0.5); border-radius: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; background-size: cover; background-position: center; color: #f7dc6f; font-size: 1.5rem; margin: 10px auto; }
-        #consent-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        #consent-overlay.hidden { display: none; }
-        #consent-modal { background: linear-gradient(145deg, #1a0e2a, #2a1a3a); border: 2px solid rgba(241,196,15,0.3); border-radius: 30px; padding: 35px 25px; max-width: 480px; width: 100%; text-align: center; animation: modalFadeIn 0.5s; max-height: 90vh; overflow-y: auto; }
-        @keyframes modalFadeIn { 0% { opacity: 0; transform: scale(0.9) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
-        #consent-modal h2 { color: #f7dc6f; font-size: 1.6rem; margin-bottom: 15px; }
-        #consent-modal p { color: #d5c8e8; font-size: 0.95rem; line-height: 1.7; margin-bottom: 20px; }
-        .consent-links { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
-        .consent-link { color: #f7dc6f; text-decoration: underline; cursor: pointer; background: none; border: none; font-family: inherit; font-size: 0.85rem; }
-        #consent-btn { background: linear-gradient(145deg, #f7dc6f, #d4ac0d); color: #1a0e1f; padding: 16px 32px; border: none; border-radius: 60px; font-size: 1.1rem; font-weight: 700; cursor: pointer; width: 100%; }
-        .consent-lang-bar { display: flex; align-items: center; gap: 8px; justify-content: center; margin: 15px 0; flex-wrap: wrap; }
-        .consent-lang-bar select { background: rgba(10,5,25,0.9); color: #f7dc6f; border: 1px solid rgba(241,196,15,0.3); border-radius: 20px; padding: 8px 30px 8px 12px; font-size: 0.8rem; font-weight: 600; cursor: pointer; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23f7dc6f' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }
-        .consent-lang-bar button { width: 36px; height: 36px; border-radius: 50%; background: #f7dc6f; color: #1a0e1f; border: none; font-weight: 700; cursor: pointer; }
-        .legal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(8px); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; }
-        .legal-overlay.active { display: flex; }
-        .legal-modal { background: linear-gradient(145deg, #1a0e2a, #2a1a3a); border: 2px solid rgba(241,196,15,0.3); border-radius: 25px; padding: 30px 20px; max-width: 600px; width: 100%; max-height: 80vh; overflow-y: auto; position: relative; color: #d5c8e8; }
-        .legal-modal h2, .legal-modal h3 { color: #f7dc6f; }
-        .legal-close-btn { position: sticky; top: 10px; float: right; background: rgba(255,215,0,0.2); border: 1px solid rgba(255,215,0,0.4); color: #f7dc6f; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; z-index: 5; margin-bottom: 10px; }
-        #result-area { display: none; background: rgba(20,12,30,0.8); backdrop-filter: blur(8px); border-radius: 30px; padding: 20px 15px; margin-top: 15px; border: 1px solid rgba(255,215,0,0.1); width: 100%; }
-        #result-text { color: #e6d5f5; font-size: 0.95rem; line-height: 1.7; white-space: pre-wrap; }
-        .btn-back { background: transparent; border: none; color: #b9a6d4; font-size: 0.9rem; cursor: pointer; margin-bottom: 10px; align-self: flex-start; }
-        .shop-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; display: none; align-items: flex-end; justify-content: center; }
-        .shop-modal-overlay.active { display: flex; }
-        .shop-modal { background: #1a0e2a; border-radius: 30px 30px 0 0; padding: 30px 20px; width: 100%; max-width: 500px; animation: slideUp 0.3s ease; }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @media (max-width: 480px) { .splash-title { font-size: 2.4rem; } .splash-icon { width: 140px; height: 140px; } }
-    </style>
-</head>
-<body>
-    <!-- CONSENT OVERLAY -->
-    <div id="consent-overlay">
-        <div id="consent-modal">
-            <div style="font-size:4rem;margin-bottom:15px;">🔮</div>
-            <h2 data-translate="true">Καλώς ορίσατε στο Omen!</h2>
-            <p data-translate="true">Επιβεβαιώστε ότι είστε <strong>άνω των 18 ετών</strong> και αποδέχεστε ότι η εφαρμογή χρησιμοποιεί AI για ψυχαγωγικούς σκοπούς.</p>
-            <div class="consent-links">
-                <button class="consent-link" onclick="showLegal('terms')" data-translate="true">📜 Όροι Χρήσης</button>
-                <button class="consent-link" onclick="showLegal('privacy')" data-translate="true">🔒 Πολιτική Απορρήτου</button>
-            </div>
-            <div class="consent-lang-bar">
-                <select id="consent-lang-select" onchange="setLang(this.value)">
-                    <option value="el">🇬🇷 Ελληνικά</option>
-                    <option value="en">🇬🇧 English</option>
-                    <option value="de">🇩🇪 Deutsch</option>
-                    <option value="fr">🇫🇷 Français</option>
-                    <option value="es">🇪🇸 Español</option>
-                    <option value="it">🇮🇹 Italiano</option>
-                    <option value="ar">🇸🇦 العربية</option>
-                    <option value="zh-CN">🇨🇳 中文</option>
-                    <option value="ja">🇯🇵 日本語</option>
-                    <option value="ru">🇷🇺 Русский</option>
-                    <option value="tr">🇹🇷 Türkçe</option>
-                    <option value="nl">🇳🇱 Nederlands</option>
-                    <option value="pt">🇵🇹 Português</option>
-                    <option value="sv">🇸🇪 Svenska</option>
-                    <option value="no">🇳🇴 Norsk</option>
-                    <option value="da">🇩🇰 Dansk</option>
-                    <option value="fi">🇫🇮 Suomi</option>
-                    <option value="pl">🇵🇱 Polski</option>
-                    <option value="cs">🇨🇿 Čeština</option>
-                    <option value="ro">🇷🇴 Română</option>
-                    <option value="bg">🇧🇬 Български</option>
-                    <option value="uk">🇺🇦 Українська</option>
-                    <option value="ko">🇰🇷 한국어</option>
-                    <option value="hi">🇮🇳 हिन्दी</option>
-                    <option value="vi">🇻🇳 Tiếng Việt</option>
-                    <option value="th">🇹🇭 ไทย</option>
-                    <option value="id">🇮🇩 Indonesia</option>
-                    <option value="iw">🇮🇱 עברית</option>
-                </select>
-                <button onclick="applyTranslation()" title="Μετάφραση">▶</button>
-            </div>
-            <button id="consent-btn" onclick="acceptConsent()" data-translate="true">Συμφωνώ & Είμαι άνω των 18 ετών</button>
-        </div>
-    </div>
+const API = 'https://franklymadear-omenread.hf.space';
+const BOT = 'omenread_bot';
+const ADS_BLOCK = '32708';
+const COST = 15;
 
-    <!-- LEGAL OVERLAYS -->
-    <div id="terms-overlay" class="legal-overlay">
-        <div class="legal-modal">
-            <button class="legal-close-btn" onclick="closeLegal('terms')">✕</button>
-            <h2 data-translate="true">📜 Όροι Χρήσης Omen</h2>
-            <p data-translate="true"><strong>Τελευταία ενημέρωση: Μάιος 2026</strong></p>
-            <h3 data-translate="true">1. Όριο Ηλικίας (Αυστηρά 18+)</h3>
-            <p data-translate="true">Η χρήση της εφαρμογής <strong>Omen</strong> επιτρέπεται αποκλειστικά και μόνο σε άτομα που έχουν συμπληρώσει το 18ο έτος της ηλικίας τους (ενήλικες).</p>
-            <p data-translate="true">Με την αποδοχή των όρων και την επιλογή του σχετικού πλαισίου, ο χρήστης δηλώνει υπεύθυνα ότι είναι ενήλικος.</p>
-            <p data-translate="true">Οι διαχειριστές του Omen δεν φέρουν καμία ευθύνη για ψευδείς δηλώσεις ηλικίας από πλευράς των επισκεπτών.</p>
-            <h3 data-translate="true">2. Ψυχαγωγικός, Μη Κατευθυντικός και Χιουμοριστικός Χαρακτήρας</h3>
-            <p data-translate="true">Το Omen είναι μια ψηφιακή εφαρμογή που χρησιμοποιεί αλγόριθμους τεχνητής νοημοσύνης (AI) για να αναλύει εικόνες φλιτζανιών του καφέ και να παράγει κείμενα βασισμένα σε ένα παραδοσιακό λεξικό συμβόλων.</p>
-            <p data-translate="true">Η υπηρεσία παρέχεται αποκλειστικά και μόνο για σκοπούς χιούμορ, διασκέδασης και ψυχαγωγίας.</p>
-            <p data-translate="true">Τα αποτελέσματα της ανάλυσης <strong>δεν αποτελούν σε καμία περίπτωση</strong> πραγματικές, επιστημονικές, ιατρικές, ψυχολογικές, νομικές ή χρηματοοικονομικές προβλέψεις και συμβουλές.</p>
-            <p data-translate="true">Οι παραγόμενες απαντήσεις δεν έχουν σκοπό, πρόθεση ή ικανότητα να καθοδηγήσουν, να επηρεάσουν ή να κατευθύνουν τις αποφάσεις, τις πράξεις, την προσωπική ή την επαγγελματική ζωή των χρηστών.</p>
-            <h3 data-translate="true">3. Περιορισμός Ευθύνης (Disclaimer)</h3>
-            <p data-translate="true">Ο χρήστης συμφωνεί ότι χρησιμοποιεί την εφαρμογή με δική του αποκλειστική ευθύνη.</p>
-            <p data-translate="true">Οι δημιουργοί, οι ιδιοκτήτες και οι συνεργάτες του Omen δεν φέρουν καμία απολύτως αστική ή ποινική ευθύνη για οποιαδήποτε πράξη, απόφαση, απώλεια, ζημία (άμεση ή έμμεση) ή ψυχική αναστάτωση προκύψει από την ανάγνωση, την παρερμηνεία ή την εφαρμογή των χιουμοριστικών αποτελεσμάτων της καφεμαντείας στην πραγματική ζωή.</p>
-            <h3 data-translate="true">4. Πνευματική Ιδιοκτησία</h3>
-            <p data-translate="true">Όλο το περιεχόμενο του ιστοτόπου (συμπεριλαμβανομένων των κειμένων, του λογότυπου, των γραφικών, των κωδίκων της εφαρμογής και του λεξικού συμβόλων) αποτελεί πνευματική ιδιοκτησία του Omen και προστατεύεται από τις σχετικές διατάξεις του ελληνικού και ευρωπαϊκού δικαίου.</p>
-            <p data-translate="true">Απαγορεύεται αυστηρά η αντιγραφή, αναπαραγωγή, αναδημοσίευση ή εμπορική εκμετάλλευση μέρους ή του συνόλου του κώδικα και των κειμένων χωρίς την έγγραφη άδεια των ιδιοκτητών.</p>
-            <p style="text-align:center;margin-top:18px;" data-translate="true">📧 <strong>info.franklydear@gmail.com</strong></p>
-            <p style="text-align:center;font-size:0.75rem;color:#c9a0dc;" data-translate="true">Τελευταία ενημέρωση: Μάιος 2026</p>
-        </div>
-    </div>
-    <div id="privacy-overlay" class="legal-overlay">
-        <div class="legal-modal">
-            <button class="legal-close-btn" onclick="closeLegal('privacy')">✕</button>
-            <h2 data-translate="true">🔒 Πολιτική Απορρήτου Omen</h2>
-            <p data-translate="true"><strong>Τελευταία ενημέρωση: Μάιος 2026</strong></p>
-            <h3 data-translate="true">1. Πώς Διαχειριζόμαστε τις Φωτογραφίες του Φλιτζανιού σας</h3>
-            <p data-translate="true"><strong>Δεν Αποθηκεύουμε τις Εικόνες:</strong> Όταν ανεβάζετε ή τραβάτε μια φωτογραφία του φλιτζανιού σας, η εικόνα μετατρέπεται σε προσωρινή μορφή (Base64) στη συσκευή σας και αποστέλλεται στον server μας αποκλειστικά για να μεταφερθεί στο Gemini API της Google για οπτική ανάλυση.</p>
-            <p data-translate="true"><strong>Καμία Μόνιμη Αποθήκευση:</strong> Οι φωτογραφίες του φλιτζανιού ΔΕΝ αποθηκεύονται σε καμία βάση δεδομένων, ΔΕΝ κρατούνται στον server μας και διαγράφονται οριστικά από τη μνήμη αμέσως μόλις ολοκληρωθεί η ανάλυση.</p>
-            <p data-translate="true">Δεν χρησιμοποιούμε τις φωτογραφίες για διαφημιστικούς σκοπούς, ούτε τις μοιραζόμαστε με τρίτους, εκτός από την ασφαλή, αυτοματοποιημένη αποστολή στο API της Google για την παραγωγή της περιγραφής.</p>
-            <h3 data-translate="true">2. Δεδομένα που Συλλέγουμε Αυτόματα (Cookies & Διαφημίσεις)</h3>
-            <p data-translate="true">Για τη σωστή λειτουργία της ιστοσελίδας και τη χρηματοδότησή της, συνεργαζόμαστε με τρίτες διαφημιστικές εταιρείες (όπως η Google AdSense και η Monetag). Αυτές οι εταιρείες ενδέχεται να συλλέγουν ανώνυμα τεχνικά δεδομένα:</p>
-            <p data-translate="true">• <strong>Cookies:</strong> Χρησιμοποιούμε cookies για να θυμόμαστε τις προτιμήσεις σας (π.χ. αν έχετε πατήσει το checkbox ηλικίας) και για να αναλύουμε την επισκεψιμότητα (μέσω Google Analytics).</p>
-            <p data-translate="true">• <strong>Διαφημίσεις Τρίτων (AdSense / Monetag):</strong> Οι διαφημιστές ενδέχεται να χρησιμοποιούν cookies για να προβάλλουν διαφημίσεις που σχετίζονται με τα ενδιαφέροντά σας. Μπορείτε να απενεργοποιήσετε τα εξατομικευμένα cookies μέσα από τις ρυθμίσεις του προγράμματος περιήγησής σας (browser).</p>
-            <p data-translate="true">• <strong>Τοπική Αποθήκευση (Local Storage):</strong> Η εφαρμογή χρησιμοποιεί τοπική μνήμη στη συσκευή σας για να μετράει τις ημερήσιες προσπάθειές σας, ώστε να τηρούνται τα όρια χρήσης χωρίς να χρειάζεται να κάνετε εγγραφή (login).</p>
-            <h3 data-translate="true">3. Δικαιώματα των Χρηστών (GDPR)</h3>
-            <p data-translate="true">Σύμφωνα με τον ευρωπαϊκό νόμο, έχετε τα εξής δικαιώματα:</p>
-            <p data-translate="true">• Το δικαίωμα να γνωρίζετε ποια δεδομένα σας επεξεργαζόμαστε (όπως εξηγείται στην παρούσα πολιτική, δεν κρατάμε προσωπικά σας στοιχεία ή φωτογραφίες φλιτζανιών).</p>
-            <p data-translate="true">• Το δικαίωμα να διαγράψετε τα cookies και το ιστορικό του Omen από τον browser σας ανά πάσα στιγμή.</p>
-            <h3 data-translate="true">4. Αλλαγές στους Όρους και την Πολιτική Απορρήτου</h3>
-            <p data-translate="true">Το Omen διατηρεί το δικαίωμα να αλλάξει ή να επικαιροποιήσει αυτούς τους όρους και την πολιτική απορρήτου οποιαδήποτε στιγμή, προκειμένου να συμμορφώνεται με νέους νόμους ή τεχνικές αναβαθμίσεις. Οι αλλαγές θα εμφανίζονται σε αυτή τη σελίδα.</p>
-            <p style="text-align:center;margin-top:18px;" data-translate="true">📧 <strong>info.franklydear@gmail.com</strong></p>
-            <p style="text-align:center;font-size:0.75rem;color:#c9a0dc;" data-translate="true">Τελευταία ενημέρωση: Μάιος 2026</p>
-        </div>
-    </div>
+let tg = null, uid = null, lang = localStorage.getItem('omen_lang') || 'el';
+let currentImage = null;
+let isAnalyzing = false;
+let adReady = false;
+let AdController = null;
 
-    <canvas id="bg-canvas"></canvas>
+// ====== ADSGRAM ======
+function initAds() {
+    if (typeof window.Adsgram !== 'undefined') {
+        AdController = window.Adsgram.init({ blockId: ADS_BLOCK });
+        adReady = true;
+    } else setTimeout(initAds, 1000);
+}
 
-    <!-- SPLASH PAGE -->
-    <div id="splash" class="page active">
-        <div class="splash-icon" onclick="goToScan()">🔮</div>
-        <div class="splash-title">Omen</div>
-        <div class="splash-sub" data-translate="true">✦ Καφεμαντεία με AI ✦</div>
-        <div class="splash-desc" data-translate="true">Η Μαντάμ Ζαΐρα σε περιμένει.<br>Άφησε τις σκιές του καφέ να αποκαλύψουν το πεπρωμένο σου.</div>
-        <button class="btn-mystic" onclick="goToScan()" data-translate="true">🔮 Ανάλυση Φλιτζανιού</button>
-        <div class="install-prompt" style="display:flex;align-items:center;gap:10px;background:rgba(20,10,40,0.85);backdrop-filter:blur(10px);border:1px solid rgba(241,196,15,0.3);border-radius:20px;padding:12px 20px;margin-top:5px;max-width:360px;text-align:center;">
-            <span style="font-size:1.8rem;">📲</span>
-            <span style="color:#d5c8e8;font-size:0.8rem;" data-translate="true"><strong>Συμβουλή:</strong> Προσθέστε την εφαρμογή στην αρχική οθόνη!</span>
-        </div>
-    </div>
+// ====== ΓΛΩΣΣΑ (ΜΟΝΟ ΑΠΟ CONSENT) ======
+function setLang(l) { 
+    lang = l;
+    localStorage.setItem('omen_lang', l); 
+}
 
-    <!-- LIFELINE ROLLUP -->
-    <div id="lifeline-rollup">
-        <a href="https://lifeline.franklymadear.com" target="_blank" class="rollup-inner">
-            <span>✨</span> <span style="color:#f7dc6f;font-weight:600;">LiFeLiNe – Χειρομαντεία</span>
-        </a>
-    </div>
+async function applyTranslation() {
+    if (lang === 'el') { restoreOriginals(); return; }
+    const els = document.querySelectorAll('[data-translate="true"]');
+    for (const el of els) {
+        const orig = el.getAttribute('data-original') || el.textContent.trim();
+        if (!el.getAttribute('data-original')) el.setAttribute('data-original', orig);
+        if (orig.length > 0 && orig.length < 1500) {
+            try {
+                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${lang}&dt=t&q=${encodeURIComponent(orig)}`);
+                const data = await res.json();
+                if (data && data[0] && data[0][0]) el.textContent = data[0][0][0];
+            } catch(e) { console.error(e); }
+        }
+    }
+}
 
-    <!-- SCAN PAGE -->
-    <div id="scan" class="page">
-        <div class="points-header">
-            <div class="points-badge">💎 <span id="points-display">0</span></div>
-        </div>
-        <button class="btn-back" onclick="goToSplash()">☽ <span data-translate="true">Πίσω στην αρχή</span></button>
-        <div style="text-align:center;width:100%;">
-            <h2 style="font-size:2rem;background:linear-gradient(135deg,#e6c27a,#d4af37);-webkit-background-clip:text;-webkit-text-fill-color:transparent;" data-translate="true">Ανάλυση Φλιτζανιού</h2>
-            <p style="color:#b8a0d0;" data-translate="true">Ανέβασε μια φωτογραφία του φλιτζανιού σου</p>
-        </div>
+function restoreOriginals() {
+    document.querySelectorAll('[data-translate="true"]').forEach(el => {
+        const orig = el.getAttribute('data-original');
+        if (orig) el.textContent = orig;
+    });
+}
 
-        <!-- Κρυφό input για upload (λειτουργεί σε Telegram WebView) -->
-        <input type="file" id="file-input" accept="image/*" style="display:none;" onchange="handleFileSelect(this.files[0])">
+// Συναρτήση για τη μετάφραση μεμονωμένου στοιχείου (χρησιμοποιείται για το modal-result-text)
+async function translateSingleElement(el, targetLang) {
+    const orig = el.getAttribute('data-original') || el.textContent.trim();
+    if (!el.getAttribute('data-original')) el.setAttribute('data-original', orig);
+    if (orig.length > 0) {
+        try {
+            const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(orig)}`);
+            const data = await res.json();
+            if (data && data[0] && data[0][0]) el.textContent = data[0][0][0];
+        } catch(e) { console.error(e); }
+    }
+}
 
-        <label for="file-input" class="photo-slot" id="photo-slot" style="cursor:pointer;">
-            📸 Ανέβασε φωτογραφία
-        </label>
+// ====== NAVIGATION ======
+function goToScan() {
+    document.getElementById('splash').classList.remove('active');
+    document.getElementById('scan').classList.add('active');
+    updatePointsDisplay();
+}
+function goToSplash() {
+    document.getElementById('scan').classList.remove('active');
+    document.getElementById('splash').classList.add('active');
+}
 
-        <!-- Ανάλυση κουμπί (με spinner) -->
-        <button id="analyze-btn" class="btn-green" onclick="performAnalysis()" disabled>
-            <span id="analyze-btn-text" data-translate="true">🔮 Ανάλυση (15 πόντοι)</span>
-            <span id="analyze-spinner" style="display:none; margin-left:8px; animation: spin 1s linear infinite;">⏳</span>
-        </button>
+// ====== ΠΟΝΤΟΙ & ΣΥΓΚΑΤΑΘΕΣΗ ======
+function acceptConsent() {
+    document.getElementById('consent-overlay').classList.add('hidden');
+    localStorage.setItem('omen_consent', 'true');
+    applyTranslation();
+}
 
-        <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:15px 0;">
-            <button class="btn-earn" onclick="earnPoints()" data-translate="true">🎁 Κέρδισε 10 Πόντους</button>
-            <button class="btn-earn" onclick="openReferralPopup()" data-translate="true">👥 Πρόσκληση Φίλων</button>
-            <button class="btn-earn" onclick="openShop()" data-translate="true">🛒 Αγόρασε Πόντους</button>
-        </div>
+async function updatePointsDisplay() {
+    if (!uid) return;
+    try {
+        const res = await fetch(`${API}/api/points?user_id=${uid}`);
+        const data = await res.json();
+        const pts = data.points !== undefined ? data.points : 0;
+        document.getElementById('points-display').textContent = pts;
+        document.getElementById('analyze-btn').disabled = (pts < COST || !currentImage || isAnalyzing);
+    } catch(e) { console.error(e); }
+}
 
-        <div id="result-area">
-            <h2 data-translate="true">☽ Η Ετυμηγορία του Καφέ ☾</h2>
-            <div id="result-text"></div>
-            <div style="text-align:center;margin-top:20px;">
-                <button style="background:transparent;border:1px solid rgba(255,215,0,0.3);color:#f7dc6f;padding:12px 30px;border-radius:60px;cursor:pointer;" onclick="resetScan()" data-translate="true">🔄 Διάβασε άλλο φλιτζάνι</button>
-            </div>
-        </div>
-    </div>
+// ====== ΔΙΑΧΕΙΡΙΣΗ ΦΩΤΟΓΡΑΦΙΑΣ (PHOTO SLOT) ======
+function handleFileSelect(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        currentImage = e.target.result;
+        const slot = document.getElementById('photo-slot');
+        
+        // Εφαρμογή της φωτογραφίας ως background cover
+        slot.style.backgroundImage = `url('${currentImage}')`;
+        slot.classList.add('loaded');
+        
+        updatePointsDisplay();
+    };
+    reader.readAsDataURL(file);
+}
 
-    <!-- SHOP MODAL -->
-    <div class="shop-modal-overlay" id="shop-modal-overlay" onclick="closeShop(event)">
-        <div class="shop-modal" onclick="event.stopPropagation()">
-            <h3 style="color:#f7dc6f;text-align:center;" data-translate="true">🛒 Αγόρασε Πόντους</h3>
-            <p style="color:#d5c8e8;text-align:center;margin-bottom:15px;" data-translate="true">Δεν έχεις πόντους; 🔮 Μπορείς να κερδίσεις βλέποντας διαφήμιση ή να αγοράσεις ένα πακέτο:</p>
-            <button class="btn-green" style="margin-bottom:10px;" onclick="buyPackage('starter')">Starter (45 πόντοι) - 50 ⭐</button>
-            <button class="btn-green" style="margin-bottom:10px;" onclick="buyPackage('pro')">Pro (75 πόντοι) - 80 ⭐</button>
-            <button class="btn-green" style="margin-bottom:10px;" onclick="buyPackage('expert')">Expert (150 πόντοι) - 150 ⭐</button>
-            <button style="background:transparent;color:#f7dc6f;border:none;margin-top:10px;width:100%;" onclick="closeShop()">✕ Κλείσιμο</button>
-        </div>
-    </div>
+// ====== ΑΝΑΛΥΣΗ ΦΛΙΤΖΑΝΙΟΥ ======
+async function performAnalysis() {
+    if (!currentImage || isAnalyzing) return;
+    isAnalyzing = true;
+    
+    const btn = document.getElementById('analyze-btn');
+    const spinner = document.getElementById('analyze-spinner');
+    const btnText = document.getElementById('analyze-btn-text');
+    
+    btn.disabled = true;
+    spinner.style.display = 'inline-block';
+    if(btnText) btnText.style.display = 'none';
 
-    <!-- REFERRAL POPUP -->
-    <div class="shop-modal-overlay" id="referral-overlay" onclick="closeReferralPopup(event)">
-        <div class="shop-modal" onclick="event.stopPropagation()" style="text-align: center;">
-            <h2 style="color: #f7dc6f; margin-bottom: 15px;" data-translate="true">👥 Πρόσκληση Φίλων</h2>
-            <div style="background: rgba(20,10,40,0.9); border: 1px solid rgba(241,196,15,0.4); border-radius: 15px; padding: 15px; margin: 15px 0;">
-                <p style="color: #d5c8e8; font-size: 0.9rem; margin-bottom: 8px;" data-translate="true">Το κλειδί σου:</p>
-                <code id="referral-key-display" style="color: #f7dc6f; font-size: 1rem; word-break: break-all; background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 10px; display: block;">OmenRef_...</code>
-            </div>
-            <p style="color: #d5c8e8; font-size: 0.9rem; line-height: 1.6; margin: 15px 0;" data-translate="true">
-                Μοιράσου αυτό το κλειδί με φίλους.<br>
-                Όταν ο φίλος σου εγγραφεί χρησιμοποιώντας αυτό το κλειδί, κερδίζεις:
-            </p>
-            <div style="display: flex; justify-content: center; gap: 20px; margin: 15px 0;">
-                <div style="text-align: center;">
-                    <span style="font-size: 2rem;">🎁</span>
-                    <p style="color: #f7dc6f; font-weight: 700;">+30 Πόντοι</p>
-                </div>
-                <div style="text-align: center;">
-                    <span style="font-size: 2rem;">💎</span>
-                    <p style="color: #f7dc6f; font-weight: 700;">+20 Πόντοι</p>
-                    <p style="color: #b9a6d4; font-size: 0.75rem;">για τον φίλο σου</p>
-                </div>
-            </div>
-            <button class="btn-green" style="margin-bottom: 10px;" onclick="copyReferralKey()">
-                📋 <span data-translate="true">Αντιγραφή Κλειδιού</span>
-            </button>
-            <button class="btn-green" style="margin-bottom: 10px; background: linear-gradient(145deg, #3498db, #2980b9);" onclick="shareReferralLink()">
-                ✈️ <span data-translate="true">Κοινοποίηση σε Telegram</span>
-            </button>
-            <button style="background: transparent; color: #f7dc6f; border: none; margin-top: 10px; width: 100%;" onclick="closeReferralPopup()">
-                ✕ Κλείσιμο
-            </button>
-        </div>
-    </div>
+    try {
+        const res = await fetch(`${API}/api/analyze`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: uid, image: currentImage })
+        });
+        const data = await res.json();
+        
+        if (data.error) {
+            alert(data.error);
+        } else if (data.analysis) {
+            const modalText = document.getElementById('modal-result-text');
+            modalText.textContent = data.analysis;
+            modalText.removeAttribute('data-original'); // Καθαρισμός παλιού cache μετάφρασης
+            
+            // Αν η γλώσσα δεν είναι Ελληνικά, μεταφράζουμε ΑΥΤΟΜΑΤΑ την πρόβλεψη πριν ανοίξει το Modal
+            if (lang !== 'el') {
+                modalText.textContent = "🔮 ..."; // Προσωρινό εφέ φόρτωσης μετάφρασης
+                modalText.textContent = data.analysis;
+                await translateSingleElement(modalText, lang);
+            }
+            
+            // Άνοιγμα του Modal Αποτελεσμάτων
+            openResultModal();
+        }
+    } catch(e) {
+        console.error(e);
+        alert('Σφάλμα σύνδεσης με τον διακομιστή.');
+    } finally {
+        isAnalyzing = false;
+        spinner.style.display = 'none';
+        if(btnText) btnText.style.display = 'inline-block';
+        updatePointsDisplay();
+    }
+}
 
-    <script src="script.js?v=16"></script>
-</body>
-</html>
+// ====== ΔΙΑΧΕΙΡΙΣΗ MODAL ΑΠΟΤΕΛΕΣΜΑΤΩΝ ======
+function openResultModal() {
+    document.getElementById('result-modal-overlay').classList.add('active');
+}
+
+function closeResultModal(shouldReset = false) {
+    document.getElementById('result-modal-overlay').classList.remove('active');
+    
+    // Αν πατηθεί το "Κλείσιμο & Νέα Ανάλυση", επαναφέρουμε το Photo Slot στην αρχική του μορφή
+    if (shouldReset) {
+        currentImage = null;
+        const slot = document.getElementById('photo-slot');
+        slot.style.backgroundImage = '';
+        slot.classList.remove('loaded');
+        document.getElementById('file-input').value = '';
+        updatePointsDisplay();
+    }
+}
+
+// ====== ΔΙΑΦΗΜΙΣΕΙΣ (ADSGRAM) ======
+function earnPoints() {
+    if (!adReady || !AdController) {
+        alert('Η διαφήμιση δεν είναι έτοιμη ακόμα. Δοκιμάστε ξανά σε λίγα δευτερόλεπτα.');
+        return;
+    }
+    AdController.show().then(async (result) => {
+        if (result.done) {
+            try {
+                const res = await fetch(`${API}/api/earn`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: uid })
+                });
+                const d = await res.json();
+                alert(d.message || 'Κερδίσατε 10 πόντους!');
+                updatePointsDisplay();
+            } catch(e) { console.error(e); }
+        }
+    }).catch((err) => {
+        console.error(err);
+        alert('Η διαφήμιση έκλεισε νωρίς ή προέκυψε σφάλμα.');
+    });
+}
+
+// ====== SHOP & REFERRALS ======
+function openShop() { document.getElementById('shop-modal-overlay').style.display = 'flex'; }
+function closeShop(e) {
+    if (!e || e.target === document.getElementById('shop-modal-overlay') || e.target.tagName === 'BUTTON') {
+        document.getElementById('shop-modal-overlay').style.display = 'none';
+    }
+}
+
+async function buyPackage(pkgId) {
+    if (!tg) { alert('Η αγορά είναι διαθέσιμη μόνο μέσα από το Telegram.'); return; }
+    try {
+        const res = await fetch(`${API}/api/invoice`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: uid, package_id: pkgId })
+        });
+        const data = await res.json();
+        if (data.invoice_link) {
+            tg.openInvoice(data.invoice_link, function(status) {
+                if (status === 'paid') {
+                    alert('Επιτυχής πληρωμή! Οι πόντοι σας προστέθηκαν.');
+                    closeShop();
+                    updatePointsDisplay();
+                } else if (status === 'cancelled') {
+                    alert('Η πληρωμή ακυρώθηκε.');
+                } else {
+                    alert('Κατάσταση πληρωμής: ' + status);
+                }
+            });
+        } else { alert('Σφάλμα κατά τη δημιουργία της τιμολόγησης.'); }
+    } catch(e) { console.error(e); }
+}
+
+function openReferralPopup() {
+    if (uid) {
+        document.getElementById('referral-key-display').textContent = `OmenRef_${uid}`;
+    }
+    document.getElementById('referral-overlay').style.display = 'flex';
+}
+function closeReferralPopup(e) {
+    if (!e || e.target === document.getElementById('referral-overlay') || e.target.tagName === 'BUTTON') {
+        document.getElementById('referral-overlay').style.display = 'none';
+    }
+}
+function copyReferralKey() {
+    const key = document.getElementById('referral-key-display').textContent;
+    navigator.clipboard.writeText(key).then(() => alert('Το κλειδί αντιγράφηκε!'));
+}
+function shareReferralLink() {
+    const key = `OmenRef_${uid}`;
+    const text = encodeURIComponent(`🔮 Μόλις χρησιμοποίησα το Omen για να διαβάσω το φλιτζάνι μου! Χρησιμοποίησε το κλειδί μου ${key} κατά την είσοδο για να πάρεις +20 δωρεάν πόντους! ✨`);
+    window.open(`https://t.me/share/url?url=https://t.me/${BOT}&text=${text}`);
+}
+
+// ====== LEGAL ======
+function showLegal(type) { document.getElementById(`${type}-overlay`).classList.add('active'); }
+function closeLegal(type) { document.getElementById(`${type}-overlay`).classList.remove('active'); }
+
+// ====== BACKGROUND ANIMATION (CANVAS) ======
+(function() {
+    const canvas = document.getElementById('bg-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let stars = [];
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+    for (let i = 0; i < 45; i++) {
+        stars.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            r: Math.random() * 1.5 + 0.5,
+            dx: (Math.random() - 0.5) * 0.2,
+            dy: (Math.random() - 0.5) * 0.2,
+            alpha: Math.random()
+        });
+    }
+    function draw() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        stars.forEach(s => {
+            s.x += s.dx; s.y += s.dy;
+            if (s.x<0||s.x>canvas.width) s.dx*=-1;
+            if (s.y<0||s.y>canvas.height) s.dy*=-1;
+            ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+            ctx.fillStyle = `rgba(255,215,150,${s.alpha*0.7})`; ctx.fill();
+        });
+        requestAnimationFrame(draw);
+    }
+    draw();
+})();
+
+// ====== INIT ======
+async function init() {
+    initAds();
+    if (window.Telegram?.WebApp) {
+        tg = window.Telegram.WebApp; 
+        tg.ready(); 
+        tg.expand();
+        uid = tg.initDataUnsafe?.user?.id || parseInt(localStorage.getItem('tid') || Date.now());
+    } else {
+        uid = parseInt(localStorage.getItem('tid') || Date.now());
+    }
+    localStorage.setItem('tid', uid);
+    
+    try {
+        const res = await fetch(`${API}/api/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: uid, start_param: tg?.initDataUnsafe?.start_param || '', first_name: tg?.initDataUnsafe?.user?.first_name || '' })
+        });
+        const d = await res.json();
+        if (d.show_lifeline) {
+            document.getElementById('lifeline-rollup').classList.add('visible');
+        }
+    } catch(e) { console.error(e); }
+
+    if (localStorage.getItem('omen_consent') === 'true') {
+        document.getElementById('consent-overlay').classList.add('hidden');
+        applyTranslation();
+    }
+    updatePointsDisplay();
+}
+window.onload = init;
