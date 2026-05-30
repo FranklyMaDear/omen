@@ -17,15 +17,19 @@ function initAds() {
     } else setTimeout(initAds, 1000);
 }
 
-// ====== ΓΛΩΣΣΑ (ΜΟΝΟ ΑΠΟ CONSENT) ======
+// ====== ΓΛΩΣΣΑ & ΜΕΤΑΦΡΑΣΗ ======
 function setLang(l) { 
     lang = l;
     localStorage.setItem('omen_lang', l); 
 }
 
-async function applyTranslation() {
+// Ενιαία συνάρτηση μετάφρασης (Υποστηρίζει ολόκληρη τη σελίδα ή μεμονωμένο element από το screenshot)
+async function applyTranslation(targetElement = null) {
     if (lang === 'el') { restoreOriginals(); return; }
-    const els = document.querySelectorAll('[data-translate="true"]');
+    
+    // Αν έχει οριστεί targetElement (π.χ. το modal text), μεταφράζει μόνο αυτό. Αλλιώς, όλη τη σελίδα.
+    const els = targetElement ? [targetElement] : document.querySelectorAll('[data-translate="true"]');
+    
     for (const el of els) {
         const orig = el.getAttribute('data-original') || el.textContent.trim();
         if (!el.getAttribute('data-original')) el.setAttribute('data-original', orig);
@@ -46,19 +50,6 @@ function restoreOriginals() {
     });
 }
 
-// Συναρτήση για τη μετάφραση μεμονωμένου στοιχείου (χρησιμοποιείται για το modal-result-text)
-async function translateSingleElement(el, targetLang) {
-    const orig = el.getAttribute('data-original') || el.textContent.trim();
-    if (!el.getAttribute('data-original')) el.setAttribute('data-original', orig);
-    if (orig.length > 0) {
-        try {
-            const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(orig)}`);
-            const data = await res.json();
-            if (data && data[0] && data[0][0]) el.textContent = data[0][0][0];
-        } catch(e) { console.error(e); }
-    }
-}
-
 // ====== NAVIGATION ======
 function goToScan() {
     document.getElementById('splash').classList.remove('active');
@@ -74,7 +65,7 @@ function goToSplash() {
 function acceptConsent() {
     document.getElementById('consent-overlay').classList.add('hidden');
     localStorage.setItem('omen_consent', 'true');
-    applyTranslation();
+    applyTranslation(); // Μετάφραση όλης της σελίδας κατά την αποδοχή
 }
 
 async function updatePointsDisplay() {
@@ -96,7 +87,6 @@ function handleFileSelect(file) {
         currentImage = e.target.result;
         const slot = document.getElementById('photo-slot');
         
-        // Εφαρμογή της φωτογραφίας ως background cover
         slot.style.backgroundImage = `url('${currentImage}')`;
         slot.classList.add('loaded');
         
@@ -133,14 +123,11 @@ async function performAnalysis() {
             modalText.textContent = data.analysis;
             modalText.removeAttribute('data-original'); // Καθαρισμός παλιού cache μετάφρασης
             
-            // Αν η γλώσσα δεν είναι Ελληνικά, μεταφράζουμε ΑΥΤΟΜΑΤΑ την πρόβλεψη πριν ανοίξει το Modal
+            // Αν ο χρήστης έχει επιλέξει άλλη γλώσσα, μεταφράζουμε ΜΟΝΟ το κείμενο του αποτελέσματος
             if (lang !== 'el') {
-                modalText.textContent = "🔮 ..."; // Προσωρινό εφέ φόρτωσης μετάφρασης
-                modalText.textContent = data.analysis;
-                await translateSingleElement(modalText, lang);
+                await applyTranslation(modalText);
             }
             
-            // Άνοιγμα του Modal Αποτελεσμάτων
             openResultModal();
         }
     } catch(e) {
@@ -162,7 +149,6 @@ function openResultModal() {
 function closeResultModal(shouldReset = false) {
     document.getElementById('result-modal-overlay').classList.remove('active');
     
-    // Αν πατηθεί το "Κλείσιμο & Νέα Ανάλυση", επαναφέρουμε το Photo Slot στην αρχική του μορφή
     if (shouldReset) {
         currentImage = null;
         const slot = document.getElementById('photo-slot');
@@ -173,7 +159,7 @@ function closeResultModal(shouldReset = false) {
     }
 }
 
-// ====== ΔΙΑΦΗΜΙΣΕΙΣ (ADSGRAM) ======
+// ====== ΔΙΑΦΗΜΙΣΕΙΣ (ADSGRAM - ΔΙΟΡΘΩΜΕΝΟ ENDPOINT) ======
 function earnPoints() {
     if (!adReady || !AdController) {
         alert('Η διαφήμιση δεν είναι έτοιμη ακόμα. Δοκιμάστε ξανά σε λίγα δευτερόλεπτα.');
@@ -182,7 +168,8 @@ function earnPoints() {
     AdController.show().then(async (result) => {
         if (result.done) {
             try {
-                const res = await fetch(`${API}/api/earn`, {
+                // Διόρθωση: Κλήση στο /api/adsgram αντί για /api/earn σύμφωνα με το backend
+                const res = await fetch(`${API}/api/adsgram`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_id: uid })
@@ -317,10 +304,14 @@ async function init() {
         }
     } catch(e) { console.error(e); }
 
-    if (localStorage.getItem('omen_consent') === 'true') {
-        document.getElementById('consent-overlay').classList.add('hidden');
-        applyTranslation();
+    // ΔΙΟΡΘΩΣΗ: Το Consent παράθυρο εμφανίζεται ΠΑΝΤΑ στην αρχή για κάθε επίσκεψη
+    document.getElementById('consent-overlay').classList.remove('hidden');
+    
+    // Αν υπάρχει ήδη επιλεγμένη γλώσσα, την εφαρμόζουμε στα σταθερά στοιχεία
+    if (lang !== 'el') {
+        applyTranslation(); 
     }
+    
     updatePointsDisplay();
 }
 window.onload = init;
