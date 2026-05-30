@@ -3,7 +3,13 @@ const BOT = 'omenread_bot';
 const ADS_BLOCK = '32708';
 const COST = 15;
 
-let tg = null, uid = null, lang = localStorage.getItem('omen_lang') || 'el';
+let tg = null, uid = null;
+// Αυτόματη ανίχνευση γλώσσας αν δεν έχει οριστεί
+let lang = localStorage.getItem('omen_lang') || (() => {
+    const tgLang = window.Telegram?.WebApp?.initDataUnsafe?.user?.language_code;
+    const browserLang = (navigator.language || 'en').substring(0,2);
+    return (tgLang === 'el' || browserLang === 'el') ? 'el' : (tgLang || browserLang || 'en');
+})();
 let currentImage = null;
 let isAnalyzing = false;
 let adReady = false;
@@ -21,9 +27,9 @@ function initAds() {
 function setLang(l) { 
     lang = l;
     localStorage.setItem('omen_lang', l); 
+    applyTranslation(); // άμεση εφαρμογή νέας γλώσσας
 }
 
-// Ενιαία συνάρτηση μετάφρασης (Υποστηρίζει όλη τη σελίδα ή μεμονωμένο element από το screenshot)
 async function applyTranslation(targetElement = null) {
     if (lang === 'el') { restoreOriginals(); return; }
     
@@ -49,6 +55,15 @@ function restoreOriginals() {
     });
 }
 
+// ====== ΦΥΛΟ (GENDER) ======
+function setGender(g) {
+    localStorage.setItem('omen_gender', g);
+    const maleBtn = document.getElementById('gender-male');
+    const femaleBtn = document.getElementById('gender-female');
+    if (maleBtn) maleBtn.classList.toggle('active', g === 'male');
+    if (femaleBtn) femaleBtn.classList.toggle('active', g === 'female');
+}
+
 // ====== NAVIGATION ======
 function goToScan() {
     document.getElementById('splash').classList.remove('active');
@@ -70,7 +85,6 @@ function acceptConsent() {
 async function updatePointsDisplay() {
     if (!uid) return;
     try {
-        // ΔΙΟΡΘΩΣΗ: Χρήση του σωστού endpoint που επιστρέφει τους πραγματικούς πόντους
         const res = await fetch(`${API}/api/user/${uid}`);
         const data = await res.json();
         const pts = data.points !== undefined ? data.points : 0;
@@ -95,7 +109,7 @@ function handleFileSelect(file) {
     reader.readAsDataURL(file);
 }
 
-// ====== ΑΝΑΛΥΣΗ ΦΛΙΤΖΑΝΙΟΥ ======
+// ====== ΑΝΑΛΥΣΗ ΦΛΙΤΖΑΝΙΟΥ (ΜΕ ΑΠΟΣΤΟΛΗ ΦΥΛΟΥ) ======
 async function performAnalysis() {
     if (!currentImage || isAnalyzing) return;
     isAnalyzing = true;
@@ -109,10 +123,12 @@ async function performAnalysis() {
     if(btnText) btnText.style.display = 'none';
 
     try {
+        // Προσθέτουμε το φύλο στο body
+        const gender = localStorage.getItem('omen_gender') || 'male';
         const res = await fetch(`${API}/api/analyze`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: uid, image: currentImage })
+            body: JSON.stringify({ user_id: uid, image: currentImage, gender: gender })
         });
         const data = await res.json();
         
@@ -121,12 +137,14 @@ async function performAnalysis() {
         } else if (data.analysis) {
             const modalText = document.getElementById('modal-result-text');
             modalText.textContent = data.analysis;
-            // Αποθήκευση του πρωτότυπου ελληνικού κειμένου πριν την όποια μετάφραση
+            // Αποθήκευση του πρωτότυπου ελληνικού κειμένου
             modalText.setAttribute('data-original', data.analysis);
             
-            // Αν η γλώσσα ΔΕΝ είναι Ελληνικά, μετάφρασε ΠΡΙΝ εμφανιστεί το modal
+            // Αν η γλώσσα ΔΕΝ είναι Ελληνικά, μετάφρασε το κείμενο της ανάλυσης
+            // και επίσης όλα τα σταθερά κείμενα του modal (τίτλος, κουμπί)
             if (lang !== 'el') {
-                await applyTranslation(modalText);
+                await applyTranslation(modalText);       // μετάφραση ανάλυσης
+                await applyTranslation();                // μετάφραση υπόλοιπων στοιχείων modal
             }
             
             openResultModal();
@@ -160,7 +178,7 @@ function closeResultModal(shouldReset = false) {
     }
 }
 
-// ====== ΔΙΑΦΗΜΙΣΕΙΣ (ADSGRAM – ΔΙΟΡΘΩΜΕΝΟ ENDPOINT & BODY) ======
+// ====== ΔΙΑΦΗΜΙΣΕΙΣ (ADSGRAM) ======
 function earnPoints() {
     if (!adReady || !AdController) {
         alert('Η διαφήμιση δεν είναι έτοιμη ακόμα. Δοκιμάστε ξανά σε λίγα δευτερόλεπτα.');
@@ -169,7 +187,6 @@ function earnPoints() {
     AdController.show().then(async (result) => {
         if (result.done) {
             try {
-                // ΔΙΟΡΘΩΣΗ: POST στο /api/earn με σωστό JSON body
                 const res = await fetch(`${API}/api/earn`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -177,7 +194,7 @@ function earnPoints() {
                 });
                 const d = await res.json();
                 alert(d.message || 'Κερδίσατε 10 πόντους!');
-                updatePointsDisplay();   // Άμεση ανανέωση πόντων μετά την επιτυχία
+                updatePointsDisplay();
             } catch(e) { console.error(e); }
         }
     }).catch((err) => {
@@ -281,7 +298,7 @@ function closeLegal(type) { document.getElementById(`${type}-overlay`).classList
     draw();
 })();
 
-// ====== INIT (ΣΥΓΧΡΟΝΙΣΜΕΝΟ ΓΙΑ ΑΡΧΙΚΟΥΣ ΠΟΝΤΟΥΣ) ======
+// ====== INIT (ΦΟΡΤΩΣΗ ΦΥΛΟΥ ΚΑΙ ΑΥΤΟΜΑΤΗ ΜΕΤΑΦΡΑΣΗ) ======
 async function init() {
     initAds();
     if (window.Telegram?.WebApp) {
@@ -294,11 +311,14 @@ async function init() {
     }
     localStorage.setItem('tid', uid);
     
-    // 1. Εμφάνιση του Καλώς Ορίσατε (Consent) πάντα στην αρχή
+    // Φόρτωση αποθηκευμένου φύλου (default: 'male')
+    const savedGender = localStorage.getItem('omen_gender') || 'male';
+    setGender(savedGender);
+    
+    // Εμφάνιση του consent overlay
     document.getElementById('consent-overlay').classList.remove('hidden');
 
     try {
-        // 2. Εκτελούμε πρώτα την εγγραφή (Register) στο Backend
         const startParam = tg?.initDataUnsafe?.start_param || '';
         const firstName = tg?.initDataUnsafe?.user?.first_name || '';
         
@@ -308,7 +328,6 @@ async function init() {
             body: JSON.stringify({ user_id: uid, start_param: startParam, first_name: firstName })
         });
         
-        // 3. Μόλις γίνει η εγγραφή, ανανεώνουμε ΑΜΕΣΩΣ την οθόνη των πόντων (με το σωστό endpoint)
         await updatePointsDisplay();
         
         const d = await res.json();
@@ -317,10 +336,10 @@ async function init() {
         }
     } catch(e) { 
         console.error(e);
-        // Αν αποτύχει το register, τρέχουμε την updatePointsDisplay ως fallback
         updatePointsDisplay();
     }
 
+    // Αν η γλώσσα δεν είναι Ελληνικά, μετάφραση όλης της σελίδας
     if (lang !== 'el') {
         applyTranslation(); 
     }
