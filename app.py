@@ -42,7 +42,7 @@ MINI_APP_URL = os.environ.get("MINI_APP_URL", "https://omen.franklymadear.com")
 genai.configure(api_key=GEMINI_API_KEY)
 
 # Χρήση του νεότερου σταθερού μοντέλου
-gemini_model = genai.GenerativeModel('gemini-2.0-flash')
+gemini_model = genai.GenerativeModel('gemini-1.5-flash')
 
 OFFICIAL_BOT_USERNAME = "omenread_bot"
 
