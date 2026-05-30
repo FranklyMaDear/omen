@@ -201,6 +201,31 @@
             box-shadow: 0 0 30px rgba(241,196,15,0.4);
         }
 
+        /* GENDER SELECTOR */
+        .gender-selector {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 5px 0;
+        }
+        .gender-btn {
+            background: rgba(20,10,40,0.7);
+            border: 2px solid rgba(241,196,15,0.3);
+            color: #d5c8e8;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        .gender-btn.active, .gender-btn:hover {
+            background: rgba(241,196,15,0.2);
+            border-color: #f7dc6f;
+            color: #f7dc6f;
+            box-shadow: 0 0 15px rgba(241,196,15,0.3);
+        }
+
         #consent-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
         #consent-overlay.hidden { display: none; }
         #consent-modal { background: linear-gradient(145deg, #1a0e2a, #2a1a3a); border: 2px solid rgba(241,196,15,0.3); border-radius: 30px; padding: 35px 25px; max-width: 480px; width: 100%; text-align: center; animation: modalFadeIn 0.5s; max-height: 90vh; overflow-y: auto; }
@@ -376,7 +401,7 @@
         <!-- Κρυφό input για upload -->
         <input type="file" id="file-input" accept="image/*" style="display:none;" onchange="handleFileSelect(this.files[0])">
 
-        <!-- Νέο Επαγγελματικό Photo Slot -->
+        <!-- Επαγγελματικό Photo Slot -->
         <label for="file-input" class="photo-slot" id="photo-slot">
             <span class="photo-slot-icon">📸</span>
             <span class="photo-slot-text">Ανέβασε τη φωτογραφία του φλιτζανιού σου</span>
@@ -388,6 +413,13 @@
             <span id="analyze-spinner" style="display:none; margin-left:8px; animation: spin 1s linear infinite;">⏳</span>
         </button>
 
+        <!-- GENDER SELECTOR – ΜΕΤΑΦΕΡΘΗΚΕ ΑΚΡΙΒΩΣ ΕΔΩ -->
+        <div class="gender-selector">
+            <button id="gender-male" class="gender-btn active" onclick="setGender('male')" data-translate="true">👨 Άντρας</button>
+            <button id="gender-female" class="gender-btn" onclick="setGender('female')" data-translate="true">👩 Γυναίκα</button>
+        </div>
+
+        <!-- Κουμπιά κερδών / referral / shop -->
         <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:15px 0;">
             <button class="btn-earn" onclick="earnPoints()" data-translate="true">🎁 Κέρδισε 10 Πόντους</button>
             <button class="btn-earn" onclick="openReferralPopup()" data-translate="true">👥 Πρόσκληση Φίλων</button>
@@ -395,13 +427,13 @@
         </div>
     </div>
 
-    <!-- Νέο Modal Αποτελεσμάτων -->
+    <!-- Modal Αποτελεσμάτων -->
     <div class="result-modal-overlay" id="result-modal-overlay">
         <div class="result-modal">
             <button class="result-modal-close" onclick="closeResultModal()">✕</button>
-            <h2>☽ Η Ετυμηγορία του Καφέ ☾</h2>
+            <h2 data-translate="true" data-original="☽ Η Ετυμηγορία του Καφέ ☾">☽ Η Ετυμηγορία του Καφέ ☾</h2>
             <div id="modal-result-text"></div>
-            <button class="result-modal-btn" onclick="closeResultModal(true)">
+            <button class="result-modal-btn" onclick="closeResultModal(true)" data-translate="true" data-original="🔮 Κλείσιμο & Νέα Ανάλυση">
                 🔮 Κλείσιμο & Νέα Ανάλυση
             </button>
         </div>
@@ -454,6 +486,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=16"></script>
+    <script src="script.js?v=18"></script>
 </body>
 </html>
