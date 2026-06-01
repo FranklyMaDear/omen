@@ -23,10 +23,12 @@
     <meta name="twitter:description" content="🔮 Η Μαντάμ Ζαΐρα διαβάζει το φλιτζάνι σου!">
     <meta name="twitter:image" content="https://omen.franklymadear.com/omen.png">
 
-    <!-- Αυτόματη ανακατεύθυνση στο Telegram Bot -->
-    <meta http-equiv="refresh" content="0;url=https://t.me/omenread_bot?profile">
+    <!-- Διορθωμένη ανακατεύθυνση με καθυστέρηση 1 δευτερολέπτου για να μην κολλάει ο browser -->
+    <meta http-equiv="refresh" content="1;url=https://t.me/omenread_bot?profile">
     <script>
-        window.location.href = "https://t.me/omenread_bot?profile";
+        setTimeout(function() {
+            window.location.href = "https://t.me/omenread_bot?profile";
+        }, 1000);
     </script>
 
     <meta name="theme-color" content="#0a0a12">
