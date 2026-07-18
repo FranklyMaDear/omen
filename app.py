@@ -343,4 +343,4 @@ def analyze():
 if __name__ == '__main__':
     init_db()
     logger.info("🚀 Omen server starting on port 7860...")
-    app.run(host='0.0.0.0', port=7860)
+    app.run(host='0.0.0.0', port=7860) 
