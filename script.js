@@ -123,6 +123,7 @@ async function performAnalysis() {
     if(btnText) btnText.style.display = 'none';
 
     try {
+        // Προσθέτουμε το φύλο στο body
         const gender = localStorage.getItem('omen_gender') || 'male';
         const res = await fetch(`${API}/api/analyze`, {
             method: 'POST',
@@ -136,11 +137,14 @@ async function performAnalysis() {
         } else if (data.analysis) {
             const modalText = document.getElementById('modal-result-text');
             modalText.textContent = data.analysis;
+            // Αποθήκευση του πρωτότυπου ελληνικού κειμένου
             modalText.setAttribute('data-original', data.analysis);
             
+            // Αν η γλώσσα ΔΕΝ είναι Ελληνικά, μετάφρασε το κείμενο της ανάλυσης
+            // και επίσης όλα τα σταθερά κείμενα του modal (τίτλος, κουμπί)
             if (lang !== 'el') {
-                await applyTranslation(modalText);
-                await applyTranslation();
+                await applyTranslation(modalText);       // μετάφραση ανάλυσης
+                await applyTranslation();                // μετάφραση υπόλοιπων στοιχείων modal
             }
             
             openResultModal();
@@ -199,24 +203,7 @@ function earnPoints() {
     });
 }
 
-// ====== ΒΟΗΘΗΤΙΚΗ: Αναμονή για το Telegram SDK ======
-function waitForTelegram(timeout = 5000) {
-    return new Promise((resolve) => {
-        const startTime = Date.now();
-        const check = () => {
-            if (window.Telegram?.WebApp) {
-                resolve(window.Telegram.WebApp);
-            } else if (Date.now() - startTime >= timeout) {
-                resolve(null); // Λήξη χρόνου
-            } else {
-                setTimeout(check, 100); // Έλεγχος κάθε 100ms
-            }
-        };
-        check();
-    });
-}
-
-// ====== SHOP (TELEGRAM STARS) - ΟΡΙΣΤΙΚΑ ΔΙΟΡΘΩΜΕΝΟ ======
+// ====== SHOP (TELEGRAM STARS) ======
 function openShop() { document.getElementById('shop-modal-overlay').style.display = 'flex'; }
 function closeShop(e) {
     if (!e || e.target === document.getElementById('shop-modal-overlay') || e.target.tagName === 'BUTTON') {
@@ -225,28 +212,12 @@ function closeShop(e) {
 }
 
 async function buyPackage(pkgId) {
-    // 1. Προσπαθούμε να πάρουμε το Telegram WebApp, περιμένοντας αν χρειαστεί
-    let webapp = tg;
-    if (!webapp) {
-        webapp = await waitForTelegram();
-    }
-    
-    // 2. Αν ακόμα είναι null, σημαίνει ότι η εφαρμογή ΔΕΝ τρέχει μέσα στο Telegram
-    if (!webapp) {
-        alert('Η αγορά είναι διαθέσιμη μόνο μέσα από το Telegram.');
-        return;
-    }
-    
-    // 3. Ορίζουμε τις καθολικές μεταβλητές
-    tg = webapp;
-    if (!uid) uid = tg.initDataUnsafe?.user?.id || parseInt(localStorage.getItem('tid') || Date.now());
-    localStorage.setItem('tid', uid);
-
+    if (!tg) { alert('Η αγορά είναι διαθέσιμη μόνο μέσα από το Telegram.'); return; }
     try {
-        const res = await fetch(`${API}/api/invoice`, {
+        const res = await fetch(`${API}/api/shop/buy`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: uid, package_id: pkgId })
+            body: JSON.stringify({ user_id: uid, package: pkgId })
         });
         const data = await res.json();
         if (data.invoice_link) {
@@ -261,13 +232,8 @@ async function buyPackage(pkgId) {
                     alert('Κατάσταση πληρωμής: ' + status);
                 }
             });
-        } else { 
-            alert('Σφάλμα κατά τη δημιουργία της τιμολόγησης. Βεβαιωθείτε ότι το Bot έχει ενεργό "Telegram Stars" στο BotFather.'); 
-        }
-    } catch(e) { 
-        console.error(e); 
-        alert('Σφάλμα σύνδεσης με τον διακομιστή.'); 
-    }
+        } else { alert('Σφάλμα κατά τη δημιουργία της τιμολόγησης. Βεβαιωθείτε ότι το Bot έχει ενεργό Payment Provider.'); }
+    } catch(e) { console.error(e); }
 }
 
 // ====== REFERRALS ======
@@ -332,11 +298,9 @@ function closeLegal(type) { document.getElementById(`${type}-overlay`).classList
     draw();
 })();
 
-// ====== INIT (ΑΡΧΙΚΟΠΟΙΗΣΗ) ======
+// ====== INIT (ΦΟΡΤΩΣΗ ΦΥΛΟΥ ΚΑΙ ΑΥΤΟΜΑΤΗ ΜΕΤΑΦΡΑΣΗ) ======
 async function init() {
     initAds();
-    
-    // Προσπάθεια άμεσης ανίχνευσης του Telegram
     if (window.Telegram?.WebApp) {
         tg = window.Telegram.WebApp; 
         tg.ready(); 
