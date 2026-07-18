@@ -123,7 +123,6 @@ async function performAnalysis() {
     if(btnText) btnText.style.display = 'none';
 
     try {
-        // Προσθέτουμε το φύλο στο body
         const gender = localStorage.getItem('omen_gender') || 'male';
         const res = await fetch(`${API}/api/analyze`, {
             method: 'POST',
@@ -137,14 +136,11 @@ async function performAnalysis() {
         } else if (data.analysis) {
             const modalText = document.getElementById('modal-result-text');
             modalText.textContent = data.analysis;
-            // Αποθήκευση του πρωτότυπου ελληνικού κειμένου
             modalText.setAttribute('data-original', data.analysis);
             
-            // Αν η γλώσσα ΔΕΝ είναι Ελληνικά, μετάφρασε το κείμενο της ανάλυσης
-            // και επίσης όλα τα σταθερά κείμενα του modal (τίτλος, κουμπί)
             if (lang !== 'el') {
-                await applyTranslation(modalText);       // μετάφραση ανάλυσης
-                await applyTranslation();                // μετάφραση υπόλοιπων στοιχείων modal
+                await applyTranslation(modalText);
+                await applyTranslation();
             }
             
             openResultModal();
@@ -203,7 +199,7 @@ function earnPoints() {
     });
 }
 
-// ====== SHOP (TELEGRAM STARS) ======
+// ====== SHOP (TELEGRAM STARS) - ΔΙΟΡΘΩΜΕΝΟ ======
 function openShop() { document.getElementById('shop-modal-overlay').style.display = 'flex'; }
 function closeShop(e) {
     if (!e || e.target === document.getElementById('shop-modal-overlay') || e.target.tagName === 'BUTTON') {
@@ -212,7 +208,21 @@ function closeShop(e) {
 }
 
 async function buyPackage(pkgId) {
-    if (!tg) { alert('Η αγορά είναι διαθέσιμη μόνο μέσα από το Telegram.'); return; }
+    // **ΛΥΣΗ**: Προσπαθούμε ξανά να αρχικοποιήσουμε το Telegram αν είναι null
+    if (!tg) {
+        if (window.Telegram?.WebApp) {
+            tg = window.Telegram.WebApp;
+            tg.ready();
+            tg.expand();
+            // Ενημέρωση του UID σε περίπτωση που χάθηκε
+            if (!uid) uid = tg.initDataUnsafe?.user?.id || parseInt(localStorage.getItem('tid') || Date.now());
+            localStorage.setItem('tid', uid);
+        } else {
+            alert('Η αγορά είναι διαθέσιμη μόνο μέσα από το Telegram.');
+            return;
+        }
+    }
+
     try {
         const res = await fetch(`${API}/api/invoice`, {
             method: 'POST',
@@ -298,9 +308,11 @@ function closeLegal(type) { document.getElementById(`${type}-overlay`).classList
     draw();
 })();
 
-// ====== INIT (ΦΟΡΤΩΣΗ ΦΥΛΟΥ ΚΑΙ ΑΥΤΟΜΑΤΗ ΜΕΤΑΦΡΑΣΗ) ======
+// ====== INIT (ΦΟΡΤΩΣΗ ΦΥΛΟΥ ΚΑΙ ΑΥΤΟΜΑΤΗ ΜΕΤΑΦΡΑΣΗ) - ΔΙΟΡΘΩΜΕΝΟ ======
 async function init() {
     initAds();
+    
+    // **ΛΥΣΗ**: Πιο στιβαρή αρχικοποίηση του Telegram
     if (window.Telegram?.WebApp) {
         tg = window.Telegram.WebApp; 
         tg.ready(); 
