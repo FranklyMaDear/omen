@@ -415,7 +415,7 @@
         <div class="splash-desc" data-translate="true">Η Μαντάμ Ζαΐρα σε περιμένει.<br>Άφησε τις σκιές του καφέ να αποκαλύψουν το πεπρωμένο σου.</div>
         <button class="btn-mystic" onclick="goToScan()" data-translate="true">🔮 Ανάλυση Φλιτζανιού</button>
 
-        <!-- Νέο πλαίσιο προώθησης Life Line -->
+        <!-- Πλαίσιο προώθησης Life Line + κουμπί εγκατάστασης (χωρίς τη συμβουλή) -->
         <div class="promo-box">
             <span style="font-size:1.4rem;">🔮</span>
             <div style="color:#d5c8e8; font-size:0.85rem;" data-translate="true">
@@ -424,11 +424,6 @@
             </div>
             <a href="https://t.me/lifeline2026_bot?profile" target="_blank">🚀 Δοκίμασέ το τώρα</a>
             <button class="install-btn" onclick="installApp()" data-translate="true">📱 Προσθήκη στην αρχική οθόνη</button>
-        </div>
-
-        <div class="install-prompt" style="display:flex;align-items:center;gap:10px;background:rgba(20,10,40,0.85);backdrop-filter:blur(10px);border:1px solid rgba(241,196,15,0.3);border-radius:20px;padding:12px 20px;margin-top:5px;max-width:360px;text-align:center;">
-            <span style="font-size:1.8rem;">📲</span>
-            <span style="color:#d5c8e8;font-size:0.8rem;" data-translate="true"><strong>Συμβουλή:</strong> Προσθέστε την εφαρμογή στην αρχική οθόνη!</span>
         </div>
     </div>
 
@@ -471,7 +466,7 @@
             <button id="gender-female" class="gender-btn" onclick="setGender('female')" data-translate="true">👩 Γυναίκα</button>
         </div>
 
-        <!-- Κουμπιά κερδών / referral / shop (αφαιρέθηκε το shop) -->
+        <!-- Κουμπιά κερδών / referral (αφαιρέθηκε το shop) -->
         <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:15px 0;">
             <button class="btn-earn" onclick="earnPoints()" data-translate="true">💎 Κέρδισε 10 Πόντοι</button>
             <button class="btn-earn" onclick="openReferralPopup()" data-translate="true">👥 Πρόσκληση Φίλων</button>
@@ -490,7 +485,7 @@
         </div>
     </div>
 
-    <!-- REFERRAL POPUP -->
+    <!-- REFERRAL POPUP (εμφανίζεται μόνο με το κουμπί) -->
     <div class="shop-modal-overlay" id="referral-overlay" onclick="closeReferralPopup(event)">
         <div class="shop-modal" onclick="event.stopPropagation()" style="text-align: center;">
             <h2 style="color: #f7dc6f; margin-bottom: 15px;" data-translate="true">👥 Πρόσκληση Φίλων</h2>
