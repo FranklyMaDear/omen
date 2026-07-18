@@ -199,7 +199,24 @@ function earnPoints() {
     });
 }
 
-// ====== SHOP (TELEGRAM STARS) - ΔΙΟΡΘΩΜΕΝΟ ======
+// ====== ΒΟΗΘΗΤΙΚΗ: Αναμονή για το Telegram SDK ======
+function waitForTelegram(timeout = 5000) {
+    return new Promise((resolve) => {
+        const startTime = Date.now();
+        const check = () => {
+            if (window.Telegram?.WebApp) {
+                resolve(window.Telegram.WebApp);
+            } else if (Date.now() - startTime >= timeout) {
+                resolve(null); // Λήξη χρόνου
+            } else {
+                setTimeout(check, 100); // Έλεγχος κάθε 100ms
+            }
+        };
+        check();
+    });
+}
+
+// ====== SHOP (TELEGRAM STARS) - ΟΡΙΣΤΙΚΑ ΔΙΟΡΘΩΜΕΝΟ ======
 function openShop() { document.getElementById('shop-modal-overlay').style.display = 'flex'; }
 function closeShop(e) {
     if (!e || e.target === document.getElementById('shop-modal-overlay') || e.target.tagName === 'BUTTON') {
@@ -208,20 +225,22 @@ function closeShop(e) {
 }
 
 async function buyPackage(pkgId) {
-    // **ΛΥΣΗ**: Προσπαθούμε ξανά να αρχικοποιήσουμε το Telegram αν είναι null
-    if (!tg) {
-        if (window.Telegram?.WebApp) {
-            tg = window.Telegram.WebApp;
-            tg.ready();
-            tg.expand();
-            // Ενημέρωση του UID σε περίπτωση που χάθηκε
-            if (!uid) uid = tg.initDataUnsafe?.user?.id || parseInt(localStorage.getItem('tid') || Date.now());
-            localStorage.setItem('tid', uid);
-        } else {
-            alert('Η αγορά είναι διαθέσιμη μόνο μέσα από το Telegram.');
-            return;
-        }
+    // 1. Προσπαθούμε να πάρουμε το Telegram WebApp, περιμένοντας αν χρειαστεί
+    let webapp = tg;
+    if (!webapp) {
+        webapp = await waitForTelegram();
     }
+    
+    // 2. Αν ακόμα είναι null, σημαίνει ότι η εφαρμογή ΔΕΝ τρέχει μέσα στο Telegram
+    if (!webapp) {
+        alert('Η αγορά είναι διαθέσιμη μόνο μέσα από το Telegram.');
+        return;
+    }
+    
+    // 3. Ορίζουμε τις καθολικές μεταβλητές
+    tg = webapp;
+    if (!uid) uid = tg.initDataUnsafe?.user?.id || parseInt(localStorage.getItem('tid') || Date.now());
+    localStorage.setItem('tid', uid);
 
     try {
         const res = await fetch(`${API}/api/invoice`, {
@@ -242,8 +261,13 @@ async function buyPackage(pkgId) {
                     alert('Κατάσταση πληρωμής: ' + status);
                 }
             });
-        } else { alert('Σφάλμα κατά τη δημιουργία της τιμολόγησης. Βεβαιωθείτε ότι το Bot έχει ενεργό Payment Provider.'); }
-    } catch(e) { console.error(e); }
+        } else { 
+            alert('Σφάλμα κατά τη δημιουργία της τιμολόγησης. Βεβαιωθείτε ότι το Bot έχει ενεργό "Telegram Stars" στο BotFather.'); 
+        }
+    } catch(e) { 
+        console.error(e); 
+        alert('Σφάλμα σύνδεσης με τον διακομιστή.'); 
+    }
 }
 
 // ====== REFERRALS ======
@@ -308,11 +332,11 @@ function closeLegal(type) { document.getElementById(`${type}-overlay`).classList
     draw();
 })();
 
-// ====== INIT (ΦΟΡΤΩΣΗ ΦΥΛΟΥ ΚΑΙ ΑΥΤΟΜΑΤΗ ΜΕΤΑΦΡΑΣΗ) - ΔΙΟΡΘΩΜΕΝΟ ======
+// ====== INIT (ΑΡΧΙΚΟΠΟΙΗΣΗ) ======
 async function init() {
     initAds();
     
-    // **ΛΥΣΗ**: Πιο στιβαρή αρχικοποίηση του Telegram
+    // Προσπάθεια άμεσης ανίχνευσης του Telegram
     if (window.Telegram?.WebApp) {
         tg = window.Telegram.WebApp; 
         tg.ready(); 
