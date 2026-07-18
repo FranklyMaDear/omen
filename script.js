@@ -203,6 +203,39 @@ function earnPoints() {
     });
 }
 
+// ====== SHOP (TELEGRAM STARS) ======
+function openShop() { document.getElementById('shop-modal-overlay').style.display = 'flex'; }
+function closeShop(e) {
+    if (!e || e.target === document.getElementById('shop-modal-overlay') || e.target.tagName === 'BUTTON') {
+        document.getElementById('shop-modal-overlay').style.display = 'none';
+    }
+}
+
+async function buyPackage(pkgId) {
+    if (!tg) { alert('Η αγορά είναι διαθέσιμη μόνο μέσα από το Telegram.'); return; }
+    try {
+        const res = await fetch(`${API}/api/invoice`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: uid, package_id: pkgId })
+        });
+        const data = await res.json();
+        if (data.invoice_link) {
+            tg.openInvoice(data.invoice_link, function(status) {
+                if (status === 'paid') {
+                    alert('Επιτυχής πληρωμή! Οι πόντοι σας προστέθηκαν.');
+                    closeShop();
+                    updatePointsDisplay();
+                } else if (status === 'cancelled') {
+                    alert('Η πληρωμή ακυρώθηκε.');
+                } else {
+                    alert('Κατάσταση πληρωμής: ' + status);
+                }
+            });
+        } else { alert('Σφάλμα κατά τη δημιουργία της τιμολόγησης. Βεβαιωθείτε ότι το Bot έχει ενεργό Payment Provider.'); }
+    } catch(e) { console.error(e); }
+}
+
 // ====== REFERRALS ======
 function openReferralPopup() {
     if (uid) {
@@ -221,7 +254,7 @@ function copyReferralKey() {
 }
 function shareReferralLink() {
     const key = `OmenRef_${uid}`;
-    const text = encodeURIComponent(`🔮 Μόλις χρησιμοποίησα το Omen για να διαβάσω το φλιτζάνι μου! Χρησιμοποίησε το κλειδί μου ${key} κατά την είσοδο για να πάρεις +20 δωρεάν διαμάντια! ✨`);
+    const text = encodeURIComponent(`🔮 Μόλις χρησιμοποίησα το Omen για να διαβάσω το φλιτζάνι μου! Χρησιμοποίησε το κλειδί μου ${key} κατά την είσοδο για να πάρεις +20 δωρεάν πόντους! ✨`);
     window.open(`https://t.me/share/url?url=https://t.me/${BOT}&text=${text}`);
 }
 
@@ -264,36 +297,6 @@ function closeLegal(type) { document.getElementById(`${type}-overlay`).classList
     }
     draw();
 })();
-
-// ====== ΠΡΟΣΘΗΚΗ ΣΤΗΝ ΑΡΧΙΚΗ ΟΘΟΝΗ (install) ======
-let deferredPrompt = null;
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-});
-
-function installApp() {
-    // 1. Μέσα στο Telegram
-    if (tg && typeof tg.addToHomeScreen === 'function') {
-        tg.addToHomeScreen();
-        return;
-    }
-    // 2. Android/Chrome (PWA)
-    if (deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult) => {
-            deferredPrompt = null;
-        });
-        return;
-    }
-    // 3. iOS/Safari – εμφανίζουμε οδηγίες
-    if (navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform) && !window.navigator.standalone) {
-        alert('Για να προσθέσετε την εφαρμογή στην αρχική οθόνη, πατήστε το κουμπί "Share" (Κοινοποίηση) στο κάτω μέρος του Safari και επιλέξτε "Προσθήκη στην αρχική οθόνη" (Add to Home Screen).');
-    } else {
-        // 4. Υπόλοιποι browsers
-        alert('Για να προσθέσετε την εφαρμογή στην αρχική οθόνη, πατήστε το κουμπί "Προσθήκη στην αρχική οθόνη" από το μενού του browser σας.');
-    }
-}
 
 // ====== INIT (ΦΟΡΤΩΣΗ ΦΥΛΟΥ ΚΑΙ ΑΥΤΟΜΑΤΗ ΜΕΤΑΦΡΑΣΗ) ======
 async function init() {
