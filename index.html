@@ -7,12 +7,14 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
     <title>Omen - Καφεμαντεία με AI</title>
-    <meta name="description" content="🔮 Η Μαντάμ Ζαΐρα διαβάζει το φλιτζάνι σου!">
+    <meta name="description" content="🔮 Η AZIRAM διαβάζει το φλιτζάνι σου!">
     <meta property="og:title" content="🔮 Omen - Καφεμαντεία">
-    <meta property="og:description" content="Ξεκίνησε το ταξίδι. Η Μαντάμ Ζαΐρα διαβάζει το φλιτζάνι σου!">
+    <meta property="og:description" content="Ξεκίνησε το ταξίδι. Η AZIRAM διαβάζει το φλιτζάνι σου!">
+    <!-- Ενημερώθηκε το domain σε FranklyGames σύμφωνα με τη διόρθωση -->
     <meta property="og:image" content="https://omen.franklygames.com/omen.png">
     <meta name="theme-color" content="#0a0a12">
     <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+    <!-- Προσθήκη του Telegram Web App SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -269,6 +271,7 @@
     </style>
 </head>
 <body>
+    <!-- CONSENT OVERLAY -->
     <div id="consent-overlay">
         <div id="consent-modal">
             <div style="font-size:4rem;margin-bottom:15px;">🔮</div>
@@ -315,6 +318,7 @@
         </div>
     </div>
 
+    <!-- LEGAL OVERLAYS -->
     <div id="terms-overlay" class="legal-overlay">
         <div class="legal-modal">
             <button class="legal-close-btn" onclick="closeLegal('terms')">✕</button>
@@ -335,6 +339,7 @@
             <h3 data-translate="true">4. Πνευματική Ιδιοκτησία</h3>
             <p data-translate="true">Όλο το περιεχόμενο του ιστοτόπου (συμπεριλαμβανομένων των κειμένων, του λογότυπου, των γραφικών, των κωδίκων της εφαρμογής και του λεξικού συμβόλων) αποτελεί πνευματική ιδιοκτησία του Omen και προστατεύεται από τις σχετικές διατάξεις του ελληνικού και ευρωπαϊκού δικαίου.</p>
             <p data-translate="true">Απαγορεύεται αυστηρά η αντιγραφή, αναπαραγωγή, αναδημοσίευση ή εμπορική εκμετάλλευση μέρους ή του συνόλου του κώδικα και των κειμένων χωρίς την έγγραφη άδεια των ιδιοκτητών.</p>
+            <!-- Ενημερώθηκε το email επικοινωνίας για να ταιριάζει με το νέο domain -->
             <p style="text-align:center;margin-top:18px;" data-translate="true">📧 <strong>info.franklygames@gmail.com</strong></p>
             <p style="text-align:center;font-size:0.75rem;color:#c9a0dc;" data-translate="true">Τελευταία ενημέρωση: Ιούλιος 2026</p>
         </div>
@@ -366,11 +371,12 @@
 
     <canvas id="bg-canvas"></canvas>
 
+    <!-- SPLASH PAGE -->
     <div id="splash" class="page active">
         <div class="splash-icon" onclick="goToScan()">🔮</div>
         <div class="splash-title">Omen</div>
         <div class="splash-sub" data-translate="true">✦ Καφεμαντεία με AI ✦</div>
-        <div class="splash-desc" data-translate="true">Η Μαντάμ Ζαΐρα σε περιμένει.<br>Άφησε τις σκιές του καφέ να αποκαλύψουν το πεπρωμένο σου.</div>
+        <div class="splash-desc" data-translate="true">Η AZIRAM σε περιμένει.<br>Άφησε τις σκιές του καφέ να αποκαλύψουν το πεπρωμένο σου.</div>
         <button class="btn-mystic" onclick="goToScan()" data-translate="true">🔮 Ανάλυση Φλιτζανιού</button>
         <div class="install-prompt" style="display:flex;align-items:center;gap:10px;background:rgba(20,10,40,0.85);backdrop-filter:blur(10px);border:1px solid rgba(241,196,15,0.3);border-radius:20px;padding:12px 20px;margin-top:5px;max-width:360px;text-align:center;">
             <span style="font-size:1.8rem;">📲</span>
@@ -378,12 +384,15 @@
         </div>
     </div>
 
+    <!-- LIFELINE ROLLUP -->
     <div id="lifeline-rollup">
+        <!-- Ενημερώθηκε το link για να ταιριάζει με το νέο domain -->
         <a href="https://lifeline.franklygames.com" target="_blank" class="rollup-inner">
             <span>✨</span> <span style="color:#f7dc6f;font-weight:600;">LiFeLiNe – Χειρομαντεία</span>
         </a>
     </div>
 
+    <!-- SCAN PAGE -->
     <div id="scan" class="page">
         <div class="points-header">
             <div class="points-badge">💎 <span id="points-display">0</span></div>
@@ -394,23 +403,28 @@
             <p style="color:#b8a0d0;" data-translate="true">Ανέβασε μια φωτογραφία του φλιτζανιού σου</p>
         </div>
 
+        <!-- Κρυφό input για upload -->
         <input type="file" id="file-input" accept="image/*" style="display:none;" onchange="handleFileSelect(this.files[0])">
 
+        <!-- Επαγγελματικό Photo Slot -->
         <label for="file-input" class="photo-slot" id="photo-slot">
             <span class="photo-slot-icon">📸</span>
             <span class="photo-slot-text">Ανέβασε τη φωτογραφία του φλιτζανιού σου</span>
         </label>
 
+        <!-- Ανάλυση κουμπί (με spinner) -->
         <button id="analyze-btn" class="btn-green" onclick="performAnalysis()" disabled>
             <span id="analyze-btn-text" data-translate="true">🔮 Ανάλυση (15 πόντοι)</span>
             <span id="analyze-spinner" style="display:none; margin-left:8px; animation: spin 1s linear infinite;">⏳</span>
         </button>
 
+        <!-- GENDER SELECTOR – ΜΕΤΑΦΕΡΘΗΚΕ ΑΚΡΙΒΩΣ ΕΔΩ -->
         <div class="gender-selector">
             <button id="gender-male" class="gender-btn active" onclick="setGender('male')" data-translate="true">👨 Άντρας</button>
             <button id="gender-female" class="gender-btn" onclick="setGender('female')" data-translate="true">👩 Γυναίκα</button>
         </div>
 
+        <!-- Κουμπιά κερδών / referral / shop -->
         <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:15px 0;">
             <button class="btn-earn" onclick="earnPoints()" data-translate="true">🎁 Κέρδισε 10 Πόντους</button>
             <button class="btn-earn" onclick="openReferralPopup()" data-translate="true">👥 Πρόσκληση Φίλων</button>
@@ -418,6 +432,7 @@
         </div>
     </div>
 
+    <!-- Modal Αποτελεσμάτων -->
     <div class="result-modal-overlay" id="result-modal-overlay">
         <div class="result-modal">
             <button class="result-modal-close" onclick="closeResultModal()">✕</button>
@@ -429,6 +444,7 @@
         </div>
     </div>
 
+    <!-- SHOP MODAL -->
     <div class="shop-modal-overlay" id="shop-modal-overlay" onclick="closeShop(event)">
         <div class="shop-modal" onclick="event.stopPropagation()">
             <h3 style="color:#f7dc6f;text-align:center;" data-translate="true">🛒 Αγόρασε Πόντους</h3>
@@ -440,6 +456,7 @@
         </div>
     </div>
 
+    <!-- REFERRAL POPUP -->
     <div class="shop-modal-overlay" id="referral-overlay" onclick="closeReferralPopup(event)">
         <div class="shop-modal" onclick="event.stopPropagation()" style="text-align: center;">
             <h2 style="color: #f7dc6f; margin-bottom: 15px;" data-translate="true">👥 Πρόσκληση Φίλων</h2>
@@ -474,47 +491,7 @@
         </div>
     </div>
 
-    <script src="script.js?v=19"></script>
-    <script>
-        // Προσθήκη του Telegram Web App API logic για τα Stars
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-
-        async function buyPackage(packageType) {
-            let starsAmount = 0;
-            if (packageType === 'starter') starsAmount = 50;
-            else if (packageType === 'pro') starsAmount = 80;
-            else if (packageType === 'expert') starsAmount = 150;
-
-            if (starsAmount === 0) return;
-
-            try {
-                // To backend prepei na kalesei to createInvoiceLink tou Telegram API
-                const response = await fetch('/api/create-invoice', { 
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ package: packageType, amount: starsAmount })
-                });
-                
-                const data = await response.json();
-                const invoiceUrl = data.invoiceLink; 
-
-                tg.openInvoice(invoiceUrl, function(status) {
-                    if (status === 'paid') {
-                        console.log("Η πληρωμή πέτυχε! Προσθήκη πόντων...");
-                        // Edw mpainei o kwdikas prothikis pontwn ston xristi meta tin epivevaiwsi
-                    } else if (status === 'cancelled') {
-                        console.log("Ο χρήστης ακύρωσε την αγορά.");
-                    } else if (status === 'failed') {
-                        console.log("Η αγορά απέτυχε.");
-                    }
-                });
-
-            } catch (error) {
-                console.error("Σφάλμα κατά τη δημιουργία του τιμολογίου:", error);
-                alert("Υπήρξε σφάλμα σύνδεσης. Παρακαλώ δοκιμάστε ξανά αργότερα.");
-            }
-        }
-    </script>
+    <!-- Ενημερώθηκε το αρχείο script.js με νέο version για να ανανεωθεί η μνήμη -->
+    <script src="script.js?v=20"></script>
 </body>
 </html>
