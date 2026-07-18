@@ -243,12 +243,52 @@
         .legal-modal h2, .legal-modal h3 { color: #f7dc6f; }
         .legal-close-btn { position: sticky; top: 10px; float: right; background: rgba(255,215,0,0.2); border: 1px solid rgba(255,215,0,0.4); color: #f7dc6f; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; z-index: 5; margin-bottom: 10px; }
         .btn-back { background: transparent; border: none; color: #b9a6d4; font-size: 0.9rem; cursor: pointer; margin-bottom: 10px; align-self: flex-start; }
-        .shop-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; display: none; align-items: flex-end; justify-content: center; }
-        .shop-modal-overlay.active { display: flex; }
-        .shop-modal { background: #1a0e2a; border-radius: 30px 30px 0 0; padding: 30px 20px; width: 100%; max-width: 500px; animation: slideUp 0.3s ease; }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         @keyframes spin { to { transform: rotate(360deg); } }
-        
+
+        /* Νέο πλαίσιο προώθησης Life Line */
+        .promo-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            background: rgba(20,10,40,0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(241,196,15,0.3);
+            border-radius: 20px;
+            padding: 15px 20px;
+            margin-top: 10px;
+            max-width: 360px;
+            text-align: center;
+        }
+        .promo-box a {
+            color: #f7dc6f;
+            text-decoration: none;
+            font-weight: 600;
+            background: rgba(241,196,15,0.15);
+            padding: 8px 16px;
+            border-radius: 30px;
+            display: inline-block;
+            transition: background 0.3s;
+        }
+        .promo-box a:hover {
+            background: rgba(241,196,15,0.3);
+        }
+        .install-btn {
+            background: linear-gradient(145deg, #f7dc6f, #d4ac0d);
+            color: #1a0e1f;
+            padding: 10px 24px;
+            border: none;
+            border-radius: 60px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .install-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 30px rgba(241,196,15,0.4);
+        }
+
         /* Responsive Media Queries */
         @media (max-width: 480px) { 
             .splash-title { font-size: 2.4rem; } 
@@ -374,6 +414,18 @@
         <div class="splash-sub" data-translate="true">✦ Καφεμαντεία με AI ✦</div>
         <div class="splash-desc" data-translate="true">Η Μαντάμ Ζαΐρα σε περιμένει.<br>Άφησε τις σκιές του καφέ να αποκαλύψουν το πεπρωμένο σου.</div>
         <button class="btn-mystic" onclick="goToScan()" data-translate="true">🔮 Ανάλυση Φλιτζανιού</button>
+
+        <!-- Νέο πλαίσιο προώθησης Life Line -->
+        <div class="promo-box">
+            <span style="font-size:1.4rem;">🔮</span>
+            <div style="color:#d5c8e8; font-size:0.85rem;" data-translate="true">
+                <strong>Life Line Καφεμαντεία</strong><br>
+                Διάβασε το χέρι σου με AI!
+            </div>
+            <a href="https://t.me/lifeline2026_bot?profile" target="_blank">🚀 Δοκίμασέ το τώρα</a>
+            <button class="install-btn" onclick="installApp()" data-translate="true">📱 Προσθήκη στην αρχική οθόνη</button>
+        </div>
+
         <div class="install-prompt" style="display:flex;align-items:center;gap:10px;background:rgba(20,10,40,0.85);backdrop-filter:blur(10px);border:1px solid rgba(241,196,15,0.3);border-radius:20px;padding:12px 20px;margin-top:5px;max-width:360px;text-align:center;">
             <span style="font-size:1.8rem;">📲</span>
             <span style="color:#d5c8e8;font-size:0.8rem;" data-translate="true"><strong>Συμβουλή:</strong> Προσθέστε την εφαρμογή στην αρχική οθόνη!</span>
@@ -413,17 +465,16 @@
             <span id="analyze-spinner" style="display:none; margin-left:8px; animation: spin 1s linear infinite;">⏳</span>
         </button>
 
-        <!-- GENDER SELECTOR – ΜΕΤΑΦΕΡΘΗΚΕ ΑΚΡΙΒΩΣ ΕΔΩ -->
+        <!-- GENDER SELECTOR -->
         <div class="gender-selector">
             <button id="gender-male" class="gender-btn active" onclick="setGender('male')" data-translate="true">👨 Άντρας</button>
             <button id="gender-female" class="gender-btn" onclick="setGender('female')" data-translate="true">👩 Γυναίκα</button>
         </div>
 
-        <!-- Κουμπιά κερδών / referral / shop -->
+        <!-- Κουμπιά κερδών / referral / shop (αφαιρέθηκε το shop) -->
         <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:15px 0;">
-            <button class="btn-earn" onclick="earnPoints()" data-translate="true">🎁 Κέρδισε 10 Πόντους</button>
+            <button class="btn-earn" onclick="earnPoints()" data-translate="true">💎 Κέρδισε 10 Πόντοι</button>
             <button class="btn-earn" onclick="openReferralPopup()" data-translate="true">👥 Πρόσκληση Φίλων</button>
-            <button class="btn-earn" onclick="openShop()" data-translate="true">🛒 Αγόρασε Πόντους</button>
         </div>
     </div>
 
@@ -436,18 +487,6 @@
             <button class="result-modal-btn" onclick="closeResultModal(true)" data-translate="true" data-original="🔮 Κλείσιμο & Νέα Ανάλυση">
                 🔮 Κλείσιμο & Νέα Ανάλυση
             </button>
-        </div>
-    </div>
-
-    <!-- SHOP MODAL -->
-    <div class="shop-modal-overlay" id="shop-modal-overlay" onclick="closeShop(event)">
-        <div class="shop-modal" onclick="event.stopPropagation()">
-            <h3 style="color:#f7dc6f;text-align:center;" data-translate="true">🛒 Αγόρασε Πόντους</h3>
-            <p style="color:#d5c8e8;text-align:center;margin-bottom:15px;" data-translate="true">Δεν έχεις πόντους; 🔮 Μπορείς να κερδίσεις βλέποντας διαφήμιση ή να αγοράσεις ένα πακέτο:</p>
-            <button class="btn-green" style="margin-bottom:10px;" onclick="buyPackage('starter')">Starter (45 πόντοι) - 50 ⭐</button>
-            <button class="btn-green" style="margin-bottom:10px;" onclick="buyPackage('pro')">Pro (75 πόντοι) - 80 ⭐</button>
-            <button class="btn-green" style="margin-bottom:10px;" onclick="buyPackage('expert')">Expert (150 πόντοι) - 150 ⭐</button>
-            <button style="background:transparent;color:#f7dc6f;border:none;margin-top:10px;width:100%;" onclick="closeShop()">✕ Κλείσιμο</button>
         </div>
     </div>
 
@@ -465,12 +504,12 @@
             </p>
             <div style="display: flex; justify-content: center; gap: 20px; margin: 15px 0;">
                 <div style="text-align: center;">
-                    <span style="font-size: 2rem;">🎁</span>
-                    <p style="color: #f7dc6f; font-weight: 700;">+30 Πόντοι</p>
+                    <span style="font-size: 2rem;">💎</span>
+                    <p style="color: #f7dc6f; font-weight: 700;">+30 Διαμάντια</p>
                 </div>
                 <div style="text-align: center;">
                     <span style="font-size: 2rem;">💎</span>
-                    <p style="color: #f7dc6f; font-weight: 700;">+20 Πόντοι</p>
+                    <p style="color: #f7dc6f; font-weight: 700;">+20 Διαμάντια</p>
                     <p style="color: #b9a6d4; font-size: 0.75rem;">για τον φίλο σου</p>
                 </div>
             </div>
