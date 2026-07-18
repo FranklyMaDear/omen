@@ -85,15 +85,107 @@ def update_user_points(user_id, points_to_add):
     conn.close()
     return new_points
 
-# 6. Πακέτα Telegram Stars
-PACKAGES = {
-    "starter": {"prices": [{"label": "Starter Package", "amount": 50}], "points": 45},
-    "pro": {"prices": [{"label": "Pro Package", "amount": 80}], "points": 75},
-    "expert": {"prices": [{"label": "Expert Package", "amount": 150}], "points": 150}
-}
+# ================= FLASK ENDPOINTS =================
 
-# 7. ΟΛΟΚΛΗΡΩΜΕΝΟ ΣΥΣΤΗΜΑ ΟΔΗΓΙΩΝ ΚΑΙ ΛΕΞΙΚΟ ΖΑΪΡΑΣ (ΝΕΑ ΕΚΔΟΣΗ)
-ZAIRA_PROMPT = """
+@app.route('/')
+def home():
+    return "Omen Backend is running successfully with complete symbol dictionary and gender filtering!", 200
+
+@app.route('/api/register', methods=['POST'])
+def register():
+    data = request.json or {}
+    user_id = data.get('user_id')
+    start_param = data.get('start_param', '')
+    first_name = data.get('first_name', '')
+    
+    if not user_id:
+        return jsonify({"error": "Missing user_id"}), 400
+    
+    user_id = int(user_id)
+    
+    # Αρχική εγγραφή χρήστη (αν δεν υπάρχει) με 15 πόντους
+    points = get_user_points(user_id)
+    logger.info(f"✅ User {user_id} registered/checked with {points} points")
+    
+    # Υποστήριξη referral: αν το start_param είναι OmenRef_<inviter_id>
+    if start_param and start_param.startswith('OmenRef_'):
+        try:
+            inviter_id = int(start_param.split('_')[1])
+            if inviter_id != user_id:
+                # Δίνουμε +30 στον καλώντα (inviter)
+                inviter_points = update_user_points(inviter_id, 30)
+                # Δίνουμε +20 στο νέο χρήστη (επιπλέον των 15 που ήδη έχει)
+                new_user_points = update_user_points(user_id, 20)
+                logger.info(f"👥 Referral: User {user_id} invited by {inviter_id}. Inviter gets +30, new user gets +20.")
+        except (IndexError, ValueError):
+            logger.warning(f"Invalid referral key: {start_param}")
+    
+    return jsonify({"user_id": user_id, "points": points}), 200
+
+@app.route('/api/user/<int:user_id>', methods=['GET'])
+def get_user(user_id):
+    points = get_user_points(user_id)
+    return jsonify({"user_id": user_id, "points": points}), 200
+
+@app.route('/api/earn', methods=['POST'])
+def earn():
+    data = request.json or {}
+    user_id = data.get('user_id')
+    points_to_add = data.get('points', 10)
+    
+    if not user_id:
+        return jsonify({"error": "Missing user_id"}), 400
+        
+    user_id = int(user_id)
+    new_points = update_user_points(user_id, points_to_add)
+    logger.info(f"🎁 User {user_id} earned {points_to_add} points. Total: {new_points}")
+    
+    return jsonify({"success": True, "points": new_points}), 200
+
+@app.route('/api/analyze', methods=['POST'])
+def analyze():
+    try:
+        data = request.json or {}
+        image_data = data.get('image')
+        user_id = data.get('user_id')
+        gender = data.get('gender', 'female') # Αν δεν σταλεί, βάζουμε default γυναίκα
+        
+        if not image_data:
+            return jsonify({"error": "Missing image data"}), 400
+
+        user_id = int(user_id) if user_id else None
+
+        # Έλεγχος υπόλοιπου πόντων
+        if user_id:
+            points = get_user_points(user_id)
+            if points < 15:
+                return jsonify({
+                    "error": "Δεν έχετε αρκετούς πόντους. Κερδίστε ή αγοράστε!",
+                    "remaining_points": points
+                }), 402
+
+        # Θωράκιση Base64 αποκωδικοποίησης
+        if isinstance(image_data, str):
+            if image_data.startswith('data:image'):
+                header, encoded = image_data.split(",", 1)
+                encoded = encoded.replace("\n", "").replace("\r", "").replace(" ", "")
+                img_bytes = base64.b64decode(encoded)
+            else:
+                image_data = image_data.replace("\n", "").replace("\r", "").replace(" ", "")
+                img_bytes = base64.b64decode(image_data)
+        else:
+            img_bytes = image_data
+            
+        image = Image.open(io.BytesIO(img_bytes))
+
+        # Δυναμική προσαρμογή οδηγίας φύλου στο prompt
+        if gender == 'male':
+            gender_instruction = "ΑΝΤΡΑΣ (Χρησιμοποίησε αρσενικές καταλήξεις, π.χ. 'είσαι έτοιμος', 'αγαπημένε μου', και ερμήνευσε τα σύμβολα εστιάζοντας σε άντρα χρήστη)."
+        else:
+            gender_instruction = "ΓΥΝΑΙΚΑ (Χρησιμοποίησε θηλυκές καταλήξεις, π.χ. 'είσαι έτοιμη', 'αγαπημένη μου', και ερμήνευσε τα σύμβολα εστιάζοντας σε γυναίκα χρήστη)."
+
+        # Ενσωμάτωση της οδηγίας στο prompt
+        ZAIRA_PROMPT = """
 Είσαι η Ζαΐρα, μια έμπειρη, σοφή, παραδοσιακή και μυστηριώδης καφεμάντισσα.
 Ο χρήστης σου δίνει μια φωτογραφία από το εσωτερικό ενός φλιτζανιού ελληνικού καφέ.
 Πριν ξεκινήσεις την ανάλυση, μελέτησε πολύ προσεκτικά τη γεωγραφία του φλιτζανιού, τις αποστάσεις από το χερούλι, τη συμπεριφορά των γραμμών και τις παραδοσιακές ερμηνείες των σχημάτων.
@@ -223,122 +315,6 @@ ZAIRA_PROMPT = """
    - **Γενικό Μήνυμα & Συμβουλή της Ζαΐρας**
 5. Η απάντηση πρέπει να είναι αποκλειστικά στην ελληνική γλώσσα, πλούσια, αναλυτική και χωρίς αναφορές στους τεχνικούς όρους του prompt (μην αναφέρεις τις λέξεις "Prompt", "Σημείο 1", "Περιοχή Α" στην τελική απάντηση, χρησιμοποίησε εκφράσεις όπως "κοντά στα χείλη του φλιτζανιού βλέπω...", "βαθιά στον πάτο και αριστερά κρύβεται...").
 """
-
-# ================= FLASK ENDPOINTS =================
-
-@app.route('/')
-def home():
-    return "Omen Backend is running successfully with complete symbol dictionary and gender filtering!", 200
-
-@app.route('/api/register', methods=['POST'])
-def register():
-    data = request.json or {}
-    user_id = data.get('user_id')
-    if not user_id:
-        return jsonify({"error": "Missing user_id"}), 400
-    
-    user_id = int(user_id)
-    points = get_user_points(user_id)
-    logger.info(f"✅ User {user_id} registered/checked with {points} points")
-    
-    return jsonify({"user_id": user_id, "points": points}), 200
-
-@app.route('/api/user/<int:user_id>', methods=['GET'])
-def get_user(user_id):
-    points = get_user_points(user_id)
-    return jsonify({"user_id": user_id, "points": points}), 200
-
-@app.route('/api/earn', methods=['POST'])
-def earn():
-    data = request.json or {}
-    user_id = data.get('user_id')
-    points_to_add = data.get('points', 10)
-    
-    if not user_id:
-        return jsonify({"error": "Missing user_id"}), 400
-        
-    user_id = int(user_id)
-    new_points = update_user_points(user_id, points_to_add)
-    logger.info(f"🎁 User {user_id} earned {points_to_add} points. Total: {new_points}")
-    
-    return jsonify({"success": True, "points": new_points}), 200
-
-@app.route('/api/shop/buy', methods=['POST'])
-def create_invoice():
-    data = request.json or {}
-    user_id = data.get('user_id')
-    pkg_id = data.get('package')
-    
-    if not user_id or pkg_id not in PACKAGES:
-        return jsonify({"success": False, "error": "Invalid request"}), 400
-        
-    pkg = PACKAGES[pkg_id]
-    
-    url = f"https://api.telegram.org/bot{TOKEN}/createInvoiceLink"
-    payload = {
-        "title": f"Omen {pkg_id.title()} Points",
-        "description": f"Αγορά {pkg['points']} πόντων για ανάλυση καφεμαντείας.",
-        "payload": f"{user_id}_{pkg_id}",
-        "provider_token": "",  
-        "currency": "XTR",    
-        "prices": pkg["prices"]
-    }
-    
-    try:
-        response = requests.post(url, json=payload)
-        res_data = response.json()
-        if res_data.get("ok"):
-            return jsonify({"success": True, "invoice_link": res_data["result"]})
-        else:
-            logger.error(f"Telegram API Error: {res_data}")
-            return jsonify({"success": False, "error": "Αποτυχία δημιουργίας συνδέσμου πληρωμής"})
-    except Exception as e:
-        logger.error(f"Invoice creation failed: {e}")
-        return jsonify({"success": False, "error": str(e)}), 500
-
-@app.route('/api/analyze', methods=['POST'])
-def analyze():
-    try:
-        data = request.json or {}
-        image_data = data.get('image')
-        user_id = data.get('user_id')
-        gender = data.get('gender', 'female') # Αν δεν σταλεί, βάζουμε default γυναίκα
-        
-        if not image_data:
-            return jsonify({"error": "Missing image data"}), 400
-
-        user_id = int(user_id) if user_id else None
-
-        # Έλεγχος υπόλοιπου πόντων
-        if user_id:
-            points = get_user_points(user_id)
-            if points < 15:
-                return jsonify({
-                    "error": "Δεν έχετε αρκετούς πόντους. Κερδίστε ή αγοράστε!",
-                    "remaining_points": points
-                }), 402
-
-        # Θωράκιση Base64 αποκωδικοποίησης
-        if isinstance(image_data, str):
-            if image_data.startswith('data:image'):
-                header, encoded = image_data.split(",", 1)
-                encoded = encoded.replace("\n", "").replace("\r", "").replace(" ", "")
-                img_bytes = base64.b64decode(encoded)
-            else:
-                image_data = image_data.replace("\n", "").replace("\r", "").replace(" ", "")
-                img_bytes = base64.b64decode(image_data)
-        else:
-            img_bytes = image_data
-            
-        image = Image.open(io.BytesIO(img_bytes))
-
-        # Δυναμική προσαρμογή οδηγίας φύλου στο prompt
-        if gender == 'male':
-            gender_instruction = "ΑΝΤΡΑΣ (Χρησιμοποίησε αρσενικές καταλήξεις, π.χ. 'είσαι έτοιμος', 'αγαπημένε μου', και ερμήνευσε τα σύμβολα εστιάζοντας σε άντρα χρήστη)."
-        else:
-            gender_instruction = "ΓΥΝΑΙΚΑ (Χρησιμοποίησε θηλυκές καταλήξεις, π.χ. 'είσαι έτοιμη', 'αγαπημένη μου', και ερμήνευσε τα σύμβολα εστιάζοντας σε γυναίκα χρήστη)."
-
-        # Ενσωμάτωση της οδηγίας στο prompt
         final_prompt = ZAIRA_PROMPT.format(gender_instruction=gender_instruction)
 
         # Κλήση Gemini API
@@ -363,23 +339,6 @@ def analyze():
             "error": f"Σφάλμα κατά την ανάλυση: {str(e)}",
             "remaining_points": remaining
         }), 500
-
-@app.route('/webhook', methods=['POST'])
-def webhook():
-    data = request.json or {}
-    if "message" in data and "successful_payment" in data["message"]:
-        payment_info = data["message"]["successful_payment"]
-        payload_data = payment_info.get("invoice_payload", "")
-        try:
-            uid_str, pkg_id = payload_data.split("_")
-            uid = int(uid_str)
-            if pkg_id in PACKAGES:
-                points_to_add = PACKAGES[pkg_id]["points"]
-                new_points = update_user_points(uid, points_to_add)
-                logger.info(f"✅ Η πληρωμή ολοκληρώθηκε! Ο χρήστης {uid} έλαβε {points_to_add} πόντους. Σύνολο: {new_points}")
-        except Exception as e:
-            logger.error(f"Σφάλμα κατά την επεξεργασία του webhook πληρωμής: {e}")
-    return 'OK', 200
 
 if __name__ == '__main__':
     init_db()
