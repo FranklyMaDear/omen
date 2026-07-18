@@ -1,4 +1,3 @@
-
 const API = 'https://franklymadear-omenread.hf.space';
 const BOT = 'omenread_bot';
 const ADS_BLOCK = '32708';
@@ -204,9 +203,6 @@ function earnPoints() {
     });
 }
 
-// ====== SHOP (αφαιρέθηκε) ======
-// Το σύστημα αγοράς πόντων με Telegram Stars έχει αφαιρεθεί.
-
 // ====== REFERRALS ======
 function openReferralPopup() {
     if (uid) {
@@ -277,17 +273,24 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 function installApp() {
+    // 1. Μέσα στο Telegram
+    if (tg && typeof tg.addToHomeScreen === 'function') {
+        tg.addToHomeScreen();
+        return;
+    }
+    // 2. Android/Chrome (PWA)
     if (deferredPrompt) {
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then((choiceResult) => {
-            if (choiceResult.outcome === 'accepted') {
-                console.log('User accepted the install prompt');
-            } else {
-                console.log('User dismissed the install prompt');
-            }
             deferredPrompt = null;
         });
+        return;
+    }
+    // 3. iOS/Safari – εμφανίζουμε οδηγίες
+    if (navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform) && !window.navigator.standalone) {
+        alert('Για να προσθέσετε την εφαρμογή στην αρχική οθόνη, πατήστε το κουμπί "Share" (Κοινοποίηση) στο κάτω μέρος του Safari και επιλέξτε "Προσθήκη στην αρχική οθόνη" (Add to Home Screen).');
     } else {
+        // 4. Υπόλοιποι browsers
         alert('Για να προσθέσετε την εφαρμογή στην αρχική οθόνη, πατήστε το κουμπί "Προσθήκη στην αρχική οθόνη" από το μενού του browser σας.');
     }
 }
