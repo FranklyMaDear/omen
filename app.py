@@ -21,8 +21,8 @@ app = Flask(__name__)
 CORS(app)
 
 # 3. Environment Variables & Credentials
-TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
-GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
+TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
+GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
 
 if not TOKEN or not GEMINI_KEY:
     logger.error("❌ Μυστικά κλειδιά (Secrets) λείπουν από τις ρυθμίσεις!")
@@ -285,7 +285,7 @@ def create_invoice():
     }
     
     try:
-        response = requests.post(url, json=payload)
+        response = requests.post(url, json=payload, timeout=10)
         res_data = response.json()
         if res_data.get("ok"):
             return jsonify({"success": True, "invoice_link": res_data["result"]})
