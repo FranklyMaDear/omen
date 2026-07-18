@@ -274,27 +274,33 @@ def create_invoice():
         
     pkg = PACKAGES[pkg_id]
     
+    # URL για δημιουργία invoice link για Stars
     url = f"https://api.telegram.org/bot{TOKEN}/createInvoiceLink"
+    
+    # Απλοποιημένο payload για αποφυγή σφαλμάτων
     payload = {
-        "title": f"Omen {pkg_id.title()} Points",
-        "description": f"Αγορά {pkg['points']} πόντων για ανάλυση καφεμαντείας.",
+        "title": "Omen Points",
+        "description": "Αγορά πόντων Omen",
         "payload": f"{user_id}_{pkg_id}",
-        "provider_token": "",  
-        "currency": "XTR",    
+        "currency": "XTR",
         "prices": pkg["prices"]
     }
     
     try:
-        response = requests.post(url, json=payload, timeout=10)
+        response = requests.post(url, json=payload, timeout=15)
         res_data = response.json()
+        
+        # LOG για να δούμε τι ακριβώς απαντάει το Telegram αν αποτύχει
+        logger.info(f"Telegram API Response: {res_data}")
+        
         if res_data.get("ok"):
             return jsonify({"success": True, "invoice_link": res_data["result"]})
         else:
-            logger.error(f"Telegram API Error: {res_data}")
-            return jsonify({"success": False, "error": "Αποτυχία δημιουργίας συνδέσμου πληρωμής"})
+            return jsonify({"success": False, "error": res_data.get("description", "Unknown API error")})
     except Exception as e:
         logger.error(f"Invoice creation failed: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
+
 
 @app.route('/api/analyze', methods=['POST'])
 def analyze():
