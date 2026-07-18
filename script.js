@@ -233,7 +233,10 @@ async function buyPackage(pkgId) {
                 }
             });
         } else { alert('Σφάλμα κατά τη δημιουργία της τιμολόγησης. Βεβαιωθείτε ότι το Bot έχει ενεργό Payment Provider.'); }
-    } catch(e) { console.error(e); }
+    } catch(e) { 
+        console.error(e); 
+        alert('Αποτυχία επικοινωνίας! Βεβαιώσου ότι το Space στο Hugging Face είναι ενεργό (Running).');
+    }
 }
 
 // ====== REFERRALS ======
